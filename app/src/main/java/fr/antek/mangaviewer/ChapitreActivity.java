@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 import java.util.Objects;
 
-//TODO:ajouter une preview des pages
 
 public class ChapitreActivity extends AppCompatActivity {
     private Chapitre chapitre;
@@ -55,7 +54,6 @@ public class ChapitreActivity extends AppCompatActivity {
             intentToPageActivity.putExtra("mangaName",mangaName);
             intentToPageActivity.putExtra("chapitreName",chapitreName);
             intentToPageActivity.putExtra("pageName",page.getName());
-            intentToPageActivity.putExtra("from","left");
             startActivity(intentToPageActivity);
         });
         

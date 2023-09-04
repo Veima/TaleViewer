@@ -16,9 +16,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-//TODO:ajouter des outils de renommage et de split des pages
-//TODO:ajouter des infos sur les mangas (nombre de champitre et de page)
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -132,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
                     intentToPageActivity.putExtra("mangaName",nameUltimeManga);
                     intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
                     intentToPageActivity.putExtra("pageName",nameLastPage);
-                    intentToPageActivity.putExtra("from","left");
                     startActivity(intentToPageActivity);
                 });
 
@@ -161,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
                     intentToPageActivity.putExtra("mangaName",namePenultiemeManga);
                     intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
                     intentToPageActivity.putExtra("pageName",nameLastPage);
-                    intentToPageActivity.putExtra("from","left");
                     startActivity(intentToPageActivity);
                 });
 
@@ -190,7 +185,6 @@ public class MainActivity extends AppCompatActivity {
                     intentToPageActivity.putExtra("mangaName",nameAntepenultiemeManga);
                     intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
                     intentToPageActivity.putExtra("pageName",nameLastPage);
-                    intentToPageActivity.putExtra("from","left");
                     startActivity(intentToPageActivity);
                 });
 

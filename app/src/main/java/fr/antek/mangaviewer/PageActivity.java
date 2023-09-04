@@ -28,12 +28,6 @@ import java.util.Objects;
 
 import fr.antek.mangaviewer.databinding.ActivityPageBinding;
 
-//TODO:ajouter zoom
-
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class PageActivity extends AppCompatActivity {
     private final Handler mHideHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
     private View mContentView;
@@ -42,7 +36,7 @@ public class PageActivity extends AppCompatActivity {
     private String mangaName;
     private String chapitreName;
     private ImageView pageView;
-    private boolean hide;
+    private boolean hide = false;
     private SharedPreferences memoire;
     private Page prevPage;
     private Page nextPage;
