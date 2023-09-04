@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">MangaViewer</string>
+    <string name="title_activity_page">PageActivity</string>
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="buttonContinueText">Continuer</string>
+    <string name="buttonChooseDir">Changer Dossier</string>
+    <string name="buttonUpdate">Actualiser</string>
+    <string name="pageDescription">Une Page de manga</string>
+    <string name="dernierePage">Ceci est la dernière page du Manga</string>
+    <string name="premierePage">Ceci est la première page du Manga</string>
+    <integer name="tempsToast">3</integer>
 </resources>
