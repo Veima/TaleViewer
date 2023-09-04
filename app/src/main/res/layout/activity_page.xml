@@ -18,6 +18,7 @@
         android:id="@+id/pageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:srcCompat="@android:drawable/ic_menu_gallery" />
+        app:srcCompat="@android:drawable/ic_menu_gallery"
+        android:contentDescription="@string/pageDescription" />
 
 </FrameLayout>

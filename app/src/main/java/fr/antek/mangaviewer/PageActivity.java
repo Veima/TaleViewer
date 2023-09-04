@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
-import android.view.animation.Animation;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -23,6 +22,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import fr.antek.mangaviewer.databinding.ActivityPageBinding;
 
@@ -31,26 +31,19 @@ import fr.antek.mangaviewer.databinding.ActivityPageBinding;
  * status bar and navigation/system bar) with user interaction.
  */
 public class PageActivity extends AppCompatActivity {
-    private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mHideHandler = new Handler(Looper.myLooper());
+    private final Handler mHideHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
     private View mContentView;
-    private ActivityPageBinding binding;
-    private Manga manga;
-    private Chapitre chapitre;
     private Page page;
     private Uri mangaFolderUri;
     private String mangaName;
     private String chapitreName;
     private String pageName;
     private ImageView pageView;
-    private String[] PrevEtNextPage;
     private String prevChapitreName;
     private String prevPageName;
     private String nextChapitreName;
     private String nextPageName;
-    private String from;
     private boolean hide;
-    private Animation myAnimation;
     private SharedPreferences memoire;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -59,17 +52,15 @@ public class PageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
 
-
-        binding = ActivityPageBinding.inflate(getLayoutInflater());
+        fr.antek.mangaviewer.databinding.ActivityPageBinding binding = ActivityPageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         mangaFolderUri = Uri.parse(getIntent().getStringExtra("mangaFolderUri"));
         mangaName = getIntent().getStringExtra("mangaName");
         chapitreName = getIntent().getStringExtra("chapitreName");
         pageName = getIntent().getStringExtra("pageName");
-        from = getIntent().getStringExtra("from");
         hide = getIntent().getBooleanExtra("hide",false);
-        getSupportActionBar().setTitle(pageName);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(pageName);
 
 
         mContentView = binding.pageView;
@@ -82,33 +73,31 @@ public class PageActivity extends AppCompatActivity {
             show();
         }
 
-        pageView.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    float x = event.getX();
-                    float y = event.getY();
+        pageView.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                float x = event.getX();
+                float y = event.getY();
 
-                    int width = pageView.getWidth();
-                    int height = pageView.getHeight();
+                int width = pageView.getWidth();
+                int height = pageView.getHeight();
 
-                    float relativeX = x / width;
-                    float relativeY = y / height;
+                float relativeX = x / width;
+                float relativeY = y / height;
 
-                    if ((relativeY < 0.15) || (relativeY > 0.85)) {
-                        toggle();
-                    } else if (relativeX < 0.5) {
-                        goPrevPage();
-                    } else {
-                        goNextPage();
-                    }
+                if ((relativeY < 0.15) || (relativeY > 0.85)) {
+                    toggle();
+                } else if (relativeX < 0.5) {
+                    goPrevPage();
+                } else {
+                    goNextPage();
                 }
-                return true;
             }
+            return true;
         });
 
-        manga = new Manga(this, mangaName, mangaFolderUri);
+        Manga manga = new Manga(this, mangaName, mangaFolderUri);
 
-        chapitre = manga.getChapitreWithName(chapitreName);
+        Chapitre chapitre = manga.getChapitreWithName(chapitreName);
         page = chapitre.getPageWithName(pageName);
 
         Uri pageUri = page.getPageFile().getUri();
@@ -116,7 +105,7 @@ public class PageActivity extends AppCompatActivity {
 
 
 
-        Bitmap bitmap = null;
+        Bitmap bitmap;
         try {
             bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), pageUri);
         } catch (IOException e) {
@@ -126,14 +115,6 @@ public class PageActivity extends AppCompatActivity {
         if (bitmap != null) {
             pageView.setImageBitmap(bitmap);
         }
-
-        /*
-        if (from.equals("left")){
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-        } else if (from.equals("right")) {
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }
-        */
 
     }
 
@@ -145,11 +126,11 @@ public class PageActivity extends AppCompatActivity {
             saveMangaLastPage();
             saveAppLastManga();
 
-            PrevEtNextPage = page.getPrevEtNextPage();
-            prevChapitreName = PrevEtNextPage[0];
-            prevPageName = PrevEtNextPage[1];
-            nextChapitreName = PrevEtNextPage[2];
-            nextPageName = PrevEtNextPage[3];
+            String[] prevEtNextPage = page.getPrevEtNextPage();
+            prevChapitreName = prevEtNextPage[0];
+            prevPageName = prevEtNextPage[1];
+            nextChapitreName = prevEtNextPage[2];
+            nextPageName = prevEtNextPage[3];
         }
     }
 
@@ -186,7 +167,7 @@ public class PageActivity extends AppCompatActivity {
     }
 
     private void goPrevPage(){
-        if ((prevChapitreName!=null) && (prevChapitreName!=null)) {
+        if ((prevChapitreName!=null) && (prevPageName!=null)) {
             Intent intentToPageActivity = new Intent(PageActivity.this, PageActivity.class);
             intentToPageActivity.putExtra("mangaFolderUri", mangaFolderUri.toString());
             intentToPageActivity.putExtra("mangaName", mangaName);
@@ -199,7 +180,7 @@ public class PageActivity extends AppCompatActivity {
     }
 
     private void goNextPage(){
-        if ((nextChapitreName!=null) && (nextChapitreName!=null)) {
+        if ((nextChapitreName!=null) && (nextPageName!=null)) {
             Intent intentToPageActivity = new Intent(PageActivity.this, PageActivity.class);
             intentToPageActivity.putExtra("mangaFolderUri", mangaFolderUri.toString());
             intentToPageActivity.putExtra("mangaName", mangaName);
@@ -238,7 +219,7 @@ public class PageActivity extends AppCompatActivity {
     private void show() {
         // Show the system bar
         if (Build.VERSION.SDK_INT >= 30) {
-            mContentView.getWindowInsetsController().show(
+            Objects.requireNonNull(mContentView.getWindowInsetsController()).show(
                     WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
         } else {
             mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -256,7 +237,7 @@ public class PageActivity extends AppCompatActivity {
         public void run() {
             // Delayed removal of status and navigation bar
             if (Build.VERSION.SDK_INT >= 30) {
-                mContentView.getWindowInsetsController().hide(
+                Objects.requireNonNull(mContentView.getWindowInsetsController()).hide(
                         WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
             } else {
                 // Note that some of these constants are new as of API 16 (Jelly Bean)
@@ -272,14 +253,11 @@ public class PageActivity extends AppCompatActivity {
         }
     };
 
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            // Delayed display of UI elements
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.show();
-            }
+    private final Runnable mShowPart2Runnable = () -> {
+        // Delayed display of UI elements
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.show();
         }
     };
 

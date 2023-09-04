@@ -8,21 +8,18 @@ import androidx.documentfile.provider.DocumentFile;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 public class Manga implements Comparable<Manga>{
-    private AppCompatActivity context;
-    private String name;
-    private Uri mangaFolderUri;
+    private final String name;
     private ArrayList<Chapitre> chapitreList = null;
-    private DocumentFile root;
-    private DocumentFile mangaFile;
+    private final DocumentFile root;
+    private final DocumentFile mangaFile;
 
     public Manga(AppCompatActivity context,String name, Uri mangaFolderUri) {
-        this.context = context;
         this.name = name;
-        this.mangaFolderUri = mangaFolderUri;
         this.root = DocumentFile.fromTreeUri(context, mangaFolderUri);
-        this.mangaFile = root.findFile(name);
+        this.mangaFile = Objects.requireNonNull(root).findFile(name);
     }
 
     public void findChapitre(){
@@ -56,7 +53,7 @@ public class Manga implements Comparable<Manga>{
             }
             return null;
         }else{
-            return new Chapitre(mangaFile.findFile(name),this);
+            return new Chapitre(Objects.requireNonNull(mangaFile.findFile(name)),this);
         }
 
     }
@@ -107,6 +104,6 @@ public class Manga implements Comparable<Manga>{
     }
 
     public boolean equals(@Nullable Manga manga) {
-        return (this.name.equals(manga.getName()) && this.root.getName().equals(manga.getRoot().getName()));
+        return (this.name.equals(Objects.requireNonNull(manga).getName()) && Objects.requireNonNull(this.root.getName()).equals(manga.getRoot().getName()));
     }
 }

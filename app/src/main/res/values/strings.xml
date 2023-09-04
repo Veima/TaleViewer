@@ -2,6 +2,8 @@
     <string name="app_name">MangaViewer</string>
     <string name="title_activity_page">PageActivity</string>
     <string name="title_activity_fullscreen">FullscreenActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="buttonContinueText">Continuer</string>
+    <string name="buttonChooseDir">Changer Dossier</string>
+    <string name="buttonUpdate">Actualiser</string>
+    <string name="pageDescription">Une Page de manga</string>
 </resources>

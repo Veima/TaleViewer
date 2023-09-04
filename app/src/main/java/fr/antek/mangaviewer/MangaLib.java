@@ -10,8 +10,8 @@ import java.util.Collections;
 
 public class MangaLib {
     private ArrayList<Manga> mangaList;
-    private AppCompatActivity context;
-    private Uri uri;
+    private final AppCompatActivity context;
+    private final Uri uri;
 
     public MangaLib(AppCompatActivity context, Uri uri) {
         this.context =context;
@@ -47,20 +47,8 @@ public class MangaLib {
         return listName;
     }
 
-    public Manga getMangaWithName(String name){
-        for (Manga manga : mangaList){
-            if (manga.getName().equals(name)){
-                return manga;
-            }
-        }
-        return null;
-    }
-
     public Manga getMangaWithPos(int pos){
         return mangaList.get(pos);
     }
 
-    public AppCompatActivity getContext() {
-        return context;
-    }
 }

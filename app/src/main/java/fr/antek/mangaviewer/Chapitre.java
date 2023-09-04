@@ -1,19 +1,17 @@
 package fr.antek.mangaviewer;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 public class Chapitre implements Comparable<Chapitre>{
-    private AppCompatActivity context;
-    private Manga manga;
-    private String name;
+    private final Manga manga;
+    private final String name;
     private ArrayList<Page> pageList = null;
-    private DocumentFile chapitreFile;
+    private final DocumentFile chapitreFile;
     public Chapitre(DocumentFile chapitreFile, Manga manga) {
         this.chapitreFile = chapitreFile;
         this.name = chapitreFile.getName();
@@ -109,7 +107,7 @@ public class Chapitre implements Comparable<Chapitre>{
             }
             return null;
         }else{
-            return new Page(chapitreFile.findFile(name), this);
+            return new Page(Objects.requireNonNull(chapitreFile.findFile(name)), this);
         }
 
     }
@@ -131,7 +129,7 @@ public class Chapitre implements Comparable<Chapitre>{
         return this.name.compareTo(chapitre.getName());
     }
 
-    public boolean equals(@Nullable Chapitre chapitre) {
+    public boolean equals(@NonNull Chapitre chapitre) {
         return (this.name.equals(chapitre.getName()) && this.manga.equals(chapitre.getManga()));
     }
 }

@@ -25,13 +25,13 @@
                 android:id="@+id/buttonContinueUltime"
                 android:layout_width="180dp"
                 android:layout_height="wrap_content"
-                android:text="Continue" />
+                android:text="@string/buttonContinueText"
+                tools:ignore="DuplicateSpeakableTextCheck" />
 
             <TextView
                 android:id="@+id/textContinueUltime"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TextView" />
+                android:layout_height="wrap_content"/>
         </TableRow>
 
         <TableRow
@@ -42,13 +42,12 @@
                 android:id="@+id/buttonContinuePenultieme"
                 android:layout_width="180dp"
                 android:layout_height="wrap_content"
-                android:text="Continue 2" />
+                android:text="@string/buttonContinueText"/>
 
             <TextView
                 android:id="@+id/textContinuePenultieme"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TextView" />
+                android:layout_height="wrap_content"/>
         </TableRow>
 
         <TableRow
@@ -59,13 +58,12 @@
                 android:id="@+id/buttonContinueAntepenultieme"
                 android:layout_width="180dp"
                 android:layout_height="wrap_content"
-                android:text="Continue 3" />
+                android:text="@string/buttonContinueText"/>
 
             <TextView
                 android:id="@+id/textContinueAntepenultieme"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TextView" />
+                android:layout_height="wrap_content"/>
         </TableRow>
     </TableLayout>
 
@@ -77,31 +75,31 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonupdate"
+        app:layout_constraintBottom_toTopOf="@+id/buttonUpdate"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout"
         app:layout_constraintVertical_bias="0.0" />
 
     <Button
-        android:id="@+id/buttonupdate"
+        android:id="@+id/buttonUpdate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Actualiser"
+        android:text="@string/buttonUpdate"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/buttoncherche"
+        android:id="@+id/buttonCherche"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Changer Dossier"
+        android:text="@string/buttonChooseDir"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

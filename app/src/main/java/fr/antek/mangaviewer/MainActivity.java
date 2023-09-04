@@ -6,15 +6,12 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,8 +19,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button buttonCherche;
-    private Button buttonUpdate;
     private Button buttonContinueUltime;
     private Button buttonContinuePenultieme;
     private Button buttonContinueAntepenultieme;
@@ -33,10 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView listViewManga;
     private Uri mangaFolderUri = null;
     private SharedPreferences memoire;
-    private SharedPreferences.Editor memoireEditor;
     private MangaLib mangaLib;
-    private static final String TAG = "MyActivity";
-
 
 
     @Override
@@ -51,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
         textContinuePenultieme = findViewById(R.id.textContinuePenultieme);
         textContinueAntepenultieme = findViewById(R.id.textContinueAntepenultieme);
 
-        buttonCherche = findViewById(R.id.buttoncherche);
-        buttonUpdate = findViewById(R.id.buttonupdate);
+        Button buttonCherche = findViewById(R.id.buttonCherche);
+        Button buttonUpdate = findViewById(R.id.buttonUpdate);
         listViewManga = findViewById(R.id.listViewManga);
 
 
@@ -64,28 +56,18 @@ public class MainActivity extends AppCompatActivity {
             updateListView(mangaFolderUri);
         }
 
-        buttonCherche.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                pickDirectory();
-            }
-        });
+        buttonCherche.setOnClickListener(v -> pickDirectory());
 
-        buttonUpdate.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                updateListView(mangaFolderUri);
-            }
-        });
+        buttonUpdate.setOnClickListener(v -> updateListView(mangaFolderUri));
 
 
     }
 
-    ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() == Activity.RESULT_OK){
-                Intent intent = result.getData();
+    ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == Activity.RESULT_OK){
+            Intent intent = result.getData();
+            if (intent != null) {
                 mangaFolderUri = intent.getData();
-
                 getContentResolver().takePersistableUriPermission(mangaFolderUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                 saveUriToSharedPreferences(mangaFolderUri);
@@ -97,16 +79,14 @@ public class MainActivity extends AppCompatActivity {
     private void updateListView(Uri mangaFolderUri){
         mangaLib = new MangaLib(this, mangaFolderUri);
 
-        ListAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, mangaLib.getListName());
+        ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mangaLib.getListName());
         listViewManga.setAdapter(adapter);
-        listViewManga.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Manga selectedManga = mangaLib.getMangaWithPos(position);
-                Intent intentToMangaActivity = new Intent(MainActivity.this, MangaActivity.class);
-                intentToMangaActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
-                intentToMangaActivity.putExtra("mangaName",selectedManga.getName());
-                startActivity(intentToMangaActivity);
-            }
+        listViewManga.setOnItemClickListener((parent, view, position, id) -> {
+            Manga selectedManga = mangaLib.getMangaWithPos(position);
+            Intent intentToMangaActivity = new Intent(MainActivity.this, MangaActivity.class);
+            intentToMangaActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
+            intentToMangaActivity.putExtra("mangaName",selectedManga.getName());
+            startActivity(intentToMangaActivity);
         });
     }
 
@@ -124,33 +104,34 @@ public class MainActivity extends AppCompatActivity {
     private Uri getStoredUri() {
         String uriString = memoire.getString("mangaFolder", null);
         if (uriString != null) {
-            Uri storedUri = Uri.parse(uriString);
-            return storedUri;
+            return Uri.parse(uriString);
         }else{
             return null;
         }
     }
 
+
     private void recupLastManga(){
+
         String nameUltimeManga = memoire.getString("nameUltimeManga", null);
         if (nameUltimeManga != null){
             String nameLastChapitre = memoire.getString(nameUltimeManga + "lastChapitre", null);
             String nameLastPage = memoire.getString(nameUltimeManga + "lastPage", null);
-            buttonContinueUltime.setText("Continué " + nameUltimeManga);
+            String textButtonUltime = getString(R.string.buttonContinueText) + " " + nameUltimeManga;
+            buttonContinueUltime.setText(textButtonUltime);
             if ((nameLastChapitre != null) && (nameLastPage != null)){
-                textContinueUltime.setText(nameLastChapitre + " | " + nameLastPage);
+                String textInfoUltime = nameLastChapitre + " | " + nameLastPage;
+                textContinueUltime.setText(textInfoUltime);
 
-                buttonContinueUltime.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
-                        intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
-                        intentToPageActivity.putExtra("mangaName",nameUltimeManga);
-                        intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
-                        intentToPageActivity.putExtra("pageName",nameLastPage);
-                        intentToPageActivity.putExtra("from","left");
-                        intentToPageActivity.putExtra("hide",false);
-                        startActivity(intentToPageActivity);
-                    }
+                buttonContinueUltime.setOnClickListener(v -> {
+                    Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
+                    intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
+                    intentToPageActivity.putExtra("mangaName",nameUltimeManga);
+                    intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
+                    intentToPageActivity.putExtra("pageName",nameLastPage);
+                    intentToPageActivity.putExtra("from","left");
+                    intentToPageActivity.putExtra("hide",false);
+                    startActivity(intentToPageActivity);
                 });
 
             }else{
@@ -166,21 +147,21 @@ public class MainActivity extends AppCompatActivity {
         if (namePenultiemeManga != null){
             String nameLastChapitre = memoire.getString(namePenultiemeManga + "lastChapitre", null);
             String nameLastPage = memoire.getString(namePenultiemeManga + "lastPage", null);
-            buttonContinuePenultieme.setText("Continué " + namePenultiemeManga);
+            String textButtonPenultieme = getString(R.string.buttonContinueText) + " " + namePenultiemeManga;
+            buttonContinuePenultieme.setText(textButtonPenultieme);
             if ((nameLastChapitre != null) && (nameLastPage != null)){
-                textContinuePenultieme.setText(nameLastChapitre + " | " + nameLastPage);
+                String textInfoPenultieme = nameLastChapitre + " | " + nameLastPage;
+                textContinuePenultieme.setText(textInfoPenultieme);
 
-                buttonContinuePenultieme.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
-                        intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
-                        intentToPageActivity.putExtra("mangaName",namePenultiemeManga);
-                        intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
-                        intentToPageActivity.putExtra("pageName",nameLastPage);
-                        intentToPageActivity.putExtra("from","left");
-                        intentToPageActivity.putExtra("hide",false);
-                        startActivity(intentToPageActivity);
-                    }
+                buttonContinuePenultieme.setOnClickListener(v -> {
+                    Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
+                    intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
+                    intentToPageActivity.putExtra("mangaName",namePenultiemeManga);
+                    intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
+                    intentToPageActivity.putExtra("pageName",nameLastPage);
+                    intentToPageActivity.putExtra("from","left");
+                    intentToPageActivity.putExtra("hide",false);
+                    startActivity(intentToPageActivity);
                 });
 
             }else{
@@ -196,21 +177,21 @@ public class MainActivity extends AppCompatActivity {
         if (nameAntepenultiemeManga != null){
             String nameLastChapitre = memoire.getString(nameAntepenultiemeManga + "lastChapitre", null);
             String nameLastPage = memoire.getString(nameAntepenultiemeManga + "lastPage", null);
-            buttonContinueAntepenultieme.setText("Continué " + nameAntepenultiemeManga);
+            String textButtonAntepenultieme = getString(R.string.buttonContinueText) + " " + nameAntepenultiemeManga;
+            buttonContinueAntepenultieme.setText(textButtonAntepenultieme);
             if ((nameLastChapitre != null) && (nameLastPage != null)){
-                textContinueAntepenultieme.setText(nameLastChapitre + " | " + nameLastPage);
+                String textInfoAntepenultieme = nameLastChapitre + " | " + nameLastPage;
+                textContinueAntepenultieme.setText(textInfoAntepenultieme);
 
-                buttonContinueAntepenultieme.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
-                        intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
-                        intentToPageActivity.putExtra("mangaName",nameAntepenultiemeManga);
-                        intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
-                        intentToPageActivity.putExtra("pageName",nameLastPage);
-                        intentToPageActivity.putExtra("from","left");
-                        intentToPageActivity.putExtra("hide",false);
-                        startActivity(intentToPageActivity);
-                    }
+                buttonContinueAntepenultieme.setOnClickListener(v -> {
+                    Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
+                    intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
+                    intentToPageActivity.putExtra("mangaName",nameAntepenultiemeManga);
+                    intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
+                    intentToPageActivity.putExtra("pageName",nameLastPage);
+                    intentToPageActivity.putExtra("from","left");
+                    intentToPageActivity.putExtra("hide",false);
+                    startActivity(intentToPageActivity);
                 });
 
             }else{

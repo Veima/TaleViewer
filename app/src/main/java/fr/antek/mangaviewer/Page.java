@@ -4,9 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 public class Page implements Comparable<Page>{
-    private Chapitre chapitre;
-    private String name;
-    private DocumentFile pageFile;
+    private final Chapitre chapitre;
+    private final String name;
+    private final DocumentFile pageFile;
 
     public Page(@NonNull DocumentFile pageFile, Chapitre chapitre) {
         this.pageFile = pageFile;
