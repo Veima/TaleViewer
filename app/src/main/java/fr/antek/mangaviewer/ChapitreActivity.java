@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 import java.util.Objects;
 
+//TODO:ajouter une preview des pages
 
 public class ChapitreActivity extends AppCompatActivity {
     private Chapitre chapitre;

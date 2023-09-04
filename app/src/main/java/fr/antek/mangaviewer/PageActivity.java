@@ -26,6 +26,10 @@ import java.util.Objects;
 
 import fr.antek.mangaviewer.databinding.ActivityPageBinding;
 
+//TODO:Changer comment marche le changement de page
+//TODO:ajouter des toast pour quand a la fin ou au debut d'un manga
+//TODO:ajouter zoom
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.

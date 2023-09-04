@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.Objects;
+//TODO:ajouter des infos sur les chapitre (nombre de page)
 
 public class MangaActivity extends AppCompatActivity {
 

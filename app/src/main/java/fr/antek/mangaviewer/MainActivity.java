@@ -16,6 +16,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+//TODO:ajouter des outils de renommage et de split des pages
+//TODO:ajouter des infos sur les mangas (nombre de champitre et de page)
+
 
 public class MainActivity extends AppCompatActivity {
 
