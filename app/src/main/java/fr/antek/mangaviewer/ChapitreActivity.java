@@ -56,7 +56,6 @@ public class ChapitreActivity extends AppCompatActivity {
             intentToPageActivity.putExtra("chapitreName",chapitreName);
             intentToPageActivity.putExtra("pageName",page.getName());
             intentToPageActivity.putExtra("from","left");
-            intentToPageActivity.putExtra("hide",false);
             startActivity(intentToPageActivity);
         });
         

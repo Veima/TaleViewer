@@ -6,4 +6,7 @@
     <string name="buttonChooseDir">Changer Dossier</string>
     <string name="buttonUpdate">Actualiser</string>
     <string name="pageDescription">Une Page de manga</string>
+    <string name="dernierePage">Ceci est la dernière page du Manga</string>
+    <string name="premierePage">Ceci est la première page du Manga</string>
+    <integer name="tempsToast">3</integer>
 </resources>

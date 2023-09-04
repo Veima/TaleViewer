@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
                     intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
                     intentToPageActivity.putExtra("pageName",nameLastPage);
                     intentToPageActivity.putExtra("from","left");
-                    intentToPageActivity.putExtra("hide",false);
                     startActivity(intentToPageActivity);
                 });
 
@@ -163,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
                     intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
                     intentToPageActivity.putExtra("pageName",nameLastPage);
                     intentToPageActivity.putExtra("from","left");
-                    intentToPageActivity.putExtra("hide",false);
                     startActivity(intentToPageActivity);
                 });
 
@@ -193,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
                     intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
                     intentToPageActivity.putExtra("pageName",nameLastPage);
                     intentToPageActivity.putExtra("from","left");
-                    intentToPageActivity.putExtra("hide",false);
                     startActivity(intentToPageActivity);
                 });
 

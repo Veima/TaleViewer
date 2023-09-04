@@ -16,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -24,10 +25,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.io.IOException;
 import java.util.Objects;
 
+
 import fr.antek.mangaviewer.databinding.ActivityPageBinding;
 
-//TODO:Changer comment marche le changement de page
-//TODO:ajouter des toast pour quand a la fin ou au debut d'un manga
 //TODO:ajouter zoom
 
 /**
@@ -41,14 +41,11 @@ public class PageActivity extends AppCompatActivity {
     private Uri mangaFolderUri;
     private String mangaName;
     private String chapitreName;
-    private String pageName;
     private ImageView pageView;
-    private String prevChapitreName;
-    private String prevPageName;
-    private String nextChapitreName;
-    private String nextPageName;
     private boolean hide;
     private SharedPreferences memoire;
+    private Page prevPage;
+    private Page nextPage;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -62,8 +59,7 @@ public class PageActivity extends AppCompatActivity {
         mangaFolderUri = Uri.parse(getIntent().getStringExtra("mangaFolderUri"));
         mangaName = getIntent().getStringExtra("mangaName");
         chapitreName = getIntent().getStringExtra("chapitreName");
-        pageName = getIntent().getStringExtra("pageName");
-        hide = getIntent().getBooleanExtra("hide",false);
+        String pageName = getIntent().getStringExtra("pageName");
         Objects.requireNonNull(getSupportActionBar()).setTitle(pageName);
 
 
@@ -104,18 +100,17 @@ public class PageActivity extends AppCompatActivity {
         Chapitre chapitre = manga.getChapitreWithName(chapitreName);
         page = chapitre.getPageWithName(pageName);
 
-        Uri pageUri = page.getPageFile().getUri();
+        displayPage();
 
+    }
 
-
-
+    private void displayPage(){
         Bitmap bitmap;
         try {
-            bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), pageUri);
+            bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), page.getPageFile().getUri());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         if (bitmap != null) {
             pageView.setImageBitmap(bitmap);
         }
@@ -126,16 +121,17 @@ public class PageActivity extends AppCompatActivity {
         super.onWindowFocusChanged(hasFocus);
 
         if (hasFocus) {
-            memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
-            saveMangaLastPage();
-            saveAppLastManga();
-
-            String[] prevEtNextPage = page.getPrevEtNextPage();
-            prevChapitreName = prevEtNextPage[0];
-            prevPageName = prevEtNextPage[1];
-            nextChapitreName = prevEtNextPage[2];
-            nextPageName = prevEtNextPage[3];
+            onNewPage();
         }
+    }
+
+    private void onNewPage(){
+        memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
+        saveMangaLastPage();
+        saveAppLastManga();
+
+        prevPage = page.getPrevPage();
+        nextPage = page.getNextPage();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -171,28 +167,25 @@ public class PageActivity extends AppCompatActivity {
     }
 
     private void goPrevPage(){
-        if ((prevChapitreName!=null) && (prevPageName!=null)) {
-            Intent intentToPageActivity = new Intent(PageActivity.this, PageActivity.class);
-            intentToPageActivity.putExtra("mangaFolderUri", mangaFolderUri.toString());
-            intentToPageActivity.putExtra("mangaName", mangaName);
-            intentToPageActivity.putExtra("chapitreName", prevChapitreName);
-            intentToPageActivity.putExtra("pageName", prevPageName);
-            intentToPageActivity.putExtra("from","right");
-            intentToPageActivity.putExtra("hide",hide);
-            startActivity(intentToPageActivity);
+        if (prevPage != null){
+            page = prevPage;
+            Objects.requireNonNull(getSupportActionBar()).setTitle(page.getName());
+            displayPage();
+            onNewPage();
+        }else{
+            Toast.makeText(this, getString(R.string.premierePage), R.integer.tempsToast).show();
         }
+
     }
 
     private void goNextPage(){
-        if ((nextChapitreName!=null) && (nextPageName!=null)) {
-            Intent intentToPageActivity = new Intent(PageActivity.this, PageActivity.class);
-            intentToPageActivity.putExtra("mangaFolderUri", mangaFolderUri.toString());
-            intentToPageActivity.putExtra("mangaName", mangaName);
-            intentToPageActivity.putExtra("chapitreName", nextChapitreName);
-            intentToPageActivity.putExtra("pageName", nextPageName);
-            intentToPageActivity.putExtra("from","left");
-            intentToPageActivity.putExtra("hide",hide);
-            startActivity(intentToPageActivity);
+        if (nextPage != null){
+            page = nextPage;
+            Objects.requireNonNull(getSupportActionBar()).setTitle(page.getName());
+            displayPage();
+            onNewPage();
+        }else{
+            Toast.makeText(this, getString(R.string.dernierePage), R.integer.tempsToast).show();
         }
     }
 
@@ -267,8 +260,8 @@ public class PageActivity extends AppCompatActivity {
 
     private void saveMangaLastPage(){
         SharedPreferences.Editor editor = memoire.edit();
-        editor.putString(mangaName + "lastChapitre", chapitreName);
-        editor.putString(mangaName + "lastPage", pageName);
+        editor.putString(mangaName + "lastChapitre", page.getChapitre().getName());
+        editor.putString(mangaName + "lastPage", page.getName());
         editor.apply();
 
     }
