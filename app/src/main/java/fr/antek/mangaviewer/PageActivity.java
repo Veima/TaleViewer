@@ -25,7 +25,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.io.IOException;
 import java.util.Objects;
 
-
 import fr.antek.mangaviewer.databinding.ActivityPageBinding;
 
 public class PageActivity extends AppCompatActivity {
