@@ -43,6 +43,7 @@ public class PageActivity extends AppCompatActivity {
     private SharedPreferences memoire;
     private Page prevPage;
     private Page nextPage;
+    private TouchAnalyser touchAnalyser = new TouchAnalyser();
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -69,27 +70,15 @@ public class PageActivity extends AppCompatActivity {
         }else{
             show();
         }
-        ScaleGestureDetector scaleGestureDetector;
-        ScaleGestureListener scaleGestureListener = new ScaleGestureListener();
 
-        scaleGestureDetector = new ScaleGestureDetector(this, scaleGestureListener);
 
 
         pageView.setOnTouchListener((v, event) -> {
-
-            scaleGestureListener.zoom = false;
-            scaleGestureDetector.onTouchEvent(event);
+            touchAnalyser.touchHandler(event);
+            Objects.requireNonNull(getSupportActionBar()).setTitle(Integer.toString(touchAnalyser.getTouchList().size()));
 
             /*
-            if () {
-                Objects.requireNonNull(getSupportActionBar()).setTitle("ping");
-                return true;
-            }
-            Objects.requireNonNull(getSupportActionBar()).setTitle("pong");
-
-             */
-
-            if ((event.getAction() == MotionEvent.ACTION_DOWN)&&(scaleGestureListener.zoom == false)) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 Objects.requireNonNull(getSupportActionBar()).setTitle("pong");
                 float x = event.getX();
                 float y = event.getY();
@@ -109,6 +98,8 @@ public class PageActivity extends AppCompatActivity {
                 }
             }
 
+             */
+
 
 
             return true;
@@ -121,19 +112,6 @@ public class PageActivity extends AppCompatActivity {
 
         displayPage();
 
-    }
-
-    private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        public boolean zoom;
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            this.zoom = true;
-            // Gestion du geste de zoom ici
-            float scaleFactor = detector.getScaleFactor();
-            // Mise à l'échelle de votre ImageView ou ScrollView ici
-            Objects.requireNonNull(getSupportActionBar()).setTitle("zoom");
-            return false;
-        }
     }
 
     private void displayPage(){
@@ -316,9 +294,5 @@ public class PageActivity extends AppCompatActivity {
         editor.apply();
 
     }
-
-
-
-
 }
 
