@@ -56,6 +56,8 @@ public class PageActivity extends AppCompatActivity {
     private float currentFocusY = 0f;
     private float currentScale = 1.0f;
     private int currentOrientation;
+    private float currentXSlide;
+    private float currentYSlide;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -98,6 +100,21 @@ public class PageActivity extends AppCompatActivity {
         pageView.setOnTouchListener((v, event) -> {
             scaleGestureDetector.onTouchEvent(event);
             gestureDetector.onTouchEvent(event);
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (currentScale != 1.0f){
+                    currentXSlide = event.getX();
+                    currentYSlide = event.getY();
+                }
+            }
+
+            if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                if ((noOtherAction)&&(currentScale != 1.0f)&&(event.getPointerCount() == 1)){
+                    Bitmap cropedBitmap = moveBitmap(bitmap,event.getX()-currentXSlide,event.getY()-currentYSlide);
+                    pageView.setImageBitmap(cropedBitmap);
+                    currentXSlide = event.getX();
+                    currentYSlide = event.getY();
+                }
+            }
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 if ((noOtherAction)&&(currentScale == 1.0f)){
@@ -203,6 +220,48 @@ public class PageActivity extends AppCompatActivity {
 
         currentFocusX = newFocusX;
         currentFocusY = newFocusY;
+
+        int newLeft;
+        int newTop;
+
+        if (offsetX > 0){
+            newLeft = Math.round(offsetX);
+        }else{
+            newLeft = 0;
+        }
+        if (offsetY > 0){
+            newTop = Math.round(offsetY);
+        }else{
+            newTop = 0;
+        }
+
+        int newW = Math.round(bitmap.getWidth()/currentScale);
+        int newH = Math.round(bitmap.getHeight()/currentScale);
+
+        int newRight;
+
+        if (newLeft + newW < bitmap.getWidth()){
+            newRight = newLeft + newW;
+        }else{
+            newRight = bitmap.getWidth();
+            newLeft = newRight - newW;
+        }
+
+        Rect rect = new Rect(newLeft, newTop, newRight, newTop + newH);
+        //  Be sure that there is at least 1px to slice.
+        assert(rect.left < rect.right && rect.top < rect.bottom);
+        //  Create our resulting image (150--50),(75--25) = 200x100px
+        Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
+        //  draw source bitmap into resulting image at given position:
+        new Canvas(resultBmp).drawBitmap(bitmap, -rect.left, -rect.top, null);
+
+        return resultBmp;
+    }
+
+    private Bitmap moveBitmap(Bitmap bitmap, float slideX, float slideY){
+
+        offsetX = offsetX - slideX;
+        offsetY = offsetY - slideY;
 
         int newLeft;
         int newTop;
@@ -351,6 +410,8 @@ public class PageActivity extends AppCompatActivity {
             hide = true;
             hide();
         }
+        Handler handler = new Handler();
+        handler.postDelayed(this::displayPage, 50);
     }
     private void addOnOrientationChangeListener() {
         this.getWindow().getDecorView().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
@@ -370,7 +431,7 @@ public class PageActivity extends AppCompatActivity {
         }
         // Schedule a runnable to remove the status and navigation bar after a delay
         mHideHandler.removeCallbacks(mShowPart2Runnable);
-        mHideHandler.postDelayed(mHidePart2Runnable, 0);
+        mHideHandler.postDelayed(mHidePart2Runnable, 1);
     }
 
     private void show() {
@@ -385,7 +446,7 @@ public class PageActivity extends AppCompatActivity {
 
         // Schedule a runnable to display UI elements after a delay
         mHideHandler.removeCallbacks(mHidePart2Runnable);
-        mHideHandler.postDelayed(mShowPart2Runnable, 0);
+        mHideHandler.postDelayed(mShowPart2Runnable, 1);
     }
 
     private final Runnable mHidePart2Runnable = new Runnable() {
