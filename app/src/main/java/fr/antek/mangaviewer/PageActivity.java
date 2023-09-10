@@ -78,7 +78,6 @@ public class PageActivity extends AppCompatActivity {
 
         mContentView = binding.pageView;
         pageView = findViewById(R.id.pageView);
-        // Set up the user interaction to manually show or hide the system UI.
 
         Manga manga = new Manga(this, mangaName, mangaFolderUri);
 
@@ -109,7 +108,7 @@ public class PageActivity extends AppCompatActivity {
 
             if (event.getAction() == MotionEvent.ACTION_MOVE) {
                 if ((noOtherAction)&&(currentScale != 1.0f)&&(event.getPointerCount() == 1)){
-                    Bitmap cropedBitmap = moveBitmap(bitmap,event.getX()-currentXSlide,event.getY()-currentYSlide);
+                    Bitmap cropedBitmap = moveBitmap(event.getX()-currentXSlide,event.getY()-currentYSlide);
                     pageView.setImageBitmap(cropedBitmap);
                     currentXSlide = event.getX();
                     currentYSlide = event.getY();
@@ -137,14 +136,11 @@ public class PageActivity extends AppCompatActivity {
                 }else{
                     noOtherAction = true;
                 }
-
             }
-
             return true;
         });
 
         this.addOnOrientationChangeListener();
-
 
     }
 
@@ -165,7 +161,7 @@ public class PageActivity extends AppCompatActivity {
             noOtherAction = false;
 
             float newScale = detector.getScaleFactor();
-            Bitmap cropedBitmap = cropBitmap(bitmap, newScale, newFocusX, newFocusY);
+            Bitmap cropedBitmap = cropBitmap(newScale, newFocusX, newFocusY);
 
             pageView.setImageBitmap(cropedBitmap);
 
@@ -199,16 +195,14 @@ public class PageActivity extends AppCompatActivity {
         }
 
         Rect rect = new Rect(newLeft, newTop, newRight , newBottom );
-        //  Be sure that there is at least 1px to slice.
         assert(rect.left < rect.right && rect.top < rect.bottom);
-        //  Create our resulting image (150--50),(75--25) = 200x100px
         Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
-        //  draw source bitmap into resulting image at given position:
         new Canvas(resultBmp).drawBitmap(bitmap, -rect.left, -rect.top, null);
+
         return resultBmp;
     }
 
-    private Bitmap cropBitmap(Bitmap bitmap, float newScale, float newFocusX, float newFocusY){
+    private Bitmap cropBitmap(float newScale, float newFocusX, float newFocusY){
 
         currentScale = Math.max(1.0f, Math.min(currentScale*newScale, 10.0f));
 
@@ -221,48 +215,17 @@ public class PageActivity extends AppCompatActivity {
         currentFocusX = newFocusX;
         currentFocusY = newFocusY;
 
-        int newLeft;
-        int newTop;
-
-        if (offsetX > 0){
-            newLeft = Math.round(offsetX);
-        }else{
-            newLeft = 0;
-        }
-        if (offsetY > 0){
-            newTop = Math.round(offsetY);
-        }else{
-            newTop = 0;
-        }
-
-        int newW = Math.round(bitmap.getWidth()/currentScale);
-        int newH = Math.round(bitmap.getHeight()/currentScale);
-
-        int newRight;
-
-        if (newLeft + newW < bitmap.getWidth()){
-            newRight = newLeft + newW;
-        }else{
-            newRight = bitmap.getWidth();
-            newLeft = newRight - newW;
-        }
-
-        Rect rect = new Rect(newLeft, newTop, newRight, newTop + newH);
-        //  Be sure that there is at least 1px to slice.
-        assert(rect.left < rect.right && rect.top < rect.bottom);
-        //  Create our resulting image (150--50),(75--25) = 200x100px
-        Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
-        //  draw source bitmap into resulting image at given position:
-        new Canvas(resultBmp).drawBitmap(bitmap, -rect.left, -rect.top, null);
-
-        return resultBmp;
+        return cropAndCheck();
     }
 
-    private Bitmap moveBitmap(Bitmap bitmap, float slideX, float slideY){
+    private Bitmap moveBitmap(float slideX, float slideY){
 
         offsetX = offsetX - slideX;
         offsetY = offsetY - slideY;
+        return cropAndCheck();
+    }
 
+    private Bitmap cropAndCheck(){
         int newLeft;
         int newTop;
 
@@ -290,11 +253,8 @@ public class PageActivity extends AppCompatActivity {
         }
 
         Rect rect = new Rect(newLeft, newTop, newRight, newTop + newH);
-        //  Be sure that there is at least 1px to slice.
         assert(rect.left < rect.right && rect.top < rect.bottom);
-        //  Create our resulting image (150--50),(75--25) = 200x100px
         Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
-        //  draw source bitmap into resulting image at given position:
         new Canvas(resultBmp).drawBitmap(bitmap, -rect.left, -rect.top, null);
 
         return resultBmp;
