@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,9 +30,7 @@ import fr.antek.mangaviewer.databinding.ActivityPageBinding;
 
 import android.view.ScaleGestureDetector;
 import android.view.GestureDetector;
-import android.view.MotionEvent;
 
-import android.graphics.Matrix;
 import android.graphics.Canvas;
 
 public class PageActivity extends AppCompatActivity {
@@ -49,10 +48,14 @@ public class PageActivity extends AppCompatActivity {
     private Boolean noOtherAction = true;
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
-    private Matrix matrix = new Matrix();
-    private float scaleFactor = 1.0f;
-    private boolean isZoomed = false;
     private Bitmap bitmap;
+    private Bitmap bitmapRaw;
+    private float offsetX = 0f;
+    private float offsetY = 0f;
+    private float currentFocusX = 0f;
+    private float currentFocusY = 0f;
+    private float currentScale = 1.0f;
+    private int currentOrientation;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -81,6 +84,7 @@ public class PageActivity extends AppCompatActivity {
         page = chapitre.getPageWithName(pageName);
 
         displayPage();
+        currentOrientation = getResources().getConfiguration().orientation;
 
         if (hide){
             hide();
@@ -96,8 +100,7 @@ public class PageActivity extends AppCompatActivity {
             gestureDetector.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                if (noOtherAction){
-                    Objects.requireNonNull(getSupportActionBar()).setTitle("pong");
+                if ((noOtherAction)&&(currentScale == 1.0f)){
                     float x = event.getX();
                     float y = event.getY();
 
@@ -123,59 +126,144 @@ public class PageActivity extends AppCompatActivity {
             return true;
         });
 
+        this.addOnOrientationChangeListener();
 
 
     }
 
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+
+        @Override
+        public boolean onScaleBegin(ScaleGestureDetector detector) {
+            currentFocusX = detector.getFocusX();
+            currentFocusY = detector.getFocusY();
+            return true;
+        }
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            // Gestion du geste de zoom ici
+
+            float newFocusX = detector.getFocusX();
+            float newFocusY = detector.getFocusY();
+
             noOtherAction = false;
 
-            scaleFactor *= detector.getScaleFactor();
-            // Limitez l'échelle minimale et maximale si nécessaire
-            scaleFactor = Math.max(1.0f, Math.min(scaleFactor, 10.0f));
+            float newScale = detector.getScaleFactor();
+            Bitmap cropedBitmap = cropBitmap(bitmap, newScale, newFocusX, newFocusY);
 
-            // Appliquez la transformation à la matrice
-            Bitmap zoomedBitmapbitmap = getZoomedBitmap(scaleFactor, bitmap, 50f, 50f);
-            pageView.setImageBitmap(zoomedBitmapbitmap);
+            pageView.setImageBitmap(cropedBitmap);
 
-            isZoomed = true;
 
             return true;
         }
     }
 
+    private Bitmap adaptBitmap2View(Bitmap bitmap, View view){
+        float bmpW = bitmap.getWidth();
+        float bmpH = bitmap.getHeight();
+        float viewW = view.getWidth();
+        float viewH = view.getHeight();
+        float factorX = bmpW / viewW;
+        float factorY = bmpH / viewH;
+        int newLeft;
+        int newTop;
+        int newRight;
+        int newBottom;
+
+        if (factorX < factorY){
+            newLeft = Math.round((bmpW-factorY*viewW)/2);
+            newTop = 1;
+            newRight = Math.round(bmpW - newLeft);
+            newBottom = Math.round(bmpH);
+        }else{
+            newLeft = 1;
+            newTop = Math.round((bmpH-factorX*viewH)/2);
+            newRight = Math.round(bmpW);
+            newBottom = Math.round(bmpH - newTop);
+        }
+
+        Rect rect = new Rect(newLeft, newTop, newRight , newBottom );
+        //  Be sure that there is at least 1px to slice.
+        assert(rect.left < rect.right && rect.top < rect.bottom);
+        //  Create our resulting image (150--50),(75--25) = 200x100px
+        Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
+        //  draw source bitmap into resulting image at given position:
+        new Canvas(resultBmp).drawBitmap(bitmap, -rect.left, -rect.top, null);
+        return resultBmp;
+    }
+
+    private Bitmap cropBitmap(Bitmap bitmap, float newScale, float newFocusX, float newFocusY){
+
+        currentScale = Math.max(1.0f, Math.min(currentScale*newScale, 10.0f));
+
+        offsetX = (offsetX-newFocusX)/newScale+newFocusX;
+        offsetY = (offsetY-newFocusY)/newScale+newFocusY;
+
+        offsetX = offsetX + (currentFocusX - newFocusX);
+        offsetY = offsetY + (currentFocusY - newFocusY);
+
+        currentFocusX = newFocusX;
+        currentFocusY = newFocusY;
+
+        int newLeft;
+        int newTop;
+
+        if (offsetX > 0){
+            newLeft = Math.round(offsetX);
+        }else{
+            newLeft = 0;
+        }
+        if (offsetY > 0){
+            newTop = Math.round(offsetY);
+        }else{
+            newTop = 0;
+        }
+
+        int newW = Math.round(bitmap.getWidth()/currentScale);
+        int newH = Math.round(bitmap.getHeight()/currentScale);
+
+        int newRight;
+
+        if (newLeft + newW < bitmap.getWidth()){
+            newRight = newLeft + newW;
+        }else{
+            newRight = bitmap.getWidth();
+            newLeft = newRight - newW;
+        }
+
+        Rect rect = new Rect(newLeft, newTop, newRight, newTop + newH);
+        //  Be sure that there is at least 1px to slice.
+        assert(rect.left < rect.right && rect.top < rect.bottom);
+        //  Create our resulting image (150--50),(75--25) = 200x100px
+        Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
+        //  draw source bitmap into resulting image at given position:
+        new Canvas(resultBmp).drawBitmap(bitmap, -rect.left, -rect.top, null);
+
+        return resultBmp;
+    }
+
     private class DoubleTapListener extends GestureDetector.SimpleOnGestureListener {
         @Override
-        public boolean onDoubleTap(MotionEvent e) {
+        public boolean onDoubleTap(@NonNull MotionEvent e) {
             noOtherAction = false;
-            // Double clic détecté, effectuez le zoom à 50% centré sur le point de clic
-            if (isZoomed) {
-                matrix.setScale(1.0f, 1.0f);
-                scaleFactor = 1.0f;
-                pageView.setImageMatrix(matrix);
-                isZoomed = false;
-            } else {
-                // Vous pouvez également implémenter le centrage du zoom ici en fonction de e.getX() et e.getY()
-                matrix.setScale(0.5f, 0.5f, e.getX(), e.getY());
-                scaleFactor = 0.5f;
-                pageView.setImageMatrix(matrix);
-                isZoomed = true;
+            if (currentScale != 1.0f) {
+                currentScale = 1.0f;
+                offsetX = 0f;
+                offsetY = 0f;
+                pageView.setImageBitmap(bitmap);
             }
-            //invalidate();
             return true;
         }
     }
 
     private void displayPage(){
         try {
-            bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), page.getPageFile().getUri());
+            bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), page.getPageFile().getUri());
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        if (bitmap != null) {
+        if (bitmapRaw != null) {
+            bitmap = adaptBitmap2View(bitmapRaw,pageView);
             pageView.setImageBitmap(bitmap);
         }
 
@@ -186,6 +274,8 @@ public class PageActivity extends AppCompatActivity {
 
         if (hasFocus) {
             onNewPage();
+            bitmap = adaptBitmap2View(bitmapRaw,pageView);
+            pageView.setImageBitmap(bitmap);
         }
     }
 
@@ -253,7 +343,6 @@ public class PageActivity extends AppCompatActivity {
         }
     }
 
-
     private void toggle() {
         if (hide) {
             hide = false;
@@ -261,8 +350,15 @@ public class PageActivity extends AppCompatActivity {
         } else {
             hide = true;
             hide();
-
         }
+    }
+    private void addOnOrientationChangeListener() {
+        this.getWindow().getDecorView().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if  (currentOrientation != getResources().getConfiguration().orientation){
+                displayPage();
+                currentOrientation = getResources().getConfiguration().orientation;
+            }
+        });
     }
 
 
@@ -327,7 +423,6 @@ public class PageActivity extends AppCompatActivity {
         editor.putString(mangaName + "lastChapitre", page.getChapitre().getName());
         editor.putString(mangaName + "lastPage", page.getName());
         editor.apply();
-
     }
 
     private void saveAppLastManga(){
@@ -346,48 +441,5 @@ public class PageActivity extends AppCompatActivity {
             }
         }
         editor.apply();
-
-    }
-
-    private Bitmap getZoomedBitmap(float zoomScale, Bitmap bmp, float xPercentage, float yPercentage){
-
-        if (bmp != null) {
-            bmp.setDensity(Bitmap.DENSITY_NONE);
-
-            //Set the default values in case of bad input
-            zoomScale = (zoomScale < 0.0f || zoomScale > 10.0f) ? 2.0f : zoomScale;
-            xPercentage = (xPercentage < 0.0f || xPercentage > 100.0f) ? 50.0f : xPercentage;
-            yPercentage = (yPercentage < 0.0f || yPercentage > 100.0f) ? 50.0f : yPercentage;
-
-            float originalWidth = bmp.getWidth();
-            float originalHeight = bmp.getHeight();
-
-            //Get the new sizes based on zoomScale
-            float newWidth = originalWidth / zoomScale;
-            float newHeight = originalHeight / zoomScale;
-
-            //get the new X/Y positions based on x/yPercentage
-            float newX = (originalWidth * xPercentage / 100) - (newWidth / 2);
-            float newY = (originalHeight * yPercentage / 100) - (newHeight / 2);
-
-            //Make sure the x/y values are not lower than 0
-            newX = (newX < 0) ? 0 : newX;
-            newY = (newY < 0) ? 0 : newY;
-
-            //make sure the image does not go over the right edge
-            while ((newX + newWidth) > originalWidth) {
-                newX -= 2;
-            }
-
-            //make sure the image does not go over the bottom edge
-            while ((newY + newHeight) > originalHeight) {
-                newY -= 2;
-            }
-
-            return Bitmap.createBitmap(bmp, Math.round(newX), Math.round(newY), Math.round(newWidth), Math.round(newHeight));
-        }
-
-        return null;
     }
 }
-
