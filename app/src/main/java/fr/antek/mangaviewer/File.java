@@ -9,13 +9,13 @@ import java.util.Objects;
 public class File implements Comparable<File>{
     private final String name;
     private final String path;
-    private final DocumentFile docFile;
+    private final DocumentFile doc;
     private final File parentFile;
 
-    public File(String name, String path, DocumentFile docFile, File parentFile) {
-        this.name = name;
-        this.path = path;
-        this.docFile = docFile;
+    public File(String parentPath, DocumentFile doc, File parentFile) {
+        this.name = doc.getName();
+        this.path = parentPath + "/" + name;
+        this.doc = doc;
         this.parentFile = parentFile;
     }
 
@@ -27,8 +27,8 @@ public class File implements Comparable<File>{
     public String getPath() {
         return path;
     }
-    public DocumentFile getDocFile() {
-        return docFile;
+    public DocumentFile getDoc() {
+        return doc;
     }
     public int compareTo(File file){
         return this.name.compareTo(file.getName());
@@ -36,6 +36,8 @@ public class File implements Comparable<File>{
     public boolean equals(File file) {
         return (this.path.equals(file.getPath()) && this.name.equals(file.getName()));
     }
+
+
 
 
 }

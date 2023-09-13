@@ -9,16 +9,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class StoryLib extends Directory{
-    private ArrayList<File> storyList;
     private AppCompatActivity context;
     private Uri uri;
 
     public StoryLib(AppCompatActivity context, Uri uri) {
-        super("root", "/", DocumentFile.fromTreeUri(context, uri), null);
+        super("", DocumentFile.fromTreeUri(context, uri), null);
         this.context =context;
         this.uri = uri;
-        super.listFile();
     }
+
 
 
 
