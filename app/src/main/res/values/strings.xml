@@ -8,6 +8,7 @@
     <string name="imageDescription">Une image</string>
     <string name="derniereImage">Ceci est la dernière image du Manga</string>
     <string name="premiereImage">Ceci est la première image du Manga</string>
+    <string name="fileNotFound">File Not Found</string>
     <integer name="tempsToast">3</integer>
     <string name="title_activity_image">ImageActivity</string>
     <string name="home">Accueil</string>

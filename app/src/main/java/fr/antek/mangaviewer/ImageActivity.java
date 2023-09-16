@@ -69,70 +69,76 @@ public class ImageActivity extends AppCompatActivity {
         StoryLib storyLib = new StoryLib(this, storyFolderUri);
 
         thisImage = (Image) storyLib.buildFromPath(path.split("/", 3)[2]);
+        if (thisImage == null){
+            Toast.makeText(this, getString(R.string.fileNotFound), R.integer.tempsToast).show();
+            Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
+            startActivity(intentToMain);
+        }else {
+            Objects.requireNonNull(getSupportActionBar()).setTitle(thisImage.getName());
 
-        Objects.requireNonNull(getSupportActionBar()).setTitle(thisImage.getName());
 
+            mContentView = binding.imageView;
+            imageView = findViewById(R.id.imageView);
 
-        mContentView = binding.imageView;
-        imageView = findViewById(R.id.imageView);
+            displayImage();
+            currentOrientation = getResources().getConfiguration().orientation;
 
-        displayImage();
-        currentOrientation = getResources().getConfiguration().orientation;
-
-        if (hide){
-            hide();
-        }else{
-            show();
-        }
-
-        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureListener());
-        gestureDetector = new GestureDetector(this, new DoubleTapListener());
-
-        imageView.setOnTouchListener((v, event) -> {
-            scaleGestureDetector.onTouchEvent(event);
-            gestureDetector.onTouchEvent(event);
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                if (currentScale != 1.0f){
-                    currentXSlide = event.getX();
-                    currentYSlide = event.getY();
-                }
+            if (hide) {
+                hide();
+            } else {
+                show();
             }
 
-            if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                if ((noOtherAction)&&(currentScale != 1.0f)&&(event.getPointerCount() == 1)){
-                    Bitmap cropedBitmap = moveBitmap(event.getX()-currentXSlide,event.getY()-currentYSlide);
-                    imageView.setImageBitmap(cropedBitmap);
-                    currentXSlide = event.getX();
-                    currentYSlide = event.getY();
-                }
-            }
+            scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureListener());
+            gestureDetector = new GestureDetector(this, new DoubleTapListener());
 
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                if ((noOtherAction)&&(currentScale == 1.0f)){
-                    float x = event.getX();
-                    float y = event.getY();
-
-                    int width = imageView.getWidth();
-                    int height = imageView.getHeight();
-
-                    float relativeX = x / width;
-                    float relativeY = y / height;
-
-                    if ((relativeY < 0.15) || (relativeY > 0.85)) {
-                        toggle();
-                    } else if (relativeX < 0.5) {
-                        goPrevImage();
-                    } else {
-                        goNextImage();
+            imageView.setOnTouchListener((v, event) -> {
+                scaleGestureDetector.onTouchEvent(event);
+                gestureDetector.onTouchEvent(event);
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if (currentScale != 1.0f) {
+                        currentXSlide = event.getX();
+                        currentYSlide = event.getY();
                     }
-                }else{
-                    noOtherAction = true;
                 }
-            }
-            return true;
-        });
 
-        this.addOnOrientationChangeListener();
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    if ((noOtherAction) && (currentScale != 1.0f) && (event.getPointerCount() == 1)) {
+                        Bitmap cropedBitmap = moveBitmap(event.getX() - currentXSlide, event.getY() - currentYSlide);
+                        imageView.setImageBitmap(cropedBitmap);
+                        currentXSlide = event.getX();
+                        currentYSlide = event.getY();
+                    }
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if ((noOtherAction) && (currentScale == 1.0f)) {
+                        float x = event.getX();
+                        float y = event.getY();
+
+                        int width = imageView.getWidth();
+                        int height = imageView.getHeight();
+
+                        float relativeX = x / width;
+                        float relativeY = y / height;
+
+                        if ((relativeY < 0.15) || (relativeY > 0.85)) {
+                            toggle();
+                        } else if (relativeX < 0.5) {
+                            goPrevImage();
+                        } else {
+                            goNextImage();
+                        }
+                    } else {
+                        noOtherAction = true;
+                    }
+                }
+                return true;
+
+            });
+
+            this.addOnOrientationChangeListener();
+        }
 
     }
     public boolean onCreateOptionsMenu(Menu menu) {

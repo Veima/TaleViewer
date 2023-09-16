@@ -47,19 +47,22 @@ public class Directory extends File{
         fileList = new ArrayList<>();
         String[] splitPath = endPath.split("/", 2);
         DocumentFile childDoc = super.getDoc().findFile(splitPath[0]);
-        assert childDoc != null;
-        if (childDoc.isDirectory()){
-            Directory childFile = new Directory(super.getPath(),childDoc,this);
-            fileList.add(childFile);
-            if (splitPath.length==2){
-                return childFile.buildFromPath(splitPath[1]);
-            }else{
+        if (childDoc == null) {
+            return null;
+        }else{
+            if (childDoc.isDirectory()) {
+                Directory childFile = new Directory(super.getPath(), childDoc, this);
+                fileList.add(childFile);
+                if (splitPath.length == 2) {
+                    return childFile.buildFromPath(splitPath[1]);
+                } else {
+                    return childFile;
+                }
+            } else {
+                Image childFile = new Image(super.getPath(), childDoc, this);
+                fileList.add(childFile);
                 return childFile;
             }
-        }else{
-            Image childFile = new Image(super.getPath(),childDoc,this);
-            fileList.add(childFile);
-            return childFile;
         }
     }
 
