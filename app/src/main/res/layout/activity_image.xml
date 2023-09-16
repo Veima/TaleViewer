@@ -6,19 +6,13 @@
     android:layout_height="match_parent"
     android:background="@color/black"
     android:theme="@style/ThemeOverlay.MangaViewer.FullscreenContainer"
-    tools:context=".PageActivity">
+    tools:context=".ImageActivity">
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
-
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
     <ImageView
-        android:id="@+id/pageView"
+        android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:srcCompat="@android:drawable/ic_menu_gallery"
-        android:contentDescription="@string/pageDescription" />
+        android:contentDescription="@string/imageDescription" />
 
 </FrameLayout>

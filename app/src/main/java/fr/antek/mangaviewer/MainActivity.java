@@ -83,10 +83,17 @@ public class MainActivity extends AppCompatActivity {
         listViewStory.setAdapter(adapter);
         listViewStory.setOnItemClickListener((parent, view, position, id) -> {
             File selectedStory = storyLib.getFileWithPos(position);
-            Intent intentToMangaActivity = new Intent(MainActivity.this, MangaActivity.class);
-            //intentToMangaActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
-            //intentToMangaActivity.putExtra("mangaName",selectedManga.getName());
-            startActivity(intentToMangaActivity);
+            if (selectedStory instanceof Directory) {
+                Intent intentToStoryActivity = new Intent(MainActivity.this, StoryActivity.class);
+                intentToStoryActivity.putExtra("storyFolderUri",storyFolderUri.toString());
+                intentToStoryActivity.putExtra("path",selectedStory.getPath());
+                startActivity(intentToStoryActivity);
+            }else if(selectedStory instanceof Image){
+                Intent intentToImageActivity = new Intent(MainActivity.this, ImageActivity.class);
+                intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                intentToImageActivity.putExtra("path", selectedStory.getPath());
+                startActivity(intentToImageActivity);
+            }
         });
     }
 
@@ -113,28 +120,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void recupLastStory(){
 
-        String nameUltimeManga = memoire.getString("nameUltimeManga", null);
-        if (nameUltimeManga != null){
-            String nameLastChapitre = memoire.getString(nameUltimeManga + "lastChapitre", null);
-            String nameLastPage = memoire.getString(nameUltimeManga + "lastPage", null);
-            String textButtonUltime = getString(R.string.buttonContinueText) + " " + nameUltimeManga;
-            buttonContinueUltime.setText(textButtonUltime);
-            if ((nameLastChapitre != null) && (nameLastPage != null)){
-                String textInfoUltime = nameLastChapitre + " | " + nameLastPage;
-                textContinueUltime.setText(textInfoUltime);
+        String nameUltimeStory = memoire.getString("nameUltimeStory", null);
+        if (nameUltimeStory != null){
+            String pathLastImage = memoire.getString(nameUltimeStory + "lastImage", null);
+            if (pathLastImage != null){
+                textContinueUltime.setText(pathLastImage);
+                String textButtonUltime = getString(R.string.buttonContinueText) + " " + nameUltimeStory;
+                buttonContinueUltime.setText(textButtonUltime);
 
                 buttonContinueUltime.setOnClickListener(v -> {
-                    Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
-                    /*
-                    intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
-                    intentToPageActivity.putExtra("mangaName",nameUltimeManga);
-                    intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
-                    intentToPageActivity.putExtra("pageName",nameLastPage);
-
-                     */
-                    startActivity(intentToPageActivity);
+                    Intent intentToImageActivity = new Intent(MainActivity.this, ImageActivity.class);
+                    intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                    intentToImageActivity.putExtra("path", pathLastImage);
+                    startActivity(intentToImageActivity);
                 });
-
             }else{
                 textContinueUltime.setVisibility(View.GONE);
                 buttonContinueUltime.setVisibility(View.GONE);
@@ -144,28 +143,20 @@ public class MainActivity extends AppCompatActivity {
             buttonContinueUltime.setVisibility(View.GONE);
         }
 
-        String namePenultiemeManga = memoire.getString("namePenultiemeManga", null);
-        if (namePenultiemeManga != null){
-            String nameLastChapitre = memoire.getString(namePenultiemeManga + "lastChapitre", null);
-            String nameLastPage = memoire.getString(namePenultiemeManga + "lastPage", null);
-            String textButtonPenultieme = getString(R.string.buttonContinueText) + " " + namePenultiemeManga;
-            buttonContinuePenultieme.setText(textButtonPenultieme);
-            if ((nameLastChapitre != null) && (nameLastPage != null)){
-                String textInfoPenultieme = nameLastChapitre + " | " + nameLastPage;
-                textContinuePenultieme.setText(textInfoPenultieme);
+        String namePenultiemeStory = memoire.getString("namePenultiemeStory", null);
+        if (namePenultiemeStory != null){
+            String pathLastImage = memoire.getString(namePenultiemeStory + "lastImage", null);
+            if (pathLastImage != null){
+                textContinuePenultieme.setText(pathLastImage);
+                String textButtonPenultieme = getString(R.string.buttonContinueText) + " " + namePenultiemeStory;
+                buttonContinuePenultieme.setText(textButtonPenultieme);
 
                 buttonContinuePenultieme.setOnClickListener(v -> {
-                    Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
-                    /*
-                    intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
-                    intentToPageActivity.putExtra("mangaName",namePenultiemeManga);
-                    intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
-                    intentToPageActivity.putExtra("pageName",nameLastPage);
-
-                     */
-                    startActivity(intentToPageActivity);
+                    Intent intentToImageActivity = new Intent(MainActivity.this, ImageActivity.class);
+                    intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                    intentToImageActivity.putExtra("path", pathLastImage);
+                    startActivity(intentToImageActivity);
                 });
-
             }else{
                 textContinuePenultieme.setVisibility(View.GONE);
                 buttonContinuePenultieme.setVisibility(View.GONE);
@@ -175,28 +166,21 @@ public class MainActivity extends AppCompatActivity {
             buttonContinuePenultieme.setVisibility(View.GONE);
         }
 
-        String nameAntepenultiemeManga = memoire.getString("nameAntepenultiemeManga", null);
-        if (nameAntepenultiemeManga != null){
-            String nameLastChapitre = memoire.getString(nameAntepenultiemeManga + "lastChapitre", null);
-            String nameLastPage = memoire.getString(nameAntepenultiemeManga + "lastPage", null);
-            String textButtonAntepenultieme = getString(R.string.buttonContinueText) + " " + nameAntepenultiemeManga;
-            buttonContinueAntepenultieme.setText(textButtonAntepenultieme);
-            if ((nameLastChapitre != null) && (nameLastPage != null)){
-                String textInfoAntepenultieme = nameLastChapitre + " | " + nameLastPage;
-                textContinueAntepenultieme.setText(textInfoAntepenultieme);
+
+        String nameAntepenultiemeStory = memoire.getString("nameAntepenultiemeStory", null);
+        if (nameAntepenultiemeStory != null){
+            String pathLastImage = memoire.getString(nameAntepenultiemeStory + "lastImage", null);
+            if (pathLastImage != null){
+                textContinueAntepenultieme.setText(pathLastImage);
+                String textButtonAntepenultieme = getString(R.string.buttonContinueText) + " " + nameAntepenultiemeStory;
+                buttonContinueAntepenultieme.setText(textButtonAntepenultieme);
 
                 buttonContinueAntepenultieme.setOnClickListener(v -> {
-                    Intent intentToPageActivity = new Intent(MainActivity.this, PageActivity.class);
-                    /*
-                    intentToPageActivity.putExtra("mangaFolderUri",mangaFolderUri.toString());
-                    intentToPageActivity.putExtra("mangaName",nameAntepenultiemeManga);
-                    intentToPageActivity.putExtra("chapitreName",nameLastChapitre);
-                    intentToPageActivity.putExtra("pageName",nameLastPage);
-
-                     */
-                    startActivity(intentToPageActivity);
+                    Intent intentToImageActivity = new Intent(MainActivity.this, ImageActivity.class);
+                    intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                    intentToImageActivity.putExtra("path", pathLastImage);
+                    startActivity(intentToImageActivity);
                 });
-
             }else{
                 textContinueAntepenultieme.setVisibility(View.GONE);
                 buttonContinueAntepenultieme.setVisibility(View.GONE);
