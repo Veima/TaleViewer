@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateListView(Uri storyFolderUri){
         storyLib = new StoryLib(this, storyFolderUri);
 
-        ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, storyLib.getListName());
+        ListAdapter adapter = new FileAdapter(this, R.layout.item_directory, storyLib.getListName());
         listViewStory.setAdapter(adapter);
         listViewStory.setOnItemClickListener((parent, view, position, id) -> {
             File selectedStory = storyLib.getFileWithPos(position);
