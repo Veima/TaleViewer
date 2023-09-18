@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -79,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateListView(Uri storyFolderUri){
         storyLib = new StoryLib(this, storyFolderUri);
 
-        ListAdapter adapter = new FileAdapter(this, R.layout.item_directory, storyLib.getListName());
+        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, storyLib.getListFile());
         listViewStory.setAdapter(adapter);
         listViewStory.setOnItemClickListener((parent, view, position, id) -> {
             File selectedStory = storyLib.getFileWithPos(position);

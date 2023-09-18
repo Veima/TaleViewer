@@ -36,9 +36,7 @@ public class DirectoryActivity extends AppCompatActivity {
 
         Objects.requireNonNull(getSupportActionBar()).setTitle(thisDirectory.getName());
 
-        ArrayList<String> fileNamesList = thisDirectory.getListName();
-
-        ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,fileNamesList);
+        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, thisDirectory.getListFile());
         listViewFile.setAdapter(adapter);
         listViewFile.setOnItemClickListener((parent, view, position, id) -> {
             File selectedFile = thisDirectory.getFileWithPos(position);

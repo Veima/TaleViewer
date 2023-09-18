@@ -48,9 +48,7 @@ public class StoryActivity extends AppCompatActivity {
 
         Objects.requireNonNull(getSupportActionBar()).setTitle(thisStory.getName());
 
-        ArrayList<String> fileNamesList = thisStory.getListName();
-
-        ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,fileNamesList);
+        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, thisStory.getListFile());
         listViewChapitre.setAdapter(adapter);
         listViewChapitre.setOnItemClickListener((parent, view, position, id) -> {
             File selectedFile = thisStory.getFileWithPos(position);

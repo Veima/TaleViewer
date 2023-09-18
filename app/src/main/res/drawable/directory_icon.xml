@@ -1,0 +1,70 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:left="0dp"
+        android:right="0dp"
+        android:top="5dp"
+        android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/light_blue_900" />
+            <size android:width="60dp" android:height="40dp" />
+            <corners android:radius="3dp" /> <!-- Rayon des coins -->
+        </shape>
+    </item>
+
+    <item
+        android:left="4dp"
+        android:right="35dp"
+        android:top="0dp"
+        android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/light_blue_900" />
+            <size android:width="6dp" android:height="4dp" />
+            <corners android:radius="3dp" /> <!-- Rayon des coins -->
+        </shape>
+    </item>
+
+    <item
+        android:left="6dp"
+        android:right="37dp"
+        android:top="2dp"
+        android:bottom="38dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/white" />
+            <corners android:radius="1dp" /> <!-- Rayon des coins -->
+        </shape>
+    </item>
+    <item
+        android:left="1dp"
+        android:right="1dp"
+        android:top="17dp"
+        android:bottom="26dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/black" />
+            <corners android:radius="0dp" /> <!-- Rayon des coins -->
+        </shape>
+    </item>
+
+    <item
+        android:left="4dp"
+        android:right="2dp"
+        android:top="10dp"
+        android:bottom="27dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/grey3" />
+            <corners android:radius="0dp" /> <!-- Rayon des coins -->
+        </shape>
+    </item>
+    <item
+        android:left="2dp"
+        android:right="4dp"
+        android:top="12dp"
+        android:bottom="27dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/white" />
+            <corners android:radius="0dp" /> <!-- Rayon des coins -->
+        </shape>
+    </item>
+
+</layer-list>
+

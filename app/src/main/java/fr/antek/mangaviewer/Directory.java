@@ -32,8 +32,15 @@ public class Directory extends File{
         }
     }
 
+    public ArrayList<File> getListFile() {
+        if (!isScan){
+            listFile();
+        }
+        return fileList;
+    }
+
     public ArrayList<String> getListName(){
-        if (fileList==null){
+        if (!isScan){
             listFile();
         }
         ArrayList<String> listName = new ArrayList<>();
