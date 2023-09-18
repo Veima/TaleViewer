@@ -10,9 +10,5 @@ public class StoryLib extends Directory{
     public StoryLib(AppCompatActivity context, Uri uri) {
         super("", DocumentFile.fromTreeUri(context, uri), null);
     }
-
-
-
-
 }
 

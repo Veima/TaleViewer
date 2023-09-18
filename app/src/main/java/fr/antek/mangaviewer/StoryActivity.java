@@ -89,7 +89,7 @@ public class StoryActivity extends AppCompatActivity {
         String storyName = path.split("/")[2];
         String pathLastImage = memoire.getString(storyName + "lastImage", null);
         if (pathLastImage != null){
-            textContinueStory.setText(pathLastImage);
+            textContinueStory.setText(pathLastImage.split("/",4)[3]);
             String textButton = getString(R.string.buttonContinueText) + " " + storyName;
             buttonContinueStory.setText(textButton);
 

@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         if (nameUltimeStory != null){
             String pathLastImage = memoire.getString(nameUltimeStory + "lastImage", null);
             if (pathLastImage != null){
-                textContinueUltime.setText(pathLastImage);
+                textContinueUltime.setText(pathLastImage.split("/",3)[2]);
                 String textButtonUltime = getString(R.string.buttonContinueText) + " " + nameUltimeStory;
                 buttonContinueUltime.setText(textButtonUltime);
 
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         if (namePenultiemeStory != null){
             String pathLastImage = memoire.getString(namePenultiemeStory + "lastImage", null);
             if (pathLastImage != null){
-                textContinuePenultieme.setText(pathLastImage);
+                textContinuePenultieme.setText(pathLastImage.split("/",3)[2]);
                 String textButtonPenultieme = getString(R.string.buttonContinueText) + " " + namePenultiemeStory;
                 buttonContinuePenultieme.setText(textButtonPenultieme);
 
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         if (nameAntepenultiemeStory != null){
             String pathLastImage = memoire.getString(nameAntepenultiemeStory + "lastImage", null);
             if (pathLastImage != null){
-                textContinueAntepenultieme.setText(pathLastImage);
+                textContinueAntepenultieme.setText(pathLastImage.split("/",3)[2]);
                 String textButtonAntepenultieme = getString(R.string.buttonContinueText) + " " + nameAntepenultiemeStory;
                 buttonContinueAntepenultieme.setText(textButtonAntepenultieme);
 
