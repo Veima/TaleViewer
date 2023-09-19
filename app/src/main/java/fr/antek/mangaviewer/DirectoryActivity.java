@@ -19,6 +19,8 @@ public class DirectoryActivity extends AppCompatActivity {
     private Uri storyFolderUri;
     private String path;
     private Directory thisDirectory;
+    private boolean miniatureCharged = false;
+    private FileAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +38,7 @@ public class DirectoryActivity extends AppCompatActivity {
 
         Objects.requireNonNull(getSupportActionBar()).setTitle(thisDirectory.getName());
 
-        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, thisDirectory.getListFile());
+        adapter = new FileAdapter(this, R.layout.item_file, thisDirectory.getListFile());
         listViewFile.setAdapter(adapter);
         listViewFile.setOnItemClickListener((parent, view, position, id) -> {
             File selectedFile = thisDirectory.getFileWithPos(position);
@@ -54,6 +56,18 @@ public class DirectoryActivity extends AppCompatActivity {
         });
 
     }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus) {
+            if (!miniatureCharged) {
+                miniatureCharged = adapter.chargeMiniature();
+            }
+        }
+    }
+
 
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_dynamic, menu);
