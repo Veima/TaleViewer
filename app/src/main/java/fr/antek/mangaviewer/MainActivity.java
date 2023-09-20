@@ -3,10 +3,15 @@ package fr.antek.mangaviewer;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -14,6 +19,11 @@ import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private Uri storyFolderUri = null;
     private SharedPreferences memoire;
     private StoryLib storyLib;
+    private ArrayList<File> listStory;
 
 
     @Override
@@ -75,10 +86,28 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Handler handler = new Handler(Looper.getMainLooper());
+
+            executor.execute(() -> {
+                chargeMiniature();
+                handler.post(() -> {
+
+                });
+            });
+
+        }
+    }
+
     private void updateListView(Uri storyFolderUri){
         storyLib = new StoryLib(this, storyFolderUri);
+        listStory = storyLib.getListFile();
 
-        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, storyLib.getListFile());
+        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, listStory);
         listViewStory.setAdapter(adapter);
         listViewStory.setOnItemClickListener((parent, view, position, id) -> {
             File selectedStory = storyLib.getFileWithPos(position);
@@ -190,6 +219,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    public void chargeMiniature(){
+        View viewImage = null;
+        for (int i=0; i<listStory.size(); i++) {
+            File file =  listStory.get(i);
+            if(file instanceof Image) {
+                Bitmap bitmapRaw;
+                try {
+                    bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) file).getUri());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                if (bitmapRaw != null) {
+                    if (viewImage == null) {
+                        viewImage = listViewStory.getChildAt(i);
+                    }
+
+                    if (viewImage != null) {
+                        ImageView imageView = viewImage.findViewById(R.id.image);
+
+                        Bitmap bitmap = BitmapUtility.adaptBitmap2View(bitmapRaw, imageView);
+                        ((Image) file).setMiniature(bitmap);
+                    }
+                }
+            }
+        }
     }
 
 }

@@ -43,38 +43,24 @@ public class FileAdapter extends ArrayAdapter {
         if (file instanceof Directory){
             ImageView image = itemView.findViewById(R.id.image);
             image.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.directory_icon));
-        }
-
-
-        return itemView;
-    }
-
-    public boolean chargeMiniature(){
-        for (int i =0 ; i<fileList.size();i++){
-            File file = fileList.get(i);
-            View itemView = itemViewList.get(i);
-
-            TextView textTitre = itemView.findViewById(R.id.textName);
-            textTitre.setText(file.getName());
-
+        }else if(file instanceof Image) {
             ImageView imageView = itemView.findViewById(R.id.image);
 
-            if (file instanceof Image){
-                ImageView image = itemView.findViewById(R.id.image);
+            if (((Image) file).getMiniature() == null){
                 try {
                     bitmapRaw = MediaStore.Images.Media.getBitmap(context.getContentResolver(), ((Image) file).getUri());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
                 if (bitmapRaw != null) {
-                    //bitmap = adaptBitmap2View(bitmapRaw, imageView);
-                    imageView.setImageBitmap(bitmapRaw);
+                    Bitmap bitmap = BitmapUtility.adaptBitmap2View(bitmapRaw, imageView);
+                    ((Image) file).setMiniature(bitmap);
                 }
             }
-
+            imageView.setImageBitmap(((Image) file).getMiniature());
         }
 
-        return true;
+        return itemView;
     }
 
 

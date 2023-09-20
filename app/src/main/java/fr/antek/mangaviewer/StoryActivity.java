@@ -4,19 +4,27 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class StoryActivity extends AppCompatActivity {
     private TextView textContinueStory;
@@ -25,6 +33,8 @@ public class StoryActivity extends AppCompatActivity {
     private String path;
     private SharedPreferences memoire;
     private Directory thisStory;
+    private ArrayList<File> listFile;
+    private ListView listViewStory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +42,7 @@ public class StoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_story);
         memoire = this.getSharedPreferences("memoire",MODE_PRIVATE);
 
-        ListView listViewChapitre = findViewById(R.id.listViewFile);
+        listViewStory = findViewById(R.id.listViewFile);
 
         buttonContinueStory = findViewById(R.id.buttonContinuStory);
         textContinueStory = findViewById(R.id.textContinuStory);
@@ -47,10 +57,11 @@ public class StoryActivity extends AppCompatActivity {
         thisStory = (Directory) storyLib.buildFromPath(path.split("/", 3)[2]);
 
         Objects.requireNonNull(getSupportActionBar()).setTitle(thisStory.getName());
+        listFile = thisStory.getListFile();
 
-        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, thisStory.getListFile());
-        listViewChapitre.setAdapter(adapter);
-        listViewChapitre.setOnItemClickListener((parent, view, position, id) -> {
+        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, listFile);
+        listViewStory.setAdapter(adapter);
+        listViewStory.setOnItemClickListener((parent, view, position, id) -> {
             File selectedFile = thisStory.getFileWithPos(position);
             if (selectedFile instanceof Directory) {
                 Intent intentToDirectoryActivity = new Intent(StoryActivity.this, DirectoryActivity.class);
@@ -64,6 +75,23 @@ public class StoryActivity extends AppCompatActivity {
                 startActivity(intentToImageActivity);
             }
         });
+    }
+
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Handler handler = new Handler(Looper.getMainLooper());
+
+            executor.execute(() -> {
+                chargeMiniature();
+                handler.post(() -> {
+
+                });
+            });
+
+        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -100,6 +128,33 @@ public class StoryActivity extends AppCompatActivity {
         }else{
             textContinueStory.setVisibility(View.GONE);
             buttonContinueStory.setVisibility(View.GONE);
+        }
+    }
+
+    public void chargeMiniature(){
+        View viewImage = null;
+        for (int i=0; i< listFile.size(); i++) {
+            File file =  listFile.get(i);
+            if(file instanceof Image) {
+                Bitmap bitmapRaw;
+                try {
+                    bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) file).getUri());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                if (bitmapRaw != null) {
+                    if (viewImage == null) {
+                        viewImage = listViewStory.getChildAt(i);
+                    }
+
+                    if (viewImage != null) {
+                        ImageView imageView = viewImage.findViewById(R.id.image);
+
+                        Bitmap bitmap = BitmapUtility.adaptBitmap2View(bitmapRaw, imageView);
+                        ((Image) file).setMiniature(bitmap);
+                    }
+                }
+            }
         }
     }
 }
