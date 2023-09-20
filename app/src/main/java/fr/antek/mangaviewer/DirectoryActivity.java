@@ -157,7 +157,7 @@ public class DirectoryActivity extends AppCompatActivity {
                     if (viewImage != null) {
                         ImageView imageView = viewImage.findViewById(R.id.image);
 
-                        Bitmap bitmap = BitmapUtility.adaptBitmap2View(bitmapRaw, imageView);
+                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
                         ((Image) file).setMiniature(bitmap);
                     }
                 }

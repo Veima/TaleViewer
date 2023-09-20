@@ -6,35 +6,57 @@ import android.graphics.Rect;
 import android.view.View;
 
 public class BitmapUtility {
-    public static Bitmap adaptBitmap2View(Bitmap bitmap, View view){
+    public static Bitmap correctSize(Bitmap bitmap, View view) {
         float bmpW = bitmap.getWidth();
         float bmpH = bitmap.getHeight();
         float viewW = view.getWidth();
         float viewH = view.getHeight();
-        float ratio = bmpW/bmpH;
+        float ratio = bmpW / bmpH;
         float factorX = bmpW / viewW;
         float factorY = bmpH / viewH;
 
-        if ((viewW !=0) && (viewH !=0)){
+        if ((viewW != 0) && (viewH != 0)) {
             if (factorX > factorY) {
                 if (bmpW > viewW) {
-                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW/ratio), true);
-                    bmpW = bitmap.getWidth();
-                    bmpH = bitmap.getHeight();
-                    factorX = bmpW / viewW;
-                    factorY = bmpH / viewH;
+                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW / ratio), true);
                 }
-            }else{
+            } else {
                 if (bmpH > viewH) {
-                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH*ratio), Math.round(viewH), true);
-                    bmpW = bitmap.getWidth();
-                    bmpH = bitmap.getHeight();
-                    factorX = bmpW / viewW;
-                    factorY = bmpH / viewH;
+                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH * ratio), Math.round(viewH), true);
                 }
             }
         }
+        return bitmap;
+    }
 
+    public static Bitmap correctSize(Bitmap bitmap, float viewW, float viewH) {
+        float bmpW = bitmap.getWidth();
+        float bmpH = bitmap.getHeight();
+        float ratio = bmpW / bmpH;
+        float factorX = bmpW / viewW;
+        float factorY = bmpH / viewH;
+
+        if ((viewW != 0) && (viewH != 0)) {
+            if (factorX > factorY) {
+                if (bmpW > viewW) {
+                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW / ratio), true);
+                }
+            } else {
+                if (bmpH > viewH) {
+                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH * ratio), Math.round(viewH), true);
+                }
+            }
+        }
+        return bitmap;
+    }
+
+    public static Bitmap correctRatio(Bitmap bitmap, View view){
+        float viewW = view.getWidth();
+        float viewH = view.getHeight();
+        float bmpW = bitmap.getWidth();
+        float bmpH = bitmap.getHeight();
+        float factorX = bmpW / viewW;
+        float factorY = bmpH / viewH;
 
         int newLeft;
         int newTop;
@@ -61,21 +83,6 @@ public class BitmapUtility {
         return resultBmp;
     }
 
-    public static Bitmap cropBitmap(Bitmap bitmap, float currentScale, float newScale, float offsetX, float offsetY, float currentFocusX, float newFocusX, float currentFocusY, float newFocusY){
-
-        currentScale = Math.max(1.0f, Math.min(currentScale*newScale, 10.0f));
-
-        offsetX = (offsetX-newFocusX)/newScale+newFocusX;
-        offsetY = (offsetY-newFocusY)/newScale+newFocusY;
-
-        offsetX = offsetX + (currentFocusX - newFocusX);
-        offsetY = offsetY + (currentFocusY - newFocusY);
-
-        currentFocusX = newFocusX;
-        currentFocusY = newFocusY;
-
-        return cropAndCheck(bitmap, offsetX, offsetY, currentScale);
-    }
 
     public static Bitmap moveBitmap(Bitmap bitmap, float offsetX, float offsetY, float slideX, float slideY, float currentScale){
 

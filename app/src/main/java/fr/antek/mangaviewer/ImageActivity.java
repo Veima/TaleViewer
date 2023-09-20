@@ -1,11 +1,10 @@
 package fr.antek.mangaviewer;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -203,7 +202,8 @@ public class ImageActivity extends AppCompatActivity {
 
         if (hasFocus) {
             onNewImage();
-            bitmap = BitmapUtility.adaptBitmap2View(bitmapRaw,imageView);
+            bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
+            bitmap = BitmapUtility.correctRatio(bitmap, imageView);
             imageView.setImageBitmap(bitmap);
         }
     }
@@ -225,7 +225,18 @@ public class ImageActivity extends AppCompatActivity {
             noOtherAction = false;
 
             float newScale = detector.getScaleFactor();
-            Bitmap cropedBitmap = BitmapUtility.cropBitmap(bitmap, currentScale, newScale, offsetX, offsetY, currentFocusX, newFocusX, currentFocusY, newFocusY);
+
+            currentScale = Math.max(1.0f, Math.min(currentScale*newScale, 10.0f));
+
+            offsetX = (offsetX-newFocusX)/newScale+newFocusX;
+            offsetY = (offsetY-newFocusY)/newScale+newFocusY;
+
+            offsetX = offsetX + (currentFocusX - newFocusX);
+            offsetY = offsetY + (currentFocusY - newFocusY);
+            currentFocusX = newFocusX;
+            currentFocusY = newFocusY;
+
+            Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale);
 
             imageView.setImageBitmap(cropedBitmap);
 
@@ -258,7 +269,9 @@ public class ImageActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         if (bitmapRaw != null) {
-            bitmap = BitmapUtility.adaptBitmap2View(bitmapRaw, imageView);
+            bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
+            bitmap = BitmapUtility.correctRatio(bitmap, imageView);
+
             imageView.setImageBitmap(bitmap);
         }
 
@@ -397,4 +410,15 @@ public class ImageActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    public void setmContentView(View mContentView) {
+        this.mContentView = mContentView;
+    }
+
+    public void setCurrentFocusX(float currentFocusX) {
+        this.currentFocusX = currentFocusX;
+    }
+
+    public void setCurrentFocusY(float currentFocusY) {
+        this.currentFocusY = currentFocusY;
+    }
 }

@@ -53,7 +53,7 @@ public class FileAdapter extends ArrayAdapter {
                     throw new RuntimeException(e);
                 }
                 if (bitmapRaw != null) {
-                    Bitmap bitmap = BitmapUtility.adaptBitmap2View(bitmapRaw, imageView);
+                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
                     ((Image) file).setMiniature(bitmap);
                 }
             }
