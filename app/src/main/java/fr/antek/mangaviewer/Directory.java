@@ -18,7 +18,10 @@ public class Directory extends File{
         fileList = new ArrayList<>();
         DocumentFile[] files = super.getDoc().listFiles();
         for (DocumentFile file : files) {
-            fileList.add(createFile(file));
+            File newFile = createFile(file);
+            if (newFile != null){
+                fileList.add(newFile);
+            }
         }
         Collections.sort(fileList);
         isScan = true;
@@ -27,9 +30,22 @@ public class Directory extends File{
     public File createFile(DocumentFile file) {
         if (file.isDirectory()) {
             return new Directory(super.getPath(), file, this);
-        }else {
+        }else if(isImage(file)){
             return new Image(super.getPath(), file, this);
+        }else{
+            return null;
         }
+    }
+
+    public boolean isImage(DocumentFile file){
+        String[] extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"};
+
+        for (String extension : extensions) {
+            if (file.getName().endsWith(extension)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public ArrayList<File> getListFile() {
