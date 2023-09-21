@@ -11,7 +11,6 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -31,9 +30,21 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonContinueUltime;
     private Button buttonContinuePenultieme;
     private Button buttonContinueAntepenultieme;
-    private TextView textContinueUltime;
-    private TextView textContinuePenultieme;
-    private TextView textContinueAntepenultieme;
+    private TextView textContinueUltimeLine1;
+    private TextView textContinueUltimeLine2;
+    private TextView textContinueUltimeLine3;
+    private TextView textContinueUltimeLine4;
+    private TextView textContinueUltimeLine5;
+    private TextView textContinuePenultiemeLine1;
+    private TextView textContinuePenultiemeLine2;
+    private TextView textContinuePenultiemeLine3;
+    private TextView textContinuePenultiemeLine4;
+    private TextView textContinuePenultiemeLine5;
+    private TextView textContinueAntepenultiemeLine1;
+    private TextView textContinueAntepenultiemeLine2;
+    private TextView textContinueAntepenultiemeLine3;
+    private TextView textContinueAntepenultiemeLine4;
+    private TextView textContinueAntepenultiemeLine5;
     private ListView listViewStory;
     private Uri storyFolderUri = null;
     private SharedPreferences memoire;
@@ -49,9 +60,24 @@ public class MainActivity extends AppCompatActivity {
         buttonContinueUltime = findViewById(R.id.buttonContinueUltime);
         buttonContinuePenultieme = findViewById(R.id.buttonContinuePenultieme);
         buttonContinueAntepenultieme = findViewById(R.id.buttonContinueAntepenultieme);
-        textContinueUltime = findViewById(R.id.textContinueUltime);
-        textContinuePenultieme = findViewById(R.id.textContinuePenultieme);
-        textContinueAntepenultieme = findViewById(R.id.textContinueAntepenultieme);
+
+        textContinueUltimeLine1 = findViewById(R.id.textContinueUltimeLine1);
+        textContinueUltimeLine2 = findViewById(R.id.textContinueUltimeLine2);
+        textContinueUltimeLine3 = findViewById(R.id.textContinueUltimeLine3);
+        textContinueUltimeLine4 = findViewById(R.id.textContinueUltimeLine4);
+        textContinueUltimeLine5 = findViewById(R.id.textContinueUltimeLine5);
+
+        textContinuePenultiemeLine1 = findViewById(R.id.textContinuePenultiemeLine1);
+        textContinuePenultiemeLine2 = findViewById(R.id.textContinuePenultiemeLine2);
+        textContinuePenultiemeLine3 = findViewById(R.id.textContinuePenultiemeLine3);
+        textContinuePenultiemeLine4 = findViewById(R.id.textContinuePenultiemeLine4);
+        textContinuePenultiemeLine5 = findViewById(R.id.textContinuePenultiemeLine5);
+
+        textContinueAntepenultiemeLine1 = findViewById(R.id.textContinueAntepenultiemeLine1);
+        textContinueAntepenultiemeLine2 = findViewById(R.id.textContinueAntepenultiemeLine2);
+        textContinueAntepenultiemeLine3 = findViewById(R.id.textContinueAntepenultiemeLine3);
+        textContinueAntepenultiemeLine4 = findViewById(R.id.textContinueAntepenultiemeLine4);
+        textContinueAntepenultiemeLine5 = findViewById(R.id.textContinueAntepenultiemeLine5);
 
         Button buttonCherche = findViewById(R.id.buttonCherche);
         Button buttonUpdate = findViewById(R.id.buttonUpdate);
@@ -152,7 +178,29 @@ public class MainActivity extends AppCompatActivity {
         if (nameUltimeStory != null){
             String pathLastImage = memoire.getString(nameUltimeStory + "lastImage", null);
             if (pathLastImage != null){
-                textContinueUltime.setText(pathLastImage.split("/",3)[2]);
+                String[] splitedPath = splitPath(pathLastImage);
+                if (splitedPath[0] != null){
+                    textContinueUltimeLine1.setText(splitedPath[0]);
+                    textContinueUltimeLine1.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[1] != null){
+                    textContinueUltimeLine2.setText(splitedPath[1]);
+                    textContinueUltimeLine2.setVisibility(View.VISIBLE);
+
+                }
+                if (splitedPath[2] != null){
+                    textContinueUltimeLine3.setText(splitedPath[2]);
+                    textContinueUltimeLine3.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[3] != null){
+                    textContinueUltimeLine4.setText(splitedPath[3]);
+                    textContinueUltimeLine4.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[4] != null){
+                    textContinueUltimeLine5.setText(splitedPath[4]);
+                    textContinueUltimeLine5.setVisibility(View.VISIBLE);
+                }
+
                 String textButtonUltime = getString(R.string.buttonContinueText) + " " + nameUltimeStory;
                 buttonContinueUltime.setText(textButtonUltime);
 
@@ -163,11 +211,9 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intentToImageActivity);
                 });
             }else{
-                textContinueUltime.setVisibility(View.GONE);
                 buttonContinueUltime.setVisibility(View.GONE);
             }
         }else {
-            textContinueUltime.setVisibility(View.GONE);
             buttonContinueUltime.setVisibility(View.GONE);
         }
 
@@ -175,7 +221,28 @@ public class MainActivity extends AppCompatActivity {
         if (namePenultiemeStory != null){
             String pathLastImage = memoire.getString(namePenultiemeStory + "lastImage", null);
             if (pathLastImage != null){
-                textContinuePenultieme.setText(pathLastImage.split("/",3)[2]);
+                String[] splitedPath = splitPath(pathLastImage);
+                if (splitedPath[0] != null){
+                    textContinuePenultiemeLine1.setText(splitedPath[0]);
+                    textContinuePenultiemeLine1.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[1] != null){
+                    textContinuePenultiemeLine2.setText(splitedPath[1]);
+                    textContinuePenultiemeLine2.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[2] != null){
+                    textContinuePenultiemeLine3.setText(splitedPath[2]);
+                    textContinuePenultiemeLine3.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[3] != null){
+                    textContinuePenultiemeLine4.setText(splitedPath[3]);
+                    textContinuePenultiemeLine4.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[4] != null){
+                    textContinuePenultiemeLine5.setText(splitedPath[4]);
+                    textContinuePenultiemeLine5.setVisibility(View.VISIBLE);
+                }
+
                 String textButtonPenultieme = getString(R.string.buttonContinueText) + " " + namePenultiemeStory;
                 buttonContinuePenultieme.setText(textButtonPenultieme);
 
@@ -186,11 +253,9 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intentToImageActivity);
                 });
             }else{
-                textContinuePenultieme.setVisibility(View.GONE);
                 buttonContinuePenultieme.setVisibility(View.GONE);
             }
         }else {
-            textContinuePenultieme.setVisibility(View.GONE);
             buttonContinuePenultieme.setVisibility(View.GONE);
         }
 
@@ -199,7 +264,28 @@ public class MainActivity extends AppCompatActivity {
         if (nameAntepenultiemeStory != null){
             String pathLastImage = memoire.getString(nameAntepenultiemeStory + "lastImage", null);
             if (pathLastImage != null){
-                textContinueAntepenultieme.setText(pathLastImage.split("/",3)[2]);
+                String[] splitedPath = splitPath(pathLastImage);
+                if (splitedPath[0] != null){
+                    textContinueAntepenultiemeLine1.setText(splitedPath[0]);
+                    textContinueAntepenultiemeLine1.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[1] != null){
+                    textContinueAntepenultiemeLine2.setText(splitedPath[1]);
+                    textContinueAntepenultiemeLine2.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[2] != null){
+                    textContinueAntepenultiemeLine3.setText(splitedPath[2]);
+                    textContinueAntepenultiemeLine3.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[3] != null){
+                    textContinueAntepenultiemeLine4.setText(splitedPath[3]);
+                    textContinueAntepenultiemeLine4.setVisibility(View.VISIBLE);
+                }
+                if (splitedPath[4] != null){
+                    textContinueAntepenultiemeLine5.setText(splitedPath[4]);
+                    textContinueAntepenultiemeLine5.setVisibility(View.VISIBLE);
+                }
+
                 String textButtonAntepenultieme = getString(R.string.buttonContinueText) + " " + nameAntepenultiemeStory;
                 buttonContinueAntepenultieme.setText(textButtonAntepenultieme);
 
@@ -210,11 +296,9 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intentToImageActivity);
                 });
             }else{
-                textContinueAntepenultieme.setVisibility(View.GONE);
                 buttonContinueAntepenultieme.setVisibility(View.GONE);
             }
         }else {
-            textContinueAntepenultieme.setVisibility(View.GONE);
             buttonContinueAntepenultieme.setVisibility(View.GONE);
         }
 
@@ -222,7 +306,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void chargeMiniature(){
-        View viewImage = null;
         for (int i=0; i<listStory.size(); i++) {
             File file =  listStory.get(i);
             if(file instanceof Image) {
@@ -233,19 +316,46 @@ public class MainActivity extends AppCompatActivity {
                     throw new RuntimeException(e);
                 }
                 if (bitmapRaw != null) {
-                    if (viewImage == null) {
-                        viewImage = listViewStory.getChildAt(i);
-                    }
 
-                    if (viewImage != null) {
-                        ImageView imageView = viewImage.findViewById(R.id.image);
+                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                    ((Image) file).setMiniature(bitmap);
 
-                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
-                        ((Image) file).setMiniature(bitmap);
-                    }
                 }
             }
         }
     }
+
+    public String[] splitPath(String path){
+        String[] pathPart = path.split("/");
+        int pathSize = pathPart.length;
+        String line1 =null;
+        if (pathSize>=4){
+            line1 = pathPart[3];
+        }
+
+        String line2 =null;
+        if (pathSize>=5){
+            line2 = pathPart[4];
+        }
+
+        String line3 =null;
+        if (pathSize>8){
+            line3 = "...";
+        } else if (pathSize>=6){
+            line3 = pathPart[5];
+        }
+
+        String line4 =null;
+        if (pathSize>=7){
+            line4 = pathPart[pathSize-2];
+        }
+
+        String line5 =null;
+        if (pathSize>=8){
+            line5 = pathPart[pathSize-1];
+        }
+        return new String[]{line1,line2,line3,line4,line5};
+    }
+
 
 }

@@ -1,7 +1,5 @@
 package fr.antek.mangaviewer;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -13,12 +11,12 @@ import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,14 +25,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class StoryActivity extends AppCompatActivity {
-    private TextView textContinueStory;
+    private TextView textContinueStoryLine1;
+    private TextView textContinueStoryLine2;
+    private TextView textContinueStoryLine3;
+    private TextView textContinueStoryLine4;
+    private TextView textContinueStoryLine5;
     private Button buttonContinueStory;
     private Uri storyFolderUri;
     private String path;
     private SharedPreferences memoire;
     private Directory thisStory;
     private ArrayList<File> listFile;
-    private ListView listViewStory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +43,14 @@ public class StoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_story);
         memoire = this.getSharedPreferences("memoire",MODE_PRIVATE);
 
-        listViewStory = findViewById(R.id.listViewFile);
+        ListView listViewStory = findViewById(R.id.listViewFile);
 
         buttonContinueStory = findViewById(R.id.buttonContinuStory);
-        textContinueStory = findViewById(R.id.textContinuStory);
+        textContinueStoryLine1 = findViewById(R.id.textContinueStoryLine1);
+        textContinueStoryLine2 = findViewById(R.id.textContinueStoryLine2);
+        textContinueStoryLine3 = findViewById(R.id.textContinueStoryLine3);
+        textContinueStoryLine4 = findViewById(R.id.textContinueStoryLine4);
+        textContinueStoryLine5 = findViewById(R.id.textContinueStoryLine5);
 
         storyFolderUri = Uri.parse(getIntent().getStringExtra("storyFolderUri"));
         path = getIntent().getStringExtra("path");
@@ -115,7 +120,28 @@ public class StoryActivity extends AppCompatActivity {
         String storyName = path.split("/")[2];
         String pathLastImage = memoire.getString(storyName + "lastImage", null);
         if (pathLastImage != null){
-            textContinueStory.setText(pathLastImage.split("/",4)[3]);
+            String[] splitedPath = splitPath(pathLastImage);
+            if (splitedPath[0] != null){
+                textContinueStoryLine1.setText(splitedPath[0]);
+                textContinueStoryLine1.setVisibility(View.VISIBLE);
+            }
+            if (splitedPath[1] != null){
+                textContinueStoryLine2.setText(splitedPath[1]);
+                textContinueStoryLine2.setVisibility(View.VISIBLE);
+            }
+            if (splitedPath[2] != null){
+                textContinueStoryLine3.setText(splitedPath[2]);
+                textContinueStoryLine3.setVisibility(View.VISIBLE);
+            }
+            if (splitedPath[3] != null){
+                textContinueStoryLine4.setText(splitedPath[3]);
+                textContinueStoryLine4.setVisibility(View.VISIBLE);
+            }
+            if (splitedPath[4] != null){
+                textContinueStoryLine5.setText(splitedPath[4]);
+                textContinueStoryLine5.setVisibility(View.VISIBLE);
+            }
+
             String textButton = getString(R.string.buttonContinueText) + " " + storyName;
             buttonContinueStory.setText(textButton);
 
@@ -126,13 +152,11 @@ public class StoryActivity extends AppCompatActivity {
                 startActivity(intentToImageActivity);
             });
         }else{
-            textContinueStory.setVisibility(View.GONE);
             buttonContinueStory.setVisibility(View.GONE);
         }
     }
 
     public void chargeMiniature(){
-        View viewImage = null;
         for (int i=0; i< listFile.size(); i++) {
             File file =  listFile.get(i);
             if(file instanceof Image) {
@@ -143,18 +167,42 @@ public class StoryActivity extends AppCompatActivity {
                     throw new RuntimeException(e);
                 }
                 if (bitmapRaw != null) {
-                    if (viewImage == null) {
-                        viewImage = listViewStory.getChildAt(i);
-                    }
-
-                    if (viewImage != null) {
-                        ImageView imageView = viewImage.findViewById(R.id.image);
-
-                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
-                        ((Image) file).setMiniature(bitmap);
-                    }
+                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                    ((Image) file).setMiniature(bitmap);
                 }
             }
         }
+    }
+
+    public String[] splitPath(String path){
+        String[] pathPart = path.split("/");
+        int pathSize = pathPart.length;
+        String line1 =null;
+        if (pathSize>=4){
+            line1 = pathPart[3];
+        }
+
+        String line2 =null;
+        if (pathSize>=5){
+            line2 = pathPart[4];
+        }
+
+        String line3 =null;
+        if (pathSize>8){
+            line3 = "...";
+        } else if (pathSize>=6){
+            line3 = pathPart[5];
+        }
+
+        String line4 =null;
+        if (pathSize>=7){
+            line4 = pathPart[pathSize-2];
+        }
+
+        String line5 =null;
+        if (pathSize>=8){
+            line5 = pathPart[pathSize-1];
+        }
+        return new String[]{line1,line2,line3,line4,line5};
     }
 }

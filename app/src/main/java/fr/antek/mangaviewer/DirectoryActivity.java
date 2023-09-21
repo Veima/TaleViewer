@@ -1,8 +1,5 @@
 package fr.antek.mangaviewer;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.documentfile.provider.DocumentFile;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -12,12 +9,9 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,8 +24,6 @@ public class DirectoryActivity extends AppCompatActivity {
     private Uri storyFolderUri;
     private String path;
     private Directory thisDirectory;
-    private boolean miniatureCharged = false;
-    private FileAdapter adapter;
     private ArrayList<File> listFile;
     private ListView listViewFile;
 
@@ -122,7 +114,7 @@ public class DirectoryActivity extends AppCompatActivity {
     }
 
     private void displayList(){
-        adapter = new FileAdapter(this, R.layout.item_file, listFile);
+        FileAdapter adapter = new FileAdapter(this, R.layout.item_file, listFile);
         listViewFile.setAdapter(adapter);
         listViewFile.setOnItemClickListener((parent, view, position, id) -> {
             File selectedFile = thisDirectory.getFileWithPos(position);

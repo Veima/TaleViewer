@@ -12,4 +12,5 @@
     <integer name="tempsToast">3</integer>
     <string name="title_activity_image">ImageActivity</string>
     <string name="home">Accueil</string>
+    <string name="miniature">miniature</string>
 </resources>

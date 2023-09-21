@@ -1,5 +1,6 @@
 package fr.antek.mangaviewer;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.provider.MediaStore;
@@ -15,14 +16,12 @@ import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class FileAdapter extends ArrayAdapter {
-    private Context context;
-    private int ressource;
-    private ArrayList<File> fileList;
-    private ArrayList<View> itemViewList = new ArrayList<View>();
-    private Bitmap bitmapRaw;
+    private final Context context;
+    private final int ressource;
+    private final ArrayList<File> fileList;
+    private final ArrayList<View> itemViewList = new ArrayList<>();
 
     public FileAdapter(Context context, int resource, ArrayList<File> fileList) {
         super(context, resource, fileList);
@@ -31,10 +30,11 @@ public class FileAdapter extends ArrayAdapter {
         this.ressource = resource;
     }
 
+    @NonNull
     @Override
-    public View getView(int pos, View convertView, ViewGroup parent){
+    public View getView(int pos, View convertView, @NonNull ViewGroup parent){
         File file = fileList.get(pos);
-        View itemView = LayoutInflater.from(context).inflate(ressource, parent, false);
+        @SuppressLint("ViewHolder") View itemView = LayoutInflater.from(context).inflate(ressource, parent, false);
         itemViewList.add(itemView);
 
         TextView textTitre = itemView.findViewById(R.id.textName);
@@ -47,6 +47,7 @@ public class FileAdapter extends ArrayAdapter {
             ImageView imageView = itemView.findViewById(R.id.image);
 
             if (((Image) file).getMiniature() == null){
+                Bitmap bitmapRaw;
                 try {
                     bitmapRaw = MediaStore.Images.Media.getBitmap(context.getContentResolver(), ((Image) file).getUri());
                 } catch (IOException e) {

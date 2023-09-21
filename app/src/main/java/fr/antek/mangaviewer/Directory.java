@@ -6,6 +6,7 @@ import androidx.documentfile.provider.DocumentFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Directory extends File{
     private ArrayList<File> fileList = null;
@@ -18,7 +19,7 @@ public class Directory extends File{
     public void listFile(){
         DocumentFile[] files = super.getDoc().listFiles();
         ArrayList<Thread> listThread = new ArrayList<>();
-        List fileListNotArray =  Collections.synchronizedList(new ArrayList<File>());
+        List<File> fileListNotArray =  Collections.synchronizedList(new ArrayList<>());
         for (DocumentFile file : files) {
 
             Thread thread = new Thread(() -> {
@@ -59,7 +60,7 @@ public class Directory extends File{
         String[] extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"};
 
         for (String extension : extensions) {
-            if (file.getName().endsWith(extension)) {
+            if (Objects.requireNonNull(file.getName()).endsWith(extension)) {
                 return true;
             }
         }
@@ -97,7 +98,12 @@ public class Directory extends File{
     }
 
     public File getFileWithPos(int pos){
-        return fileList.get(pos);
+        if (fileList.size() > 0){
+            return fileList.get(pos);
+        }else{
+            return null;
+        }
+
     }
 
     public File getFirst(){

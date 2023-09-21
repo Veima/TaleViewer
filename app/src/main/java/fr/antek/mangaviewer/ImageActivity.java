@@ -1,7 +1,6 @@
 package fr.antek.mangaviewer;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -209,7 +208,7 @@ public class ImageActivity extends AppCompatActivity {
                 bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
                 bitmap = BitmapUtility.correctRatio(bitmap, imageView);
                 imageView.setImageBitmap(bitmap);
-
+                firstLoad = false;
             }
         }
     }
@@ -422,6 +421,7 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     public String title(){
-        return "(" + thisImage.getParentFile().getPos(thisImage) + "/" + thisImage.getParentFile().getListFile().size() + ") " + thisImage.getName();
+        int imagePos = thisImage.getParentFile().getPos(thisImage)+1;
+        return "(" + imagePos + "/" + thisImage.getParentFile().getListFile().size() + ") " + thisImage.getName();
     }
 }
