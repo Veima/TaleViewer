@@ -74,7 +74,7 @@ public class ImageActivity extends AppCompatActivity {
             Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
             startActivity(intentToMain);
         }else {
-            Objects.requireNonNull(getSupportActionBar()).setTitle(thisImage.getName());
+            Objects.requireNonNull(getSupportActionBar()).setTitle(title());
 
 
             mContentView = binding.imageView;
@@ -300,7 +300,7 @@ public class ImageActivity extends AppCompatActivity {
             thisImage = prevImage;
             path = thisImage.getPath();
 
-            Objects.requireNonNull(getSupportActionBar()).setTitle(thisImage.getName());
+            Objects.requireNonNull(getSupportActionBar()).setTitle(title());
             displayImage();
             onNewImage();
             prevImage = (Image) thisImage.getPrev();
@@ -316,7 +316,7 @@ public class ImageActivity extends AppCompatActivity {
             thisImage = nextImage;
             path = thisImage.getPath();
 
-            Objects.requireNonNull(getSupportActionBar()).setTitle(thisImage.getName());
+            Objects.requireNonNull(getSupportActionBar()).setTitle(title());
             displayImage();
             onNewImage();
             nextImage = (Image) thisImage.getNext();
@@ -421,15 +421,7 @@ public class ImageActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    public void setmContentView(View mContentView) {
-        this.mContentView = mContentView;
-    }
-
-    public void setCurrentFocusX(float currentFocusX) {
-        this.currentFocusX = currentFocusX;
-    }
-
-    public void setCurrentFocusY(float currentFocusY) {
-        this.currentFocusY = currentFocusY;
+    public String title(){
+        return "(" + thisImage.getParentFile().getPos(thisImage) + "/" + thisImage.getParentFile().getListFile().size() + ") " + thisImage.getName();
     }
 }
