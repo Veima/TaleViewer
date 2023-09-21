@@ -53,6 +53,7 @@ public class ImageActivity extends AppCompatActivity {
     private int currentOrientation;
     private float currentXSlide;
     private float currentYSlide;
+    private boolean firstLoad = true;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -201,10 +202,15 @@ public class ImageActivity extends AppCompatActivity {
         super.onWindowFocusChanged(hasFocus);
 
         if (hasFocus) {
-            onNewImage();
-            bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
-            bitmap = BitmapUtility.correctRatio(bitmap, imageView);
-            imageView.setImageBitmap(bitmap);
+            if (firstLoad){
+                prevImage = (Image) thisImage.getPrev();
+                nextImage = (Image) thisImage.getNext();
+                onNewImage();
+                bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
+                bitmap = BitmapUtility.correctRatio(bitmap, imageView);
+                imageView.setImageBitmap(bitmap);
+
+            }
         }
     }
 
@@ -282,21 +288,22 @@ public class ImageActivity extends AppCompatActivity {
         memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
         saveStoryLastImage();
         saveAppLastStory();
-        path = thisImage.getPath();
+
         invalidateOptionsMenu();
-        prevImage = (Image) thisImage.getPrev();
-        nextImage = (Image) thisImage.getNext();
     }
 
 
 
     private void goPrevImage(){
         if (prevImage != null){
+            nextImage = thisImage;
             thisImage = prevImage;
+            path = thisImage.getPath();
 
             Objects.requireNonNull(getSupportActionBar()).setTitle(thisImage.getName());
             displayImage();
             onNewImage();
+            prevImage = (Image) thisImage.getPrev();
         }else{
             Toast.makeText(this,getString(R.string.premiereImage) , R.integer.tempsToast).show();
         }
@@ -305,10 +312,14 @@ public class ImageActivity extends AppCompatActivity {
 
     private void goNextImage(){
         if (nextImage != null){
+            prevImage = thisImage;
             thisImage = nextImage;
+            path = thisImage.getPath();
+
             Objects.requireNonNull(getSupportActionBar()).setTitle(thisImage.getName());
             displayImage();
             onNewImage();
+            nextImage = (Image) thisImage.getNext();
         }else{
             Toast.makeText(this, getString(R.string.derniereImage), R.integer.tempsToast).show();
         }

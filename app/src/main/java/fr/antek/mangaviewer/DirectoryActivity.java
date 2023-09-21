@@ -1,6 +1,7 @@
 package fr.antek.mangaviewer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.documentfile.provider.DocumentFile;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -139,28 +140,33 @@ public class DirectoryActivity extends AppCompatActivity {
         });
     }
     public void chargeMiniature(){
-        View viewImage = null;
-        for (int i=0; i<listFile.size(); i++) {
-            File file =  listFile.get(i);
-            if(file instanceof Image) {
-                Bitmap bitmapRaw;
-                try {
-                    bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) file).getUri());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                if (bitmapRaw != null) {
-                    if (viewImage == null) {
-                        viewImage = listViewFile.getChildAt(i);
+        ArrayList<Thread> threads = new ArrayList<>();
+        for (File file : listFile) {
+            Thread thread = new Thread(() -> {
+                if(file instanceof Image) {
+                    Bitmap bitmapRaw;
+                    try {
+                        bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) file).getUri());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-
-                    if (viewImage != null) {
-                        ImageView imageView = viewImage.findViewById(R.id.image);
-
+                    if (bitmapRaw != null) {
                         Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
                         ((Image) file).setMiniature(bitmap);
+
                     }
                 }
+            });
+
+            threads.add(thread);
+            thread.start();
+
+        }
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

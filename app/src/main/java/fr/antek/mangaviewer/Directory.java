@@ -5,6 +5,7 @@ import androidx.documentfile.provider.DocumentFile;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class Directory extends File{
     private ArrayList<File> fileList = null;
@@ -15,14 +16,31 @@ public class Directory extends File{
     }
 
     public void listFile(){
-        fileList = new ArrayList<>();
         DocumentFile[] files = super.getDoc().listFiles();
+        ArrayList<Thread> listThread = new ArrayList<>();
+        List fileListNotArray =  Collections.synchronizedList(new ArrayList<File>());
         for (DocumentFile file : files) {
-            File newFile = createFile(file);
-            if (newFile != null){
-                fileList.add(newFile);
+
+            Thread thread = new Thread(() -> {
+                File newFile = createFile(file);
+                if (newFile != null){
+                    fileListNotArray.add(newFile);
+                }
+            });
+
+            listThread.add(thread);
+            thread.start();
+        }
+
+        for (Thread thread : listThread) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
+        fileList = new ArrayList<>(fileListNotArray);
+
         Collections.sort(fileList);
         isScan = true;
     }
@@ -53,17 +71,6 @@ public class Directory extends File{
             listFile();
         }
         return fileList;
-    }
-
-    public ArrayList<String> getListName(){
-        if (!isScan){
-            listFile();
-        }
-        ArrayList<String> listName = new ArrayList<>();
-        for (File file : fileList){
-            listName.add(file.getName());
-        }
-        return listName;
     }
 
     public File buildFromPath(String endPath){
