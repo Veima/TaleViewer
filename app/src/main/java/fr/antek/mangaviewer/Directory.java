@@ -110,13 +110,24 @@ public class Directory extends File{
         if (!isScan){
             listFile();
         }
-        return getFileWithPos(0);
+        File first = getFileWithPos(0);
+        if (first == null){
+            return this.getNext();
+        }else{
+            return first;
+        }
     }
     public File getLast(){
         if (!isScan){
             listFile();
         }
-        return getFileWithPos(fileList.size()-1);
+        File last = getFileWithPos(fileList.size()-1);
+        if (last == null){
+            return this.getPrev();
+        }else{
+            return last;
+        }
+
     }
     public int getPos(File file){
         if (!isScan){
