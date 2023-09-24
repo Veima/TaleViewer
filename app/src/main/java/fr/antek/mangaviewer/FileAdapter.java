@@ -3,6 +3,10 @@ package fr.antek.mangaviewer;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.pdf.PdfRenderer;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,12 +44,10 @@ public class FileAdapter extends ArrayAdapter {
         TextView textTitre = itemView.findViewById(R.id.textName);
         textTitre.setText(file.getName());
 
+        ImageView imageView = itemView.findViewById(R.id.image);
         if (file instanceof Directory){
-            ImageView image = itemView.findViewById(R.id.image);
-            image.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.directory_icon));
+            imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.directory_icon));
         }else if(file instanceof Image) {
-            ImageView imageView = itemView.findViewById(R.id.image);
-
             if (((Image) file).getMiniature() == null){
                 Bitmap bitmapRaw;
                 try {
@@ -59,6 +61,31 @@ public class FileAdapter extends ArrayAdapter {
                 }
             }
             imageView.setImageBitmap(((Image) file).getMiniature());
+        }else if(file instanceof PDF) {
+            if (((PDF) file).getMiniature() == null) {
+                Bitmap bitmapRaw;
+                try {
+                    ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFileDescriptor(((PDF) file).getUri(), "r");
+                    PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
+                    PdfRenderer.Page pdfPage = pdfRenderer.openPage(0);
+
+                    bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth(), pdfPage.getHeight(), Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bitmapRaw);
+                    canvas.drawColor(Color.WHITE);
+                    pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+
+                    pdfPage.close();
+                    pdfRenderer.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                if (bitmapRaw != null) {
+                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                    ((PDF) file).setMiniature(bitmap);
+                }
+            }
+            imageView.setImageBitmap(((PDF) file).getMiniature());
+
         }
 
         return itemView;

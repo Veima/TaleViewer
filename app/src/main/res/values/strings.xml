@@ -13,4 +13,9 @@
     <string name="title_activity_image">ImageActivity</string>
     <string name="home">Accueil</string>
     <string name="miniature">miniature</string>
+    <string name="goToPage">Changer de page</string>
+    <string name="errorInvalidNumber">Chiffre invalide. Veuillez saisir un chiffre entre 1 et </string>
+    <string name="askNumber">Saisir un chiffre entre 1 et </string>
+    <string name="validationButton">OK</string>
+    <string name="cancelButton">Annuler</string>
 </resources>

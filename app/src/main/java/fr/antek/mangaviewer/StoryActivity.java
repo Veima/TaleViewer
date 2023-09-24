@@ -3,10 +3,14 @@ package fr.antek.mangaviewer;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -73,7 +77,7 @@ public class StoryActivity extends AppCompatActivity {
                 intentToDirectoryActivity.putExtra("storyFolderUri",storyFolderUri.toString());
                 intentToDirectoryActivity.putExtra("path",selectedFile.getPath());
                 startActivity(intentToDirectoryActivity);
-            }else if(selectedFile instanceof Image){
+            }else if((selectedFile instanceof Image) || (selectedFile instanceof PDF)){
                 Intent intentToImageActivity = new Intent(StoryActivity.this, ImageActivity.class);
                 intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
                 intentToImageActivity.putExtra("path", selectedFile.getPath());
@@ -120,7 +124,7 @@ public class StoryActivity extends AppCompatActivity {
         String storyName = path.split("/")[2];
         String pathLastImage = memoire.getString(storyName + "lastImage", null);
         if (pathLastImage != null){
-            String[] splitedPath = splitPath(pathLastImage);
+            String[] splitedPath = splitPath(pathLastImage.split(":")[0]);
             if (splitedPath[0] != null){
                 textContinueStoryLine1.setText(splitedPath[0]);
                 textContinueStoryLine1.setVisibility(View.VISIBLE);
@@ -169,6 +173,27 @@ public class StoryActivity extends AppCompatActivity {
                 if (bitmapRaw != null) {
                     Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
                     ((Image) file).setMiniature(bitmap);
+                }
+            }else if(file instanceof PDF) {
+                Bitmap bitmapRaw;
+                try {
+                    ParcelFileDescriptor fileDescriptor = this.getContentResolver().openFileDescriptor(((PDF) file).getUri(), "r");
+                    PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
+                    PdfRenderer.Page pdfPage = pdfRenderer.openPage(0);
+
+                    bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth(), pdfPage.getHeight(), Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bitmapRaw);
+                    canvas.drawColor(Color.WHITE);
+                    pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+
+                    pdfPage.close();
+                    pdfRenderer.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                if (bitmapRaw != null) {
+                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                    ((PDF) file).setMiniature(bitmap);
                 }
             }
         }

@@ -1,15 +1,21 @@
 package fr.antek.mangaviewer;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.text.InputType;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,11 +23,13 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.WindowInsets;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
@@ -31,14 +39,14 @@ import fr.antek.mangaviewer.databinding.ActivityImageBinding;
 public class ImageActivity extends AppCompatActivity {
     private final Handler mHideHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
     private View mContentView;
-    private Image thisImage;
+    private File thisFile;
     private Uri storyFolderUri;
     private String path;
     private ImageView imageView;
     private boolean hide = false;
     private SharedPreferences memoire;
-    private Image prevImage;
-    private Image nextImage;
+    private File prevFile;
+    private File nextFile;
     private Boolean noOtherAction = true;
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
@@ -53,6 +61,13 @@ public class ImageActivity extends AppCompatActivity {
     private float currentXSlide;
     private float currentYSlide;
     private boolean firstLoad = true;
+    private boolean splitPage = true;
+    private boolean displayCompleteBefore = true;
+    private boolean displayCompleteMiddle = true;
+    private boolean displayCompleteAfter = true;
+    private String parameter;
+    private PdfRenderer pdfRenderer;
+    private PdfRenderer.Page pdfPage;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -67,19 +82,34 @@ public class ImageActivity extends AppCompatActivity {
 
         StoryLib storyLib = new StoryLib(this, storyFolderUri);
 
-        thisImage = (Image) storyLib.buildFromPath(path.split("/", 3)[2]);
-        if (thisImage == null){
+        String imagePath = path.split("/", 3)[2];
+        thisFile = storyLib.buildFromPath(imagePath.split(":")[0]);
+
+        if (imagePath.split(":").length >1){
+            parameter = imagePath.split(":")[1];
+        }else{
+            parameter="";
+        }
+        if (thisFile == null){
             Toast.makeText(this, getString(R.string.fileNotFound), R.integer.tempsToast).show();
             Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
             startActivity(intentToMain);
         }else {
-            Objects.requireNonNull(getSupportActionBar()).setTitle(title());
+
 
 
             mContentView = binding.imageView;
             imageView = findViewById(R.id.imageView);
 
-            displayImage();
+            if (thisFile instanceof Image){
+                openImage();
+            } else if (thisFile instanceof PDF) {
+                openPDF();
+                openPDFPage();
+            }
+            Objects.requireNonNull(getSupportActionBar()).setTitle(title());
+
+            displayBitmap();
             currentOrientation = getResources().getConfiguration().orientation;
 
             if (hide) {
@@ -124,9 +154,9 @@ public class ImageActivity extends AppCompatActivity {
                         if ((relativeY < 0.15) || (relativeY > 0.85)) {
                             toggle();
                         } else if (relativeX < 0.5) {
-                            goPrevImage();
+                            goPrevPage();
                         } else {
-                            goNextImage();
+                            goNextPage();
                         }
                     } else {
                         noOtherAction = true;
@@ -154,6 +184,7 @@ public class ImageActivity extends AppCompatActivity {
             }
             menu.add(Menu.NONE, i, Menu.NONE, itemName);
         }
+        menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.goToPage));
 
         return true;
     }
@@ -166,7 +197,9 @@ public class ImageActivity extends AppCompatActivity {
             Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
             startActivity(intentToMain);
             return true;
-        } else {
+        }else if(itemId == 0){
+            pageSelectorDialog();
+        }else {
             StringBuilder newPath = new StringBuilder();
             String[] splitPath = path.split("/");
             for (int i = 1; i < itemId + 1; i++) {
@@ -190,7 +223,7 @@ public class ImageActivity extends AppCompatActivity {
     private void addOnOrientationChangeListener() {
         this.getWindow().getDecorView().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             if  (currentOrientation != getResources().getConfiguration().orientation){
-                displayImage();
+                displayBitmap();
                 currentOrientation = getResources().getConfiguration().orientation;
             }
         });
@@ -202,9 +235,9 @@ public class ImageActivity extends AppCompatActivity {
 
         if (hasFocus) {
             if (firstLoad){
-                prevImage = (Image) thisImage.getPrev();
-                nextImage = (Image) thisImage.getNext();
-                onNewImage();
+                prevFile = thisFile.getPrev();
+                nextFile = thisFile.getNext();
+                onNewPage();
                 bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
                 bitmap = BitmapUtility.correctRatio(bitmap, imageView);
                 imageView.setImageBitmap(bitmap);
@@ -266,13 +299,16 @@ public class ImageActivity extends AppCompatActivity {
 
 
 
-    private void displayImage(){
+    private void openImage(){
         try {
-            bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), thisImage.getUri());
+            bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) thisFile).getUri());
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void displayBitmap(){
         if (bitmapRaw != null) {
             bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
             bitmap = BitmapUtility.correctRatio(bitmap, imageView);
@@ -282,45 +318,132 @@ public class ImageActivity extends AppCompatActivity {
 
     }
 
+    private void openPDF(){
+        if (parameter == ""){
+            parameter = "1";
+        }
+        try {
+            ParcelFileDescriptor fileDescriptor = this.getContentResolver().openFileDescriptor(((PDF) thisFile).getUri(), "r");
+            pdfRenderer = new PdfRenderer(fileDescriptor);
 
-    private void onNewImage(){
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void openPDFPage(){
+        pdfPage = pdfRenderer.openPage(Integer.parseInt(parameter)-1);
+
+        bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth()*4, pdfPage.getHeight()*4, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmapRaw);
+        canvas.drawColor(Color.WHITE);
+
+        pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+        if (bitmapRaw != null) {
+            bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
+            bitmap = BitmapUtility.correctRatio(bitmap, imageView);
+            imageView.setImageBitmap(bitmap);
+        }
+
+
+    }
+
+
+    private void onNewPage(){
+        Objects.requireNonNull(getSupportActionBar()).setTitle(title());
         memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
-        saveStoryLastImage();
+        saveStoryLastPage();
         saveAppLastStory();
 
         invalidateOptionsMenu();
     }
 
+    private void goPrevPage(){
+        if (thisFile instanceof Image){
+            goPrevFile();
+        }else if(thisFile instanceof PDF){
+            if (Integer.parseInt(parameter) == 1){
+                if (goPrevFile()){
+                    pdfPage.close();
+                    pdfRenderer.close();
+                }
+            }else{
+                parameter=Integer.toString(Integer.parseInt(parameter)-1);
+                pdfPage.close();
+                openPDFPage();
+                displayBitmap();
+            }
+        }
+        onNewPage();
+    }
+
+    private void goNextPage(){
+        if (thisFile instanceof Image){
+            goNextFile();
+        }else if(thisFile instanceof PDF){
+            if (Integer.parseInt(parameter) >= pdfRenderer.getPageCount()){
+                if (goNextFile()){
+                    pdfPage.close();
+                    pdfRenderer.close();
+                }
+            }else{
+                parameter=Integer.toString(Integer.parseInt(parameter)+1);
+                pdfPage.close();
+                openPDFPage();
+                displayBitmap();
+            }
+        }
+        onNewPage();
+
+    }
 
 
-    private void goPrevImage(){
-        if (prevImage != null){
-            nextImage = thisImage;
-            thisImage = prevImage;
-            path = thisImage.getPath();
 
-            Objects.requireNonNull(getSupportActionBar()).setTitle(title());
-            displayImage();
-            onNewImage();
-            prevImage = (Image) thisImage.getPrev();
+    private boolean goPrevFile(){
+        if (prevFile != null){
+            parameter = "";
+            nextFile = thisFile;
+            thisFile = prevFile;
+            path = thisFile.getPath();
+
+            if (thisFile instanceof Image){
+                openImage();
+            } else if (thisFile instanceof PDF) {
+                openPDF();
+                parameter = Integer.toString(pdfRenderer.getPageCount());
+                openPDFPage();
+            }
+
+            displayBitmap();
+            prevFile = thisFile.getPrev();
+            return true;
         }else{
             Toast.makeText(this,getString(R.string.premiereImage) , R.integer.tempsToast).show();
+            return false;
         }
 
     }
 
-    private void goNextImage(){
-        if (nextImage != null){
-            prevImage = thisImage;
-            thisImage = nextImage;
-            path = thisImage.getPath();
+    private boolean goNextFile(){
+        if (nextFile != null){
+            parameter = "";
+            prevFile = thisFile;
+            thisFile = nextFile;
+            path = thisFile.getPath();
 
-            Objects.requireNonNull(getSupportActionBar()).setTitle(title());
-            displayImage();
-            onNewImage();
-            nextImage = (Image) thisImage.getNext();
+            if (thisFile instanceof Image){
+                openImage();
+            } else if (thisFile instanceof PDF) {
+                openPDF();
+                openPDFPage();
+            }
+
+            displayBitmap();
+            nextFile = thisFile.getNext();
+            return true;
         }else{
             Toast.makeText(this, getString(R.string.derniereImage), R.integer.tempsToast).show();
+            return false;
         }
     }
 
@@ -333,7 +456,7 @@ public class ImageActivity extends AppCompatActivity {
             hide();
         }
         Handler handler = new Handler();
-        handler.postDelayed(this::displayImage, 50);
+        handler.postDelayed(this::openImage, 50);
     }
 
 
@@ -395,14 +518,14 @@ public class ImageActivity extends AppCompatActivity {
         }
     };
 
-    private void saveStoryLastImage(){
+    private void saveStoryLastPage(){
         SharedPreferences.Editor editor = memoire.edit();
-        editor.putString(path.split("/")[2] + "lastImage", thisImage.getPath());
+        editor.putString(path.split("/")[2].split(":")[0] + "lastImage", thisFile.getPath() + ":" + parameter);
         editor.apply();
     }
 
     private void saveAppLastStory(){
-        String storyName = path.split("/")[2];
+        String storyName = path.split("/")[2].split(":")[0];
         String nameUltimeStory = memoire.getString("nameUltimeStory", null);
         String namePenultiemeStory = memoire.getString("namePenultiemeStory", null);
         SharedPreferences.Editor editor = memoire.edit();
@@ -421,7 +544,55 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     public String title(){
-        int imagePos = thisImage.getParentFile().getPos(thisImage)+1;
-        return "(" + imagePos + "/" + thisImage.getParentFile().getListFile().size() + ") " + thisImage.getName();
+        if (thisFile instanceof Image){
+            int imagePos = thisFile.getParentFile().getPos(thisFile)+1;
+            return "(" + imagePos + "/" + thisFile.getParentFile().getListFile().size() + ") " + thisFile.getName();
+        } else if (thisFile instanceof PDF) {
+            int pageNum = Integer.parseInt(parameter);
+            int lastPage = pdfRenderer.getPageCount();
+            return "(" + pageNum + "/" + lastPage + ") " + thisFile.getName();
+        }else{
+            return thisFile.getName();
+        }
     }
+
+    private void pageSelectorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.askNumber) + " " + pdfRenderer.getPageCount());
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton(getString(R.string.validationButton), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String inputText = input.getText().toString();
+                try {
+                    int number = Integer.parseInt(inputText);
+                    if (number >= 1 && number <= pdfRenderer.getPageCount()) {
+                        parameter = Integer.toString(number);
+                        pdfPage.close();
+                        openPDFPage();
+                        displayBitmap();
+                        onNewPage();
+                    } else {
+                        Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + pdfRenderer.getPageCount(), Toast.LENGTH_SHORT).show();
+                    }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + pdfRenderer.getPageCount(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        builder.setNegativeButton(getString(R.string.cancelButton), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
 }
