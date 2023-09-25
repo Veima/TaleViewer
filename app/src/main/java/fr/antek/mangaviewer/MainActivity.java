@@ -319,41 +319,43 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void chargeMiniature(){
-        for (int i=0; i<listStory.size(); i++) {
-            File file =  listStory.get(i);
-            if(file instanceof Image) {
-                Bitmap bitmapRaw;
-                try {
-                    bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) file).getUri());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                if (bitmapRaw != null) {
+        if (listStory !=null) {
+            for (int i = 0; i < listStory.size(); i++) {
+                File file = listStory.get(i);
+                if (file instanceof Image) {
+                    Bitmap bitmapRaw;
+                    try {
+                        bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) file).getUri());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (bitmapRaw != null) {
 
-                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
-                    ((Image) file).setMiniature(bitmap);
+                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                        ((Image) file).setMiniature(bitmap);
 
-                }
-            }else if(file instanceof PDF) {
-                Bitmap bitmapRaw;
-                try {
-                    ParcelFileDescriptor fileDescriptor = this.getContentResolver().openFileDescriptor(((PDF) file).getUri(), "r");
-                    PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
-                    PdfRenderer.Page pdfPage = pdfRenderer.openPage(0);
+                    }
+                } else if (file instanceof PDF) {
+                    Bitmap bitmapRaw;
+                    try {
+                        ParcelFileDescriptor fileDescriptor = this.getContentResolver().openFileDescriptor(((PDF) file).getUri(), "r");
+                        PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
+                        PdfRenderer.Page pdfPage = pdfRenderer.openPage(0);
 
-                    bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth(), pdfPage.getHeight(), Bitmap.Config.ARGB_8888);
-                    Canvas canvas = new Canvas(bitmapRaw);
-                    canvas.drawColor(Color.WHITE);
-                    pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                        bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth(), pdfPage.getHeight(), Bitmap.Config.ARGB_8888);
+                        Canvas canvas = new Canvas(bitmapRaw);
+                        canvas.drawColor(Color.WHITE);
+                        pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
-                    pdfPage.close();
-                    pdfRenderer.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                if (bitmapRaw != null) {
-                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
-                    ((PDF) file).setMiniature(bitmap);
+                        pdfPage.close();
+                        pdfRenderer.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (bitmapRaw != null) {
+                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                        ((PDF) file).setMiniature(bitmap);
+                    }
                 }
             }
         }
