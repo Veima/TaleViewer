@@ -16,6 +16,7 @@ import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.text.InputType;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -175,16 +176,20 @@ public class ImageActivity extends AppCompatActivity {
 
         String[] menuOption = path.split("/");
 
-        for (int i = 1; i < menuOption.length-1; i++) {
+        menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.parameter));
+
+        for (int i = 10; i < menuOption.length+8; i++) {
             String itemName;
-            if (i==1){
+            if (i==10){
                 itemName = getString(R.string.home);
             }else {
-                itemName = menuOption[i];
+                itemName = menuOption[i-9];
             }
             menu.add(Menu.NONE, i, Menu.NONE, itemName);
         }
-        menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.goToPage));
+        if (thisFile instanceof PDF){
+            menu.add(Menu.NONE, 9, Menu.NONE, getString(R.string.goToPage));
+        }
 
         return true;
     }
@@ -193,19 +198,26 @@ public class ImageActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
-        if (itemId == 1) {
+
+        if (itemId == 0) {
+            Intent intentToParameterActivity = new Intent(ImageActivity.this, ParameterActivity.class);
+            intentToParameterActivity.putExtra("activityAfter", "ImageActivity");
+            intentToParameterActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+            intentToParameterActivity.putExtra("path", path);
+            startActivity(intentToParameterActivity);
+        }else if (itemId == 9) {
+            pageSelectorDialog();
+        }else if(itemId == 10){
             Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
             startActivity(intentToMain);
-            return true;
-        }else if(itemId == 0){
-            pageSelectorDialog();
-        }else {
+        }else{
             StringBuilder newPath = new StringBuilder();
             String[] splitPath = path.split("/");
-            for (int i = 1; i < itemId + 1; i++) {
+            for (int i = 1; i < itemId -8; i++) {
                 newPath.append("/").append(splitPath[i]);
             }
-            if (itemId == 2) {
+            Log.d("MOI", newPath.toString());
+            if (itemId == 11) {
                 Intent intentToStoryActivity = new Intent(ImageActivity.this, StoryActivity.class);
                 intentToStoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
                 intentToStoryActivity.putExtra("path", newPath.toString());
