@@ -104,17 +104,24 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_story, menu);
+        getMenuInflater().inflate(R.menu.menu_dynamic, menu);
+        menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.parameter));
+        menu.add(Menu.NONE, 10, Menu.NONE, getString(R.string.home));
         return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
+        int itemId = item.getItemId();
 
-        if (id == R.id.action_main) {
+        if (itemId == 0) {
+            Intent intentToParameterActivity = new Intent(StoryActivity.this, ParameterActivity.class);
+            intentToParameterActivity.putExtra("activityAfter", "StoryActivity");
+            intentToParameterActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+            intentToParameterActivity.putExtra("path", path);
+            startActivity(intentToParameterActivity);
+        }else if(itemId == 10){
             Intent intentToMain = new Intent(StoryActivity.this, MainActivity.class);
             startActivity(intentToMain);
-            return true;
         }
 
         return super.onOptionsItemSelected(item);

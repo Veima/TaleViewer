@@ -216,7 +216,6 @@ public class ImageActivity extends AppCompatActivity {
             for (int i = 1; i < itemId -8; i++) {
                 newPath.append("/").append(splitPath[i]);
             }
-            Log.d("MOI", newPath.toString());
             if (itemId == 11) {
                 Intent intentToStoryActivity = new Intent(ImageActivity.this, StoryActivity.class);
                 intentToStoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());

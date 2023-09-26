@@ -75,12 +75,14 @@ public class DirectoryActivity extends AppCompatActivity {
 
         String[] menuOption = path.split("/");
 
-        for (int i = 1; i < menuOption.length-1; i++) {
+        menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.parameter));
+
+        for (int i = 10; i < menuOption.length+8; i++) {
             String itemName;
-            if (i==1){
+            if (i==10){
                 itemName = getString(R.string.home);
             }else {
-                itemName = menuOption[i];
+                itemName = menuOption[i-9];
             }
             menu.add(Menu.NONE, i, Menu.NONE, itemName);
         }
@@ -91,17 +93,24 @@ public class DirectoryActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
-        if (itemId == 1){
+
+        if (itemId == 0) {
+            Intent intentToParameterActivity = new Intent(DirectoryActivity.this, ParameterActivity.class);
+            intentToParameterActivity.putExtra("activityAfter", "DirectoryActivity");
+            intentToParameterActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+            intentToParameterActivity.putExtra("path", path);
+            startActivity(intentToParameterActivity);
+        }else if (itemId == 10){
             Intent intentToMain = new Intent(DirectoryActivity.this, MainActivity.class);
             startActivity(intentToMain);
             return true;
         }else{
             StringBuilder newPath = new StringBuilder();
             String[] splitPath = path.split("/");
-            for (int i = 1; i < itemId+1; i++) {
+            for (int i = 1; i < itemId-8; i++) {
                 newPath.append("/").append(splitPath[i]);
             }
-            if (itemId == 2) {
+            if (itemId == 11) {
                 Intent intentToStoryActivity = new Intent(DirectoryActivity.this, StoryActivity.class);
                 intentToStoryActivity.putExtra("storyFolderUri",storyFolderUri.toString());
                 intentToStoryActivity.putExtra("path", newPath.toString());

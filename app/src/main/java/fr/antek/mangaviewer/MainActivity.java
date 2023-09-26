@@ -13,6 +13,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListAdapter;
@@ -131,6 +133,26 @@ public class MainActivity extends AppCompatActivity {
             });
 
         }
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_dynamic, menu);
+        menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.parameter));
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == 0) {
+            Intent intentToParameterActivity = new Intent(MainActivity.this, ParameterActivity.class);
+            intentToParameterActivity.putExtra("activityAfter", "MainActivity");
+            intentToParameterActivity.putExtra("storyFolderUri", "");
+            intentToParameterActivity.putExtra("path", "");
+            startActivity(intentToParameterActivity);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateListView(Uri storyFolderUri){

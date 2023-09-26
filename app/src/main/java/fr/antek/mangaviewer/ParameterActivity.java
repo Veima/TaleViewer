@@ -26,7 +26,20 @@ public class ParameterActivity extends AppCompatActivity {
     }
 
     private void returnActivity(){
-        if (activityAfter.equals("ImageActivity")){
+        if (activityAfter.equals("MainActivity")){
+            Intent intentToMainActivity = new Intent(ParameterActivity.this, MainActivity.class);
+            startActivity(intentToMainActivity);
+        }else if (activityAfter.equals("StoryActivity")){
+            Intent intentToStoryActivity = new Intent(ParameterActivity.this, StoryActivity.class);
+            intentToStoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+            intentToStoryActivity.putExtra("path", path);
+            startActivity(intentToStoryActivity);
+        }else if (activityAfter.equals("DirectoryActivity")){
+            Intent intentToDirectoryActivity = new Intent(ParameterActivity.this, DirectoryActivity.class);
+            intentToDirectoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+            intentToDirectoryActivity.putExtra("path", path);
+            startActivity(intentToDirectoryActivity);
+        }else if (activityAfter.equals("ImageActivity")){
             Intent intentToImageActivity = new Intent(ParameterActivity.this, ImageActivity.class);
             intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
             intentToImageActivity.putExtra("path", path);
