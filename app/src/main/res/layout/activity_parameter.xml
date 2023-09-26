@@ -23,7 +23,7 @@
             android:layout_height="48dp">
 
             <Switch
-                android:id="@+id/switch2"
+                android:id="@+id/switchSplit"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:text="@string/Activatesplitview"
@@ -34,7 +34,7 @@
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
 
             <Switch
-                android:id="@+id/switch4"
+                android:id="@+id/switchFullBefore"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="16dp"
@@ -42,11 +42,11 @@
                 android:text="@string/Activatefullviewbefore"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/switch2"
+                app:layout_constraintTop_toBottomOf="@+id/switchSplit"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
 
             <Switch
-                android:id="@+id/switch5"
+                android:id="@+id/switchFullBetween"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="16dp"
@@ -54,11 +54,11 @@
                 android:text="@string/Activatefullviewbetween"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/switch4"
+                app:layout_constraintTop_toBottomOf="@+id/switchFullBefore"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
 
             <Switch
-                android:id="@+id/switch6"
+                android:id="@+id/switchFullAfter"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="16dp"
@@ -66,18 +66,18 @@
                 android:text="@string/Activatefullviewafter"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/switch5"
+                app:layout_constraintTop_toBottomOf="@+id/switchFullBetween"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
 
             <Switch
-                android:id="@+id/switch3"
+                android:id="@+id/switchScroll"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/ActivateScrollmode"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/switch6"
+                app:layout_constraintTop_toBottomOf="@+id/switchFullAfter"
                 tools:ignore="HardcodedText,UseSwitchCompatOrMaterialXml" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

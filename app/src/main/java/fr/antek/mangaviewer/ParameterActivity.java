@@ -6,12 +6,18 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.Switch;
 
 public class ParameterActivity extends AppCompatActivity {
     private Uri storyFolderUri;
     private String path;
     private String activityAfter;
-    private Button buttonValid;
+    private Switch switchSplit;
+    private Switch switchFullBefore;
+    private Switch switchFullBetween;
+    private Switch switchFullAfter;
+    private Switch switchScroll;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,8 +27,15 @@ public class ParameterActivity extends AppCompatActivity {
         path = getIntent().getStringExtra("path");
         activityAfter = getIntent().getStringExtra("activityAfter");
 
-        buttonValid = findViewById(R.id.buttonValid);
+        Button buttonValid = findViewById(R.id.buttonValid);
         buttonValid.setOnClickListener(v -> returnActivity());
+
+        switchSplit = findViewById(R.id.switchSplit);
+        switchFullBefore = findViewById(R.id.switchFullBefore);
+        switchFullBetween = findViewById(R.id.switchFullBetween);
+        switchFullAfter = findViewById(R.id.switchFullAfter);
+        switchScroll = findViewById(R.id.switchScroll);
+
     }
 
     private void returnActivity(){
