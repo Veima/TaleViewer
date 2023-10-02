@@ -53,6 +53,7 @@ public class ImageActivity extends AppCompatActivity {
     private GestureDetector gestureDetector;
     private Bitmap bitmap;
     private Bitmap bitmapRaw;
+    private Bitmap bitmapToDisplay;
     private float offsetX = 0f;
     private float offsetY = 0f;
     private float currentFocusX = 0f;
@@ -62,10 +63,12 @@ public class ImageActivity extends AppCompatActivity {
     private float currentXSlide;
     private float currentYSlide;
     private boolean firstLoad = true;
-    private boolean splitPage = true;
-    private boolean displayCompleteBefore = true;
-    private boolean displayCompleteMiddle = true;
-    private boolean displayCompleteAfter = true;
+    private boolean splitPage;
+    private boolean firstPage;
+    private boolean fullBefore;
+    private boolean fullBetween;
+    private boolean fullAfter;
+    private int overlap;
     private String parameter;
     private PdfRenderer pdfRenderer;
     private PdfRenderer.Page pdfPage;
@@ -80,6 +83,14 @@ public class ImageActivity extends AppCompatActivity {
 
         storyFolderUri = Uri.parse(getIntent().getStringExtra("storyFolderUri"));
         path = getIntent().getStringExtra("path");
+
+        memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
+        splitPage = memoire.getBoolean("switchSplit",false);
+        firstPage = memoire.getBoolean("switchFirstPage",true);
+        fullBefore = memoire.getBoolean("switchFullBefore",false);
+        fullBetween = memoire.getBoolean("switchFullBetween",false);
+        fullAfter = memoire.getBoolean("switchFullAfter",false);
+        overlap = memoire.getInt("overlap",0);
 
         StoryLib storyLib = new StoryLib(this, storyFolderUri);
 
@@ -97,8 +108,6 @@ public class ImageActivity extends AppCompatActivity {
             startActivity(intentToMain);
         }else {
 
-
-
             mContentView = binding.imageView;
             imageView = findViewById(R.id.imageView);
 
@@ -109,6 +118,30 @@ public class ImageActivity extends AppCompatActivity {
                 openPDFPage();
             }
             Objects.requireNonNull(getSupportActionBar()).setTitle(title());
+            if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage) {
+                if (parameter.equals("fullFirst")) {
+                    bitmapToDisplay = bitmapRaw;
+                } else if (parameter.equals("halfFirst")) {
+                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
+                } else if (parameter.equals("fullBetween")) {
+                    bitmapToDisplay = bitmapRaw;
+                } else if (parameter.equals("halfLast")) {
+                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, !firstPage, overlap);
+                } else if (parameter.equals("fullLast")) {
+                    bitmapToDisplay = bitmapRaw;
+                }else{
+                    if (fullBefore){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullFirst";
+                    }else{
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
+                        parameter = "halfFirst";
+                    }
+
+                }
+            }else{
+                bitmapToDisplay = bitmapRaw;
+            }
 
             displayBitmap();
             currentOrientation = getResources().getConfiguration().orientation;
@@ -249,7 +282,7 @@ public class ImageActivity extends AppCompatActivity {
                 prevFile = thisFile.getPrev();
                 nextFile = thisFile.getNext();
                 onNewPage();
-                bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
+                bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
                 bitmap = BitmapUtility.correctRatio(bitmap, imageView);
                 imageView.setImageBitmap(bitmap);
                 firstLoad = false;
@@ -320,8 +353,9 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     private void displayBitmap(){
-        if (bitmapRaw != null) {
-            bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
+
+        if (bitmapToDisplay != null) {
+            bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
             bitmap = BitmapUtility.correctRatio(bitmap, imageView);
 
             imageView.setImageBitmap(bitmap);
@@ -350,15 +384,10 @@ public class ImageActivity extends AppCompatActivity {
         canvas.drawColor(Color.WHITE);
 
         pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
-        if (bitmapRaw != null) {
-            bitmap = BitmapUtility.correctSize(bitmapRaw, imageView);
-            bitmap = BitmapUtility.correctRatio(bitmap, imageView);
-            imageView.setImageBitmap(bitmap);
-        }
+        bitmapToDisplay = bitmapRaw;
 
 
     }
-
 
     private void onNewPage(){
         Objects.requireNonNull(getSupportActionBar()).setTitle(title());
@@ -371,7 +400,43 @@ public class ImageActivity extends AppCompatActivity {
 
     private void goPrevPage(){
         if (thisFile instanceof Image){
-            goPrevFile();
+            if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
+                if (parameter.equals("fullFirst")){
+                    goPrevFile();
+                }else if(parameter.equals("halfFirst")) {
+                    if (fullBefore){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullFirst";
+                    }else{
+                        goPrevFile();
+                    }
+                }else if(parameter.equals("fullBetween")) {
+                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
+                    parameter = "halfFirst";
+                }else if(parameter.equals("halfLast")) {
+                    if (fullBetween){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullBetween";
+                    }else{
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
+                        parameter = "halfFirst";
+                    }
+                }else if(parameter.equals("fullLast")) {
+                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
+                    parameter = "halfLast";
+                }else{
+                    if (fullAfter){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullLast";
+                    }else{
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
+                        parameter = "halfLast";
+                    }
+                }
+                displayBitmap();
+            }else{
+                goPrevFile();
+            }
         }else if(thisFile instanceof PDF){
             if (Integer.parseInt(parameter) == 1){
                 if (goPrevFile()){
@@ -390,7 +455,43 @@ public class ImageActivity extends AppCompatActivity {
 
     private void goNextPage(){
         if (thisFile instanceof Image){
-            goNextFile();
+            if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
+                if (parameter.equals("fullFirst")){
+                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
+                    parameter = "halfFirst";
+                }else if(parameter.equals("halfFirst")) {
+                    if (fullBetween){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullBetween";
+                    }else{
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
+                        parameter = "halfLast";
+                    }
+                }else if(parameter.equals("fullBetween")) {
+                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
+                    parameter = "halfLast";
+                }else if(parameter.equals("halfLast")) {
+                    if (fullAfter){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullLast";
+                    }else{
+                        goNextFile();
+                    }
+                }else if(parameter.equals("fullLast")) {
+                    goNextFile();
+                }else{
+                    if (fullBefore) {
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullFirst";
+                    } else {
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
+                        parameter = "halfFirst";
+                    }
+                }
+                displayBitmap();
+            }else {
+                goNextFile();
+            }
         }else if(thisFile instanceof PDF){
             if (Integer.parseInt(parameter) >= pdfRenderer.getPageCount()){
                 if (goNextFile()){
@@ -419,6 +520,17 @@ public class ImageActivity extends AppCompatActivity {
 
             if (thisFile instanceof Image){
                 openImage();
+                if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
+                    if (fullAfter){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullLast";
+                    }else{
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
+                        parameter = "halfLast";
+                    }
+                }else{
+                    bitmapToDisplay = bitmapRaw;
+                }
             } else if (thisFile instanceof PDF) {
                 openPDF();
                 parameter = Integer.toString(pdfRenderer.getPageCount());
@@ -444,6 +556,17 @@ public class ImageActivity extends AppCompatActivity {
 
             if (thisFile instanceof Image){
                 openImage();
+                if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
+                    if (fullBefore){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullFirst";
+                    }else{
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
+                        parameter = "halfFirst";
+                    }
+                }else{
+                    bitmapToDisplay = bitmapRaw;
+                }
             } else if (thisFile instanceof PDF) {
                 openPDF();
                 openPDFPage();

@@ -129,10 +129,10 @@ public class BitmapUtility {
     public static Bitmap splitPage(Bitmap bitmapInput, boolean isRight, int overlap){
         Rect rect;
         if (isRight){
-            float multi = (float) ((50.0-overlap)/100);
+            float multi = (float) ((100.0-overlap)/200);
             rect = new Rect(Math.round(bitmapInput.getWidth()*multi), 0, bitmapInput.getWidth(), bitmapInput.getHeight());
         }else{
-            float multi = (float) ((50.0+overlap)/100);
+            float multi = (float) ((100.0+overlap)/200);
             rect = new Rect(0, 0, Math.round(bitmapInput.getWidth()*multi), bitmapInput.getHeight());
         }
 
