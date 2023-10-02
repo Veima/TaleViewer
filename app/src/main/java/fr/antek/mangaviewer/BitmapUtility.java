@@ -125,4 +125,23 @@ public class BitmapUtility {
 
         return resultBmp;
     }
+
+    public static Bitmap splitPage(Bitmap bitmapInput, boolean isRight, int overlap){
+        Rect rect;
+        if (isRight){
+            float multi = (float) ((50.0-overlap)/100);
+            rect = new Rect(Math.round(bitmapInput.getWidth()*multi), 0, bitmapInput.getWidth(), bitmapInput.getHeight());
+        }else{
+            float multi = (float) ((50.0+overlap)/100);
+            rect = new Rect(0, 0, Math.round(bitmapInput.getWidth()*multi), bitmapInput.getHeight());
+        }
+
+        assert(rect.left < rect.right && rect.top < rect.bottom);
+        Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
+        new Canvas(resultBmp).drawBitmap(bitmapInput, -rect.left, -rect.top, null);
+
+        return resultBmp;
+
+
+    }
 }

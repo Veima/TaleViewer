@@ -20,9 +20,13 @@
     <string name="validationButton">OK</string>
     <string name="cancelButton">Annuler</string>
     <string name="Activatesplitview">Activer le split des pages larges</string>
+    <string name="FirstPage">La première page sera celle de : </string>
+    <string name="Left">Gauche</string>
+    <string name="Right">Droite</string>
     <string name="Activatefullviewbefore">Activer la vue complète avant</string>
     <string name="Activatefullviewbetween">Activer la vue complète entre</string>
     <string name="Activatefullviewafter">Activer la vue complète après</string>
+    <string name="Overlap">Superposition</string>
     <string name="ActivateScrollmode">Activer le mode Scroll</string>
 
 </resources>

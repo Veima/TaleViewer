@@ -203,7 +203,7 @@ public class ImageActivity extends AppCompatActivity {
             Intent intentToParameterActivity = new Intent(ImageActivity.this, ParameterActivity.class);
             intentToParameterActivity.putExtra("activityAfter", "ImageActivity");
             intentToParameterActivity.putExtra("storyFolderUri", storyFolderUri.toString());
-            intentToParameterActivity.putExtra("path", path);
+            intentToParameterActivity.putExtra("path", thisFile.getPath() + ":" + parameter);
             startActivity(intentToParameterActivity);
         }else if (itemId == 9) {
             pageSelectorDialog();
