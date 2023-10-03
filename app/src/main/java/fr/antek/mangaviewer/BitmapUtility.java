@@ -1,5 +1,6 @@
 package fr.antek.mangaviewer;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -84,14 +85,7 @@ public class BitmapUtility {
     }
 
 
-    public static Bitmap moveBitmap(Bitmap bitmap, float offsetX, float offsetY, float slideX, float slideY, float currentScale){
-
-        offsetX = offsetX - slideX;
-        offsetY = offsetY - slideY;
-        return cropAndCheck(bitmap, offsetX, offsetY, currentScale);
-    }
-
-    public static Bitmap cropAndCheck(Bitmap bitmap, float offsetX, float offsetY, float currentScale){
+    public static Bitmap cropAndCheck(Bitmap bitmap, float offsetX, float offsetY, float currentScale, ImageActivity context){
         int newLeft;
         int newTop;
 
@@ -99,11 +93,13 @@ public class BitmapUtility {
             newLeft = Math.round(offsetX);
         }else{
             newLeft = 0;
+            context.setOffsetX(0);
         }
         if (offsetY > 0){
             newTop = Math.round(offsetY);
         }else{
             newTop = 0;
+            context.setOffsetY(0);
         }
 
         int newW = Math.round(bitmap.getWidth()/currentScale);
@@ -116,9 +112,21 @@ public class BitmapUtility {
         }else{
             newRight = bitmap.getWidth();
             newLeft = newRight - newW;
+            context.setOffsetX(newLeft);
+
         }
 
-        Rect rect = new Rect(newLeft, newTop, newRight, newTop + newH);
+        int newBottom;
+
+        if (newTop + newH < bitmap.getHeight()){
+            newBottom = newTop + newH;
+        }else{
+            newBottom = bitmap.getHeight();
+            newTop = newBottom - newH;
+            context.setOffsetY(newTop);
+        }
+
+        Rect rect = new Rect(newLeft, newTop, newRight, newBottom);
         assert(rect.left < rect.right && rect.top < rect.bottom);
         Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
         new Canvas(resultBmp).drawBitmap(bitmap, -rect.left, -rect.top, null);

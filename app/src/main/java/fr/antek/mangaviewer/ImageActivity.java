@@ -1,6 +1,7 @@
 package fr.antek.mangaviewer;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -39,6 +40,7 @@ import java.util.Objects;
 import fr.antek.mangaviewer.databinding.ActivityImageBinding;
 public class ImageActivity extends AppCompatActivity {
     private final Handler mHideHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
+    private final ImageActivity contextThis = this;
     private View mContentView;
     private File thisFile;
     private Uri storyFolderUri;
@@ -69,6 +71,7 @@ public class ImageActivity extends AppCompatActivity {
     private boolean fullBetween;
     private boolean fullAfter;
     private int overlap;
+    private boolean scroll;
     private String parameter;
     private PdfRenderer pdfRenderer;
     private PdfRenderer.Page pdfPage;
@@ -91,6 +94,7 @@ public class ImageActivity extends AppCompatActivity {
         fullBetween = memoire.getBoolean("switchFullBetween",false);
         fullAfter = memoire.getBoolean("switchFullAfter",false);
         overlap = memoire.getInt("overlap",0);
+        scroll = memoire.getBoolean("switchScroll",false);
 
         StoryLib storyLib = new StoryLib(this, storyFolderUri);
 
@@ -167,7 +171,9 @@ public class ImageActivity extends AppCompatActivity {
 
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     if ((noOtherAction) && (currentScale != 1.0f) && (event.getPointerCount() == 1)) {
-                        Bitmap cropedBitmap = BitmapUtility.moveBitmap(bitmap, offsetX,  offsetY,event.getX() - currentXSlide, event.getY() - currentYSlide, currentScale);
+                        offsetX = offsetX - (event.getX() - currentXSlide)/currentScale/imageView.getHeight()*bitmap.getHeight();
+                        offsetY = offsetY - (event.getY() - currentYSlide)/currentScale/imageView.getWidth()*bitmap.getWidth();
+                        Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, this);
                         imageView.setImageBitmap(cropedBitmap);
                         currentXSlide = event.getX();
                         currentYSlide = event.getY();
@@ -310,15 +316,15 @@ public class ImageActivity extends AppCompatActivity {
 
             currentScale = Math.max(1.0f, Math.min(currentScale*newScale, 10.0f));
 
-            offsetX = (offsetX-newFocusX)/newScale+newFocusX;
-            offsetY = (offsetY-newFocusY)/newScale+newFocusY;
+            offsetX = (offsetX/newScale-newFocusX/newScale+newFocusX);
+            offsetY = (offsetY/newScale-newFocusY/newScale+newFocusY);
 
-            offsetX = offsetX + (currentFocusX - newFocusX);
-            offsetY = offsetY + (currentFocusY - newFocusY);
+            offsetX = offsetX + ((currentFocusX - newFocusX)/currentScale)/imageView.getWidth()*bitmap.getWidth();
+            offsetY = offsetY + ((currentFocusY - newFocusY)/currentScale)/imageView.getHeight()*bitmap.getHeight();
             currentFocusX = newFocusX;
             currentFocusY = newFocusY;
 
-            Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale);
+            Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
 
             imageView.setImageBitmap(cropedBitmap);
 
@@ -727,6 +733,14 @@ public class ImageActivity extends AppCompatActivity {
         });
 
         builder.show();
+    }
+
+    public void setOffsetX(float offsetX){
+        this.offsetX = offsetX;
+    }
+
+    public void setOffsetY(float offsetY){
+        this.offsetY = offsetY;
     }
 
 }
