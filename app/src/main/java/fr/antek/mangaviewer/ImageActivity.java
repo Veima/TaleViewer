@@ -321,6 +321,7 @@ public class ImageActivity extends AppCompatActivity {
 
             offsetX = offsetX + ((currentFocusX - newFocusX)/currentScale)/imageView.getWidth()*bitmap.getWidth();
             offsetY = offsetY + ((currentFocusY - newFocusY)/currentScale)/imageView.getHeight()*bitmap.getHeight();
+
             currentFocusX = newFocusX;
             currentFocusY = newFocusY;
 

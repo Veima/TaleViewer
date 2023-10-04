@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 
 public class BitmapUtility {
@@ -18,13 +19,9 @@ public class BitmapUtility {
 
         if ((viewW != 0) && (viewH != 0)) {
             if (factorX > factorY) {
-                if (bmpW > viewW) {
-                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW / ratio), true);
-                }
+                bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW / ratio), true);
             } else {
-                if (bmpH > viewH) {
-                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH * ratio), Math.round(viewH), true);
-                }
+                bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH * ratio), Math.round(viewH), true);
             }
         }
         return bitmap;
@@ -39,13 +36,9 @@ public class BitmapUtility {
 
         if ((viewW != 0) && (viewH != 0)) {
             if (factorX > factorY) {
-                if (bmpW > viewW) {
-                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW / ratio), true);
-                }
+                bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW / ratio), true);
             } else {
-                if (bmpH > viewH) {
-                    bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH * ratio), Math.round(viewH), true);
-                }
+                bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH * ratio), Math.round(viewH), true);
             }
         }
         return bitmap;
