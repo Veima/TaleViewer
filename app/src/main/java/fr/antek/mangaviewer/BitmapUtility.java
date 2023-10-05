@@ -142,7 +142,17 @@ public class BitmapUtility {
         new Canvas(resultBmp).drawBitmap(bitmapInput, -rect.left, -rect.top, null);
 
         return resultBmp;
+    }
 
+    public static Bitmap adaptScrollView(Bitmap bitmapScroll, View view,int scrollOffset){
+        int viewW = view.getWidth();
+        int viewH = view.getHeight();
 
+        Rect rect = new Rect(0, scrollOffset, viewW, viewH+scrollOffset);
+        assert(rect.left < rect.right && rect.top < rect.bottom);
+        Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
+        new Canvas(resultBmp).drawBitmap(bitmapScroll, -rect.left, -rect.top, null);
+
+        return resultBmp;
     }
 }

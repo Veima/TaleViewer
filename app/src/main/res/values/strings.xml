@@ -28,5 +28,8 @@
     <string name="Activatefullviewafter">Activer la vue complète après</string>
     <string name="Overlap">Superposition</string>
     <string name="ActivateScrollmode">Activer le mode Scroll</string>
+    <string name="title_activity_scroll">ScrollActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 
 </resources>

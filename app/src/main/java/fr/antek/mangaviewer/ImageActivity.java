@@ -56,6 +56,7 @@ public class ImageActivity extends AppCompatActivity {
     private Bitmap bitmap;
     private Bitmap bitmapRaw;
     private Bitmap bitmapToDisplay;
+    private Bitmap bitmapScroll;
     private float offsetX = 0f;
     private float offsetY = 0f;
     private float currentFocusX = 0f;
@@ -75,6 +76,7 @@ public class ImageActivity extends AppCompatActivity {
     private String parameter;
     private PdfRenderer pdfRenderer;
     private PdfRenderer.Page pdfPage;
+    private int scrollOffset;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -122,30 +124,35 @@ public class ImageActivity extends AppCompatActivity {
                 openPDFPage();
             }
             Objects.requireNonNull(getSupportActionBar()).setTitle(title());
-            if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage) {
-                if (parameter.equals("fullFirst")) {
-                    bitmapToDisplay = bitmapRaw;
-                } else if (parameter.equals("halfFirst")) {
-                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
-                } else if (parameter.equals("fullBetween")) {
-                    bitmapToDisplay = bitmapRaw;
-                } else if (parameter.equals("halfLast")) {
-                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, !firstPage, overlap);
-                } else if (parameter.equals("fullLast")) {
-                    bitmapToDisplay = bitmapRaw;
-                }else{
-                    if (fullBefore){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullFirst";
-                    }else{
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
-                        parameter = "halfFirst";
-                    }
-
-                }
+            if (scroll){
+                bitmapScroll=generateScrollBitmap();
             }else{
-                bitmapToDisplay = bitmapRaw;
+                if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage) {
+                    if (parameter.equals("fullFirst")) {
+                        bitmapToDisplay = bitmapRaw;
+                    } else if (parameter.equals("halfFirst")) {
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
+                    } else if (parameter.equals("fullBetween")) {
+                        bitmapToDisplay = bitmapRaw;
+                    } else if (parameter.equals("halfLast")) {
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, !firstPage, overlap);
+                    } else if (parameter.equals("fullLast")) {
+                        bitmapToDisplay = bitmapRaw;
+                    }else{
+                        if (fullBefore){
+                            bitmapToDisplay = bitmapRaw;
+                            parameter = "fullFirst";
+                        }else{
+                            bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
+                            parameter = "halfFirst";
+                        }
+
+                    }
+                }else{
+                    bitmapToDisplay = bitmapRaw;
+                }
             }
+
 
             displayBitmap();
             currentOrientation = getResources().getConfiguration().orientation;
@@ -170,36 +177,44 @@ public class ImageActivity extends AppCompatActivity {
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if ((noOtherAction) && (currentScale != 1.0f) && (event.getPointerCount() == 1)) {
-                        offsetX = offsetX - (event.getX() - currentXSlide)/currentScale/imageView.getHeight()*bitmap.getHeight();
-                        offsetY = offsetY - (event.getY() - currentYSlide)/currentScale/imageView.getWidth()*bitmap.getWidth();
-                        Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, this);
-                        imageView.setImageBitmap(cropedBitmap);
+                    if (scroll) {
+                        offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                         currentXSlide = event.getX();
-                        currentYSlide = event.getY();
+                        //update scroll
+                    }else {
+                        if ((noOtherAction) && (currentScale != 1.0f) && (event.getPointerCount() == 1)) {
+                            offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                            offsetY = offsetY - (event.getY() - currentYSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
+                            Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, this);
+                            imageView.setImageBitmap(cropedBitmap);
+                            currentXSlide = event.getX();
+                            currentYSlide = event.getY();
+                        }
                     }
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if ((noOtherAction) && (currentScale == 1.0f)) {
-                        float x = event.getX();
-                        float y = event.getY();
+                    if (!scroll){
+                        if ((noOtherAction) && (currentScale == 1.0f)) {
+                            float x = event.getX();
+                            float y = event.getY();
 
-                        int width = imageView.getWidth();
-                        int height = imageView.getHeight();
+                            int width = imageView.getWidth();
+                            int height = imageView.getHeight();
 
-                        float relativeX = x / width;
-                        float relativeY = y / height;
+                            float relativeX = x / width;
+                            float relativeY = y / height;
 
-                        if ((relativeY < 0.15) || (relativeY > 0.85)) {
-                            toggle();
-                        } else if (relativeX < 0.5) {
-                            goPrevPage();
+                            if ((relativeY < 0.15) || (relativeY > 0.85)) {
+                                toggle();
+                            } else if (relativeX < 0.5) {
+                                goPrevPage();
+                            } else {
+                                goNextPage();
+                            }
                         } else {
-                            goNextPage();
+                            noOtherAction = true;
                         }
-                    } else {
-                        noOtherAction = true;
                     }
                 }
                 return true;
@@ -288,8 +303,12 @@ public class ImageActivity extends AppCompatActivity {
                 prevFile = thisFile.getPrev();
                 nextFile = thisFile.getNext();
                 onNewPage();
-                bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
-                bitmap = BitmapUtility.correctRatio(bitmap, imageView);
+                if (scroll){
+                    bitmap = BitmapUtility.adaptScrollView(bitmapScroll,imageView,scrollOffset);
+                }else {
+                    bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
+                    bitmap = BitmapUtility.correctRatio(bitmap, imageView);
+                }
                 imageView.setImageBitmap(bitmap);
                 firstLoad = false;
             }
@@ -361,12 +380,21 @@ public class ImageActivity extends AppCompatActivity {
 
     private void displayBitmap(){
 
-        if (bitmapToDisplay != null) {
-            bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
-            bitmap = BitmapUtility.correctRatio(bitmap, imageView);
 
-            imageView.setImageBitmap(bitmap);
-        }
+            if (scroll){
+                if (bitmapScroll != null) {
+                    bitmap = BitmapUtility.adaptScrollView(bitmapScroll, imageView, scrollOffset);
+                    imageView.setImageBitmap(bitmap);
+                }
+            }else {
+                if (bitmapToDisplay != null) {
+                    bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
+                    bitmap = BitmapUtility.correctRatio(bitmap, imageView);
+                    imageView.setImageBitmap(bitmap);
+                }
+            }
+
+
 
     }
 
@@ -403,6 +431,10 @@ public class ImageActivity extends AppCompatActivity {
         saveAppLastStory();
 
         invalidateOptionsMenu();
+    }
+
+    public Bitmap generateScrollBitmap(){
+        return null;
     }
 
     private void goPrevPage(){
