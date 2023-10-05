@@ -35,6 +35,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import fr.antek.mangaviewer.databinding.ActivityImageBinding;
@@ -76,7 +77,7 @@ public class ImageActivity extends AppCompatActivity {
     private String parameter;
     private PdfRenderer pdfRenderer;
     private PdfRenderer.Page pdfPage;
-    private int scrollOffset;
+    private float scrollOffset = 0;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -178,7 +179,7 @@ public class ImageActivity extends AppCompatActivity {
 
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     if (scroll) {
-                        offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                        scrollOffset = scrollOffset - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                         currentXSlide = event.getX();
                         //update scroll
                     }else {
@@ -434,7 +435,74 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     public Bitmap generateScrollBitmap(){
+        if (imageView != null){
+            int viewH = imageView.getHeight();
+            int upH = 0;
+            ArrayList<Bitmap> bitmapUp = new ArrayList<Bitmap>();
+            while (upH < viewH){
+                Bitmap prevBitmap = getPrevBtm();
+                prevBitmap = BitmapUtility.adaptWidth(prevBitmap,imageView);
+                upH = upH +prevBitmap.getHeight();
+                bitmapUp.add(prevBitmap);
+            }
+        }
         return null;
+    }
+    //refaire la fonction goprevPage en get prev bitmap(currentFile,parameter)
+
+    private void getPrevBtm(File currentFile,String parameter){ //changebitmapRaw
+        if (currentFile instanceof Image){
+            if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
+                if (parameter.equals("fullFirst")){
+                    goPrevFile();
+                }else if(parameter.equals("halfFirst")) {
+                    if (fullBefore){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullFirst";
+                    }else{
+                        goPrevFile();
+                    }
+                }else if(parameter.equals("fullBetween")) {
+                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
+                    parameter = "halfFirst";
+                }else if(parameter.equals("halfLast")) {
+                    if (fullBetween){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullBetween";
+                    }else{
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
+                        parameter = "halfFirst";
+                    }
+                }else if(parameter.equals("fullLast")) {
+                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
+                    parameter = "halfLast";
+                }else{
+                    if (fullAfter){
+                        bitmapToDisplay = bitmapRaw;
+                        parameter = "fullLast";
+                    }else{
+                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
+                        parameter = "halfLast";
+                    }
+                }
+                displayBitmap();
+            }else{
+                goPrevFile();
+            }
+        }else if(thisFile instanceof PDF){
+            if (Integer.parseInt(parameter) == 1){
+                if (goPrevFile()){
+                    pdfPage.close();
+                    pdfRenderer.close();
+                }
+            }else{
+                parameter=Integer.toString(Integer.parseInt(parameter)-1);
+                pdfPage.close();
+                openPDFPage();
+                displayBitmap();
+            }
+        }
+        onNewPage();
     }
 
     private void goPrevPage(){

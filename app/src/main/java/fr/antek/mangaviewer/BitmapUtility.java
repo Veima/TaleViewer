@@ -144,15 +144,25 @@ public class BitmapUtility {
         return resultBmp;
     }
 
-    public static Bitmap adaptScrollView(Bitmap bitmapScroll, View view,int scrollOffset){
+    public static Bitmap adaptScrollView(Bitmap bitmapScroll, View view,float scrollOffset){
         int viewW = view.getWidth();
         int viewH = view.getHeight();
 
-        Rect rect = new Rect(0, scrollOffset, viewW, viewH+scrollOffset);
+        int offset = Math.round(scrollOffset);
+
+        Rect rect = new Rect(0, offset, viewW, viewH+offset);
         assert(rect.left < rect.right && rect.top < rect.bottom);
         Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
         new Canvas(resultBmp).drawBitmap(bitmapScroll, -rect.left, -rect.top, null);
 
         return resultBmp;
+    }
+
+    public static Bitmap adaptWidth(Bitmap bitmapInput, View view){
+        int viewW = view.getWidth();
+        float btmW = bitmapInput.getWidth();
+        float btmH = bitmapInput.getHeight();
+
+        return Bitmap.createScaledBitmap(bitmapInput, viewW, Math.round(viewW * btmW / btmH) , true);
     }
 }
