@@ -1,6 +1,7 @@
 package fr.antek.mangaviewer;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -49,8 +50,8 @@ public class ImageActivity extends AppCompatActivity {
     private ImageView imageView;
     private boolean hide = false;
     private SharedPreferences memoire;
-    private File prevFile;
-    private File nextFile;
+    private Page prevPage;
+    private Page nextPage;
     private Boolean noOtherAction = true;
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
@@ -67,17 +68,13 @@ public class ImageActivity extends AppCompatActivity {
     private float currentXSlide;
     private float currentYSlide;
     private boolean firstLoad = true;
-    private boolean splitPage;
-    private boolean firstPage;
-    private boolean fullBefore;
-    private boolean fullBetween;
-    private boolean fullAfter;
-    private int overlap;
-    private boolean scroll;
+    private Settings settings;
     private String parameter;
-    private PdfRenderer pdfRenderer;
-    private PdfRenderer.Page pdfPage;
     private float scrollOffset = 0;
+    private Page thisPage;
+    private String splitStep= null;
+    private int pageNumber;
+    private ImageActivity thisActivity = this;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -91,13 +88,16 @@ public class ImageActivity extends AppCompatActivity {
         path = getIntent().getStringExtra("path");
 
         memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
-        splitPage = memoire.getBoolean("switchSplit",false);
-        firstPage = memoire.getBoolean("switchFirstPage",true);
-        fullBefore = memoire.getBoolean("switchFullBefore",false);
-        fullBetween = memoire.getBoolean("switchFullBetween",false);
-        fullAfter = memoire.getBoolean("switchFullAfter",false);
-        overlap = memoire.getInt("overlap",0);
-        scroll = memoire.getBoolean("switchScroll",false);
+
+        settings = new Settings();
+
+        settings.setSplitPage(memoire.getBoolean("switchSplit",false));
+        settings.setFirstPage(memoire.getBoolean("switchFirstPage",true));
+        settings.setFullBefore(memoire.getBoolean("switchFullBefore",false));
+        settings.setFullBetween(memoire.getBoolean("switchFullBetween",false));
+        settings.setFullAfter(memoire.getBoolean("switchFullAfter",false));
+        settings.setOverlap(memoire.getInt("overlap",0));
+        settings.setScroll(memoire.getBoolean("switchScroll",false));
 
         StoryLib storyLib = new StoryLib(this, storyFolderUri);
 
@@ -109,54 +109,27 @@ public class ImageActivity extends AppCompatActivity {
         }else{
             parameter="";
         }
+        stringToParameter(parameter);
         if (thisFile == null){
             Toast.makeText(this, getString(R.string.fileNotFound), R.integer.tempsToast).show();
             Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
             startActivity(intentToMain);
         }else {
+            thisPage = new Page(thisFile, this, splitStep, pageNumber);
 
             mContentView = binding.imageView;
             imageView = findViewById(R.id.imageView);
+            currentOrientation = getResources().getConfiguration().orientation;
 
-            if (thisFile instanceof Image){
-                openImage();
-            } else if (thisFile instanceof PDF) {
-                openPDF();
-                openPDFPage();
-            }
             Objects.requireNonNull(getSupportActionBar()).setTitle(title());
-            if (scroll){
+
+            if (settings.getScroll()){
                 bitmapScroll=generateScrollBitmap();
             }else{
-                if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage) {
-                    if (parameter.equals("fullFirst")) {
-                        bitmapToDisplay = bitmapRaw;
-                    } else if (parameter.equals("halfFirst")) {
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
-                    } else if (parameter.equals("fullBetween")) {
-                        bitmapToDisplay = bitmapRaw;
-                    } else if (parameter.equals("halfLast")) {
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, !firstPage, overlap);
-                    } else if (parameter.equals("fullLast")) {
-                        bitmapToDisplay = bitmapRaw;
-                    }else{
-                        if (fullBefore){
-                            bitmapToDisplay = bitmapRaw;
-                            parameter = "fullFirst";
-                        }else{
-                            bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
-                            parameter = "halfFirst";
-                        }
-
-                    }
-                }else{
-                    bitmapToDisplay = bitmapRaw;
-                }
+                bitmapToDisplay=thisPage.getBitmap();
             }
 
-
             displayBitmap();
-            currentOrientation = getResources().getConfiguration().orientation;
 
             if (hide) {
                 hide();
@@ -178,7 +151,7 @@ public class ImageActivity extends AppCompatActivity {
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (scroll) {
+                    if (settings.getScroll()) {
                         scrollOffset = scrollOffset - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                         currentXSlide = event.getX();
                         //update scroll
@@ -195,7 +168,7 @@ public class ImageActivity extends AppCompatActivity {
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (!scroll){
+                    if (!settings.getScroll()){
                         if ((noOtherAction) && (currentScale == 1.0f)) {
                             float x = event.getX();
                             float y = event.getY();
@@ -258,7 +231,7 @@ public class ImageActivity extends AppCompatActivity {
             Intent intentToParameterActivity = new Intent(ImageActivity.this, ParameterActivity.class);
             intentToParameterActivity.putExtra("activityAfter", "ImageActivity");
             intentToParameterActivity.putExtra("storyFolderUri", storyFolderUri.toString());
-            intentToParameterActivity.putExtra("path", thisFile.getPath() + ":" + parameter);
+            intentToParameterActivity.putExtra("path", thisFile.getPath() + ":" + parameterToString());
             startActivity(intentToParameterActivity);
         }else if (itemId == 9) {
             pageSelectorDialog();
@@ -301,10 +274,10 @@ public class ImageActivity extends AppCompatActivity {
 
         if (hasFocus) {
             if (firstLoad){
-                prevFile = thisFile.getPrev();
-                nextFile = thisFile.getNext();
+                prevPage = thisPage.getPrevPage();
+                nextPage = thisPage.getNextPage();
                 onNewPage();
-                if (scroll){
+                if (settings.getScroll()){
                     bitmap = BitmapUtility.adaptScrollView(bitmapScroll,imageView,scrollOffset);
                 }else {
                     bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
@@ -380,9 +353,7 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     private void displayBitmap(){
-
-
-            if (scroll){
+            if (settings.getScroll()){
                 if (bitmapScroll != null) {
                     bitmap = BitmapUtility.adaptScrollView(bitmapScroll, imageView, scrollOffset);
                     imageView.setImageBitmap(bitmap);
@@ -395,32 +366,6 @@ public class ImageActivity extends AppCompatActivity {
                 }
             }
 
-
-
-    }
-
-    private void openPDF(){
-        if (parameter == ""){
-            parameter = "1";
-        }
-        try {
-            ParcelFileDescriptor fileDescriptor = this.getContentResolver().openFileDescriptor(((PDF) thisFile).getUri(), "r");
-            pdfRenderer = new PdfRenderer(fileDescriptor);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void openPDFPage(){
-        pdfPage = pdfRenderer.openPage(Integer.parseInt(parameter)-1);
-
-        bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth()*4, pdfPage.getHeight()*4, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmapRaw);
-        canvas.drawColor(Color.WHITE);
-
-        pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
-        bitmapToDisplay = bitmapRaw;
 
 
     }
@@ -440,7 +385,7 @@ public class ImageActivity extends AppCompatActivity {
             int upH = 0;
             ArrayList<Bitmap> bitmapUp = new ArrayList<Bitmap>();
             while (upH < viewH){
-                Bitmap prevBitmap = getPrevBtm();
+                Bitmap prevBitmap = null; //getPrevBtm();
                 prevBitmap = BitmapUtility.adaptWidth(prevBitmap,imageView);
                 upH = upH +prevBitmap.getHeight();
                 bitmapUp.add(prevBitmap);
@@ -448,244 +393,55 @@ public class ImageActivity extends AppCompatActivity {
         }
         return null;
     }
-    //refaire la fonction goprevPage en get prev bitmap(currentFile,parameter)
 
-    private void getPrevBtm(File currentFile,String parameter){ //changebitmapRaw
-        if (currentFile instanceof Image){
-            if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
-                if (parameter.equals("fullFirst")){
-                    goPrevFile();
-                }else if(parameter.equals("halfFirst")) {
-                    if (fullBefore){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullFirst";
-                    }else{
-                        goPrevFile();
-                    }
-                }else if(parameter.equals("fullBetween")) {
-                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
-                    parameter = "halfFirst";
-                }else if(parameter.equals("halfLast")) {
-                    if (fullBetween){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullBetween";
-                    }else{
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
-                        parameter = "halfFirst";
-                    }
-                }else if(parameter.equals("fullLast")) {
-                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
-                    parameter = "halfLast";
-                }else{
-                    if (fullAfter){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullLast";
-                    }else{
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
-                        parameter = "halfLast";
-                    }
-                }
-                displayBitmap();
-            }else{
-                goPrevFile();
-            }
-        }else if(thisFile instanceof PDF){
-            if (Integer.parseInt(parameter) == 1){
-                if (goPrevFile()){
-                    pdfPage.close();
-                    pdfRenderer.close();
-                }
-            }else{
-                parameter=Integer.toString(Integer.parseInt(parameter)-1);
-                pdfPage.close();
-                openPDFPage();
-                displayBitmap();
-            }
-        }
-        onNewPage();
-    }
+
 
     private void goPrevPage(){
-        if (thisFile instanceof Image){
-            if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
-                if (parameter.equals("fullFirst")){
-                    goPrevFile();
-                }else if(parameter.equals("halfFirst")) {
-                    if (fullBefore){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullFirst";
-                    }else{
-                        goPrevFile();
-                    }
-                }else if(parameter.equals("fullBetween")) {
-                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
-                    parameter = "halfFirst";
-                }else if(parameter.equals("halfLast")) {
-                    if (fullBetween){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullBetween";
-                    }else{
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
-                        parameter = "halfFirst";
-                    }
-                }else if(parameter.equals("fullLast")) {
-                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
-                    parameter = "halfLast";
-                }else{
-                    if (fullAfter){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullLast";
-                    }else{
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
-                        parameter = "halfLast";
-                    }
-                }
-                displayBitmap();
-            }else{
-                goPrevFile();
+        File nextFile = nextPage.getParentFile();
+        if (nextFile.equals(thisFile)){
+            if ((nextFile instanceof PDF)&&(nextPage.getPageNumber() != thisPage.getPageNumber())){
+                ((PDF) nextFile).closePage(nextPage.getPageNumber());
             }
-        }else if(thisFile instanceof PDF){
-            if (Integer.parseInt(parameter) == 1){
-                if (goPrevFile()){
-                    pdfPage.close();
-                    pdfRenderer.close();
-                }
-            }else{
-                parameter=Integer.toString(Integer.parseInt(parameter)-1);
-                pdfPage.close();
-                openPDFPage();
-                displayBitmap();
+        }else{
+            if (nextFile instanceof PDF){
+                ((PDF) nextFile).closePage(nextPage.getPageNumber());
+                ((PDF) nextFile).close();
+            }else if (nextFile instanceof Image){
+                ((Image) nextFile).close();
             }
+            thisFile = thisPage.getParentFile();
         }
+
+        nextPage = thisPage;
+        thisPage = prevPage;
+        bitmapToDisplay = thisPage.getBitmap();
+        displayBitmap();
         onNewPage();
+        prevPage = thisPage.getPrevPage();
     }
 
     private void goNextPage(){
-        if (thisFile instanceof Image){
-            if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
-                if (parameter.equals("fullFirst")){
-                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
-                    parameter = "halfFirst";
-                }else if(parameter.equals("halfFirst")) {
-                    if (fullBetween){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullBetween";
-                    }else{
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
-                        parameter = "halfLast";
-                    }
-                }else if(parameter.equals("fullBetween")) {
-                    bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
-                    parameter = "halfLast";
-                }else if(parameter.equals("halfLast")) {
-                    if (fullAfter){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullLast";
-                    }else{
-                        goNextFile();
-                    }
-                }else if(parameter.equals("fullLast")) {
-                    goNextFile();
-                }else{
-                    if (fullBefore) {
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullFirst";
-                    } else {
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw, firstPage, overlap);
-                        parameter = "halfFirst";
-                    }
-                }
-                displayBitmap();
-            }else {
-                goNextFile();
+        File prevFile = prevPage.getParentFile();
+        if (prevFile.equals(thisFile)){
+            if ((prevFile instanceof PDF)&&(nextPage.getPageNumber() != thisPage.getPageNumber())){
+                ((PDF) prevFile).closePage(nextPage.getPageNumber());
             }
-        }else if(thisFile instanceof PDF){
-            if (Integer.parseInt(parameter) >= pdfRenderer.getPageCount()){
-                if (goNextFile()){
-                    pdfPage.close();
-                    pdfRenderer.close();
-                }
-            }else{
-                parameter=Integer.toString(Integer.parseInt(parameter)+1);
-                pdfPage.close();
-                openPDFPage();
-                displayBitmap();
+        }else{
+            if (prevFile instanceof PDF){
+                ((PDF) prevFile).closePage(nextPage.getPageNumber());
+                ((PDF) prevFile).close();
+            }else if (prevFile instanceof Image){
+                ((Image) prevFile).close();
             }
+            thisFile = thisPage.getParentFile();
         }
+
+        prevPage = thisPage;
+        thisPage = nextPage;
+        bitmapToDisplay = thisPage.getBitmap();
+        displayBitmap();
         onNewPage();
-
-    }
-
-
-
-    private boolean goPrevFile(){
-        if (prevFile != null){
-            parameter = "";
-            nextFile = thisFile;
-            thisFile = prevFile;
-            path = thisFile.getPath();
-
-            if (thisFile instanceof Image){
-                openImage();
-                if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
-                    if (fullAfter){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullLast";
-                    }else{
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,!firstPage,overlap);
-                        parameter = "halfLast";
-                    }
-                }else{
-                    bitmapToDisplay = bitmapRaw;
-                }
-            } else if (thisFile instanceof PDF) {
-                openPDF();
-                parameter = Integer.toString(pdfRenderer.getPageCount());
-                openPDFPage();
-            }
-
-            displayBitmap();
-            prevFile = thisFile.getPrev();
-            return true;
-        }else{
-            Toast.makeText(this,getString(R.string.premiereImage) , R.integer.tempsToast).show();
-            return false;
-        }
-
-    }
-
-    private boolean goNextFile(){
-        if (nextFile != null){
-            parameter = "";
-            prevFile = thisFile;
-            thisFile = nextFile;
-            path = thisFile.getPath();
-
-            if (thisFile instanceof Image){
-                openImage();
-                if ((bitmapRaw.getWidth()>bitmapRaw.getHeight()) && splitPage){
-                    if (fullBefore){
-                        bitmapToDisplay = bitmapRaw;
-                        parameter = "fullFirst";
-                    }else{
-                        bitmapToDisplay = BitmapUtility.splitPage(bitmapRaw,firstPage,overlap);
-                        parameter = "halfFirst";
-                    }
-                }else{
-                    bitmapToDisplay = bitmapRaw;
-                }
-            } else if (thisFile instanceof PDF) {
-                openPDF();
-                openPDFPage();
-            }
-
-            displayBitmap();
-            nextFile = thisFile.getNext();
-            return true;
-        }else{
-            Toast.makeText(this, getString(R.string.derniereImage), R.integer.tempsToast).show();
-            return false;
-        }
+        nextPage = thisPage.getNextPage();
     }
 
     private void toggle() {
@@ -761,7 +517,7 @@ public class ImageActivity extends AppCompatActivity {
 
     private void saveStoryLastPage(){
         SharedPreferences.Editor editor = memoire.edit();
-        editor.putString(path.split("/")[2].split(":")[0] + "lastImage", thisFile.getPath() + ":" + parameter);
+        editor.putString(path.split("/")[2].split(":")[0] + "lastImage", thisFile.getPath() + ":" + parameterToString());
         editor.apply();
     }
 
@@ -789,8 +545,8 @@ public class ImageActivity extends AppCompatActivity {
             int imagePos = thisFile.getParentFile().getPos(thisFile)+1;
             return "(" + imagePos + "/" + thisFile.getParentFile().getListFile().size() + ") " + thisFile.getName();
         } else if (thisFile instanceof PDF) {
-            int pageNum = Integer.parseInt(parameter);
-            int lastPage = pdfRenderer.getPageCount();
+            int pageNum = pageNumber;
+            int lastPage = ((PDF) thisFile).getPdfRenderer().getPageCount();
             return "(" + pageNum + "/" + lastPage + ") " + thisFile.getName();
         }else{
             return thisFile.getName();
@@ -799,7 +555,7 @@ public class ImageActivity extends AppCompatActivity {
 
     private void pageSelectorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.askNumber) + " " + pdfRenderer.getPageCount());
+        builder.setTitle(getString(R.string.askNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount());
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -811,17 +567,17 @@ public class ImageActivity extends AppCompatActivity {
                 String inputText = input.getText().toString();
                 try {
                     int number = Integer.parseInt(inputText);
-                    if (number >= 1 && number <= pdfRenderer.getPageCount()) {
-                        parameter = Integer.toString(number);
-                        pdfPage.close();
-                        openPDFPage();
+                    if (number >= 1 && number <= ((PDF) thisFile).getPdfRenderer().getPageCount()) {
+                        pageNumber = number;
+                        thisPage = new Page(thisFile,thisActivity,"firstPossible",pageNumber);
+                        bitmapRaw = thisPage.getBitmap();
                         displayBitmap();
                         onNewPage();
                     } else {
-                        Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + pdfRenderer.getPageCount(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount(), Toast.LENGTH_SHORT).show();
                     }
                 } catch (NumberFormatException e) {
-                    Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + pdfRenderer.getPageCount(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount(), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -836,12 +592,33 @@ public class ImageActivity extends AppCompatActivity {
         builder.show();
     }
 
+    public String parameterToString(){
+        return "nPage=" + thisPage.getPageNumber() + "|splitStep=" + thisPage.getSplitStep();
+    }
+
+    public void stringToParameter(String parameter){
+        String[] listPara = parameter.split("|");
+        for (String para : listPara){
+            String[] paraSplit = para.split("=");
+            if (paraSplit[0].equals("nPage")){
+                pageNumber = Integer.parseInt(paraSplit[1]);
+            }else if (paraSplit[0].equals("splitStep")){
+                splitStep = paraSplit[1];
+            }
+        }
+
+    }
+
     public void setOffsetX(float offsetX){
         this.offsetX = offsetX;
     }
 
     public void setOffsetY(float offsetY){
         this.offsetY = offsetY;
+    }
+
+    public Settings getSettings(){
+        return settings;
     }
 
 }

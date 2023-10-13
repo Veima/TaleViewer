@@ -3,6 +3,7 @@ package fr.antek.mangaviewer;
 
 import android.util.Log;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.util.ArrayList;
@@ -14,8 +15,8 @@ public class Directory extends File{
     private ArrayList<File> fileList = null;
     private boolean isScan= false;
 
-    public Directory(String parentPath, DocumentFile docFile, Directory parentFile) {
-        super(parentPath, docFile, parentFile);
+    public Directory(AppCompatActivity activity, String parentPath, DocumentFile docFile, Directory parentFile) {
+        super(activity, parentPath, docFile, parentFile);
     }
 
     public void listFile(){
@@ -50,11 +51,11 @@ public class Directory extends File{
 
     public File createFile(DocumentFile file) {
         if (file.isDirectory()) {
-            return new Directory(super.getPath(), file, this);
+            return new Directory(super.getActivity(), super.getPath(), file, this);
         }else if(isImage(file)){
-            return new Image(super.getPath(), file, this);
+            return new Image(super.getActivity(), super.getPath(), file, this);
         }else if(file.getName().endsWith(".pdf")) {
-            return new PDF(super.getPath(), file, this);
+            return new PDF(super.getActivity(), super.getPath(), file, this);
         }else{
             return null;
         }
@@ -86,7 +87,7 @@ public class Directory extends File{
             return null;
         }else{
             if (childDoc.isDirectory()) {
-                Directory childFile = new Directory(super.getPath(), childDoc, this);
+                Directory childFile = new Directory(super.getActivity(), super.getPath(), childDoc, this);
                 fileList.add(childFile);
                 if (splitPath.length == 2) {
                     return childFile.buildFromPath(splitPath[1]);
@@ -94,11 +95,12 @@ public class Directory extends File{
                     return childFile;
                 }
             }else if(isImage(childDoc)){
-                Image childFile = new Image(super.getPath(), childDoc, this);
+                Image childFile = new Image(super.getActivity(), super.getPath(), childDoc, this);
                 fileList.add(childFile);
                 return childFile;
             }else if(childDoc.getName().endsWith(".pdf")) {
-                PDF childFile = new PDF(super.getPath(), childDoc, this);
+
+                PDF childFile = new PDF(super.getActivity(), super.getPath(), childDoc, this);
                 fileList.add(childFile);
                 return childFile;
             }else{

@@ -1,6 +1,7 @@
 package fr.antek.mangaviewer;
 
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.util.ArrayList;
@@ -10,8 +11,10 @@ public class File implements Comparable<File>{
     private final String path;
     private final DocumentFile doc;
     private final Directory parentFile;
+    private AppCompatActivity activity;
 
-    public File(String parentPath, DocumentFile doc, Directory parentFile) {
+    public File(AppCompatActivity activity, String parentPath, DocumentFile doc, Directory parentFile) {
+        this.activity = activity;
         this.name = doc.getName();
         this.path = parentPath + "/" + name;
         this.doc = doc;
@@ -149,5 +152,9 @@ public class File implements Comparable<File>{
     }
     public boolean isLast(){
         return equals(parentFile.getLast());
+    }
+
+    public AppCompatActivity getActivity() {
+        return activity;
     }
 }
