@@ -73,7 +73,7 @@ public class ImageActivity extends AppCompatActivity {
     private float scrollOffset = 0;
     private Page thisPage;
     private String splitStep= null;
-    private int pageNumber;
+    private int pageNumber = 1;
     private ImageActivity thisActivity = this;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -102,14 +102,14 @@ public class ImageActivity extends AppCompatActivity {
         StoryLib storyLib = new StoryLib(this, storyFolderUri);
 
         String imagePath = path.split("/", 3)[2];
-        thisFile = storyLib.buildFromPath(imagePath.split(":")[0]);
+        String[] pathSplit = imagePath.split(":");
+        thisFile = storyLib.buildFromPath(pathSplit[0]);
 
-        if (imagePath.split(":").length >1){
-            parameter = imagePath.split(":")[1];
-        }else{
-            parameter="";
+        if (pathSplit.length >1){
+            for (int i=1; i<pathSplit.length; i++){
+                stringToParameter(pathSplit[i]);
+            }
         }
-        stringToParameter(parameter);
         if (thisFile == null){
             Toast.makeText(this, getString(R.string.fileNotFound), R.integer.tempsToast).show();
             Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
@@ -397,51 +397,63 @@ public class ImageActivity extends AppCompatActivity {
 
 
     private void goPrevPage(){
-        File nextFile = nextPage.getParentFile();
-        if (nextFile.equals(thisFile)){
-            if ((nextFile instanceof PDF)&&(nextPage.getPageNumber() != thisPage.getPageNumber())){
-                ((PDF) nextFile).closePage(nextPage.getPageNumber());
-            }
+        if (prevPage == null){
+            Toast.makeText(contextThis, getString(R.string.premiereImage), Toast.LENGTH_SHORT).show();
         }else{
-            if (nextFile instanceof PDF){
-                ((PDF) nextFile).closePage(nextPage.getPageNumber());
-                ((PDF) nextFile).close();
-            }else if (nextFile instanceof Image){
-                ((Image) nextFile).close();
+            if (nextPage != null) {
+                File nextFile = nextPage.getParentFile();
+                if (nextFile.equals(thisFile)) {
+                    if ((nextFile instanceof PDF) && (nextPage.getPageNumber() != thisPage.getPageNumber())) {
+                        ((PDF) nextFile).closePage(nextPage.getPageNumber());
+                    }
+                } else {
+                    if (nextFile instanceof PDF) {
+                        ((PDF) nextFile).closePage(nextPage.getPageNumber());
+                        ((PDF) nextFile).close();
+                    } else if (nextFile instanceof Image) {
+                        ((Image) nextFile).close();
+                    }
+                }
             }
-            thisFile = thisPage.getParentFile();
-        }
 
-        nextPage = thisPage;
-        thisPage = prevPage;
-        bitmapToDisplay = thisPage.getBitmap();
-        displayBitmap();
-        onNewPage();
-        prevPage = thisPage.getPrevPage();
+            nextPage = thisPage;
+            thisPage = prevPage;
+            thisFile = thisPage.getParentFile();
+            bitmapToDisplay = thisPage.getBitmap();
+            displayBitmap();
+            onNewPage();
+            prevPage = thisPage.getPrevPage();
+        }
     }
 
     private void goNextPage(){
-        File prevFile = prevPage.getParentFile();
-        if (prevFile.equals(thisFile)){
-            if ((prevFile instanceof PDF)&&(nextPage.getPageNumber() != thisPage.getPageNumber())){
-                ((PDF) prevFile).closePage(nextPage.getPageNumber());
-            }
+        if (nextPage == null){
+            Toast.makeText(contextThis, getString(R.string.derniereImage), Toast.LENGTH_SHORT).show();
         }else{
-            if (prevFile instanceof PDF){
-                ((PDF) prevFile).closePage(nextPage.getPageNumber());
-                ((PDF) prevFile).close();
-            }else if (prevFile instanceof Image){
-                ((Image) prevFile).close();
+            if (prevPage != null) {
+                File prevFile = prevPage.getParentFile();
+                if (prevFile.equals(thisFile)) {
+                    if ((prevFile instanceof PDF) && (nextPage.getPageNumber() != thisPage.getPageNumber())) {
+                        ((PDF) prevFile).closePage(nextPage.getPageNumber());
+                    }
+                } else {
+                    if (prevFile instanceof PDF) {
+                        ((PDF) prevFile).closePage(nextPage.getPageNumber());
+                        ((PDF) prevFile).close();
+                    } else if (prevFile instanceof Image) {
+                        ((Image) prevFile).close();
+                    }
+                }
             }
-            thisFile = thisPage.getParentFile();
-        }
 
-        prevPage = thisPage;
-        thisPage = nextPage;
-        bitmapToDisplay = thisPage.getBitmap();
-        displayBitmap();
-        onNewPage();
-        nextPage = thisPage.getNextPage();
+            prevPage = thisPage;
+            thisPage = nextPage;
+            thisFile = thisPage.getParentFile();
+            bitmapToDisplay = thisPage.getBitmap();
+            displayBitmap();
+            onNewPage();
+            nextPage = thisPage.getNextPage();
+        }
     }
 
     private void toggle() {
@@ -593,20 +605,16 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     public String parameterToString(){
-        return "nPage=" + thisPage.getPageNumber() + "|splitStep=" + thisPage.getSplitStep();
+        return "nPage=" + thisPage.getPageNumber() + ":splitStep=" + thisPage.getSplitStep();
     }
 
     public void stringToParameter(String parameter){
-        String[] listPara = parameter.split("|");
-        for (String para : listPara){
-            String[] paraSplit = para.split("=");
-            if (paraSplit[0].equals("nPage")){
-                pageNumber = Integer.parseInt(paraSplit[1]);
-            }else if (paraSplit[0].equals("splitStep")){
-                splitStep = paraSplit[1];
-            }
+        String[] paraSplit = parameter.split("=");
+        if (paraSplit[0].equals("nPage")){
+            pageNumber = Integer.parseInt(paraSplit[1]);
+        }else if (paraSplit[0].equals("splitStep")){
+            splitStep = paraSplit[1];
         }
-
     }
 
     public void setOffsetX(float offsetX){

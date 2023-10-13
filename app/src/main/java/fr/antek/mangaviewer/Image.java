@@ -14,17 +14,19 @@ public class Image extends File{
     private Bitmap miniature = null;
     private Bitmap bitmapRaw;
     private Boolean isWide;
-    private AppCompatActivity activity;
+    private Boolean isOpen = false;
 
     public Image(AppCompatActivity activity, String parentPath, DocumentFile docFile, Directory parentFile) {
         super(activity, parentPath, docFile, parentFile);
         open();
+
     }
 
     public void open() {
         try {
-            bitmapRaw = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), super.getDoc().getUri());
+            bitmapRaw = MediaStore.Images.Media.getBitmap(super.getActivity().getContentResolver(), super.getDoc().getUri());
             isWide = bitmapRaw.getWidth()>bitmapRaw.getHeight();
+            isOpen = true;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -32,6 +34,7 @@ public class Image extends File{
 
     public void close(){
         bitmapRaw = null;
+        isOpen = false;
     }
 
     public Uri getUri(){
@@ -52,5 +55,9 @@ public class Image extends File{
 
     public Bitmap getBitmapRaw() {
         return bitmapRaw;
+    }
+
+    public Boolean getOpen() {
+        return isOpen;
     }
 }

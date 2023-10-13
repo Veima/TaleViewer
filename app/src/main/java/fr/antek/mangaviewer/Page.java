@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -19,28 +20,41 @@ public class Page {
     public Page(File parentFile, ImageActivity activity, String splitStep, int pageNumber) {
         this.parentFile = parentFile;
         this.activity = activity;
-        if (splitStep.equals("lastPossible")){
-            if (settings.getFullAfter()) {
-                this.splitStep = "fullLast";
-            } else {
-                this.splitStep = "halfLast";
-            }
-        }else if (splitStep.equals("fullFirst") || splitStep.equals("halfFirst") || splitStep.equals("fullBetween") || splitStep.equals("halfLast") || splitStep.equals("fullLast")){
-            this.splitStep = splitStep;
-        }else{
-            if (settings.getFullBefore()) {
-                this.splitStep = "fullFirst";
-            } else {
-                this.splitStep = "halfFirst";
+        this.settings = activity.getSettings();
+        if (splitStep != null){
+            if (splitStep.equals("lastPossible")){
+                if (settings.getFullAfter()) {
+                    this.splitStep = "fullLast";
+                } else {
+                    this.splitStep = "halfLast";
+                }
+            }else if (splitStep.equals("fullFirst") || splitStep.equals("halfFirst") || splitStep.equals("fullBetween") || splitStep.equals("halfLast") || splitStep.equals("fullLast")){
+                this.splitStep = splitStep;
+            }else{
+                if (settings.getFullBefore()) {
+                    this.splitStep = "fullFirst";
+                } else {
+                    this.splitStep = "halfFirst";
+                }
             }
         }
-        if ((pageNumber == -1) && (parentFile instanceof PDF)){
-            this.pageNumber = ((PDF)parentFile).getPdfRenderer().getPageCount();
-        }else{
-            this.pageNumber = pageNumber;
+        if (parentFile instanceof PDF){
+            if (pageNumber == -1){
+                this.pageNumber = ((PDF)parentFile).getPdfRenderer().getPageCount();
+            }else{
+                this.pageNumber = pageNumber;
+            }
+            ((PDF)parentFile).openPage(this.pageNumber);
         }
 
-        this.settings = activity.getSettings();
+        if (parentFile instanceof Image){
+            if (!((Image) parentFile).getOpen()){
+                ((Image) parentFile).open();
+            }
+        }
+
+
+
 
     }
 
@@ -81,6 +95,7 @@ public class Page {
         }else{
             resultBitmap = bitmapRaw;
         }
+
         return resultBitmap;
     }
 
@@ -149,7 +164,7 @@ public class Page {
                     return new Page(prevFile, activity,  "lastPossible", -1);
                 }
             }else{
-                return new Page(parentFile.getPrev(), activity,  "lastPossible", pageNumber-1);
+                return new Page(parentFile, activity,  "lastPossible", pageNumber-1);
             }
         }else{
             return null;

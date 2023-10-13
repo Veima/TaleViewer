@@ -5,6 +5,7 @@ import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
@@ -26,7 +27,10 @@ public class PDF extends File{
         try {
             ParcelFileDescriptor fileDescriptor = super.getActivity().getContentResolver().openFileDescriptor(super.getDoc().getUri(), "r");
             pdfRenderer = new PdfRenderer(fileDescriptor);
-            listPage = new ArrayList<PDFPage>(pdfRenderer.getPageCount());
+            listPage = new ArrayList<PDFPage>();
+            for (int i = 0; i < pdfRenderer.getPageCount(); i++) {
+                listPage.add(null);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -38,7 +42,6 @@ public class PDF extends File{
     }
 
     public void openPage(int pageNumber){
-        pdfRenderer.openPage(pageNumber-1);
         listPage.add(pageNumber-1,new PDFPage(this, pageNumber-1));
     }
 
@@ -47,6 +50,9 @@ public class PDF extends File{
     }
 
     public PDFPage getPage(int pageNumber){
+        if (listPage.get(pageNumber-1) == null){
+            openPage(pageNumber);
+        }
         return listPage.get(pageNumber-1);
     }
 
