@@ -344,6 +344,7 @@ public class ImageActivity extends AppCompatActivity {
 
 
     private void openImage(){
+
         try {
             bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) thisFile).getUri());
 
@@ -371,6 +372,7 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     private void onNewPage(){
+        pageNumber = thisPage.getPageNumber();
         Objects.requireNonNull(getSupportActionBar()).setTitle(title());
         memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
         saveStoryLastPage();
@@ -403,9 +405,11 @@ public class ImageActivity extends AppCompatActivity {
             if (nextPage != null) {
                 File nextFile = nextPage.getParentFile();
                 if (nextFile.equals(thisFile)) {
+                    /*
                     if ((nextFile instanceof PDF) && (nextPage.getPageNumber() != thisPage.getPageNumber())) {
                         ((PDF) nextFile).closePage(nextPage.getPageNumber());
                     }
+                     */
                 } else {
                     if (nextFile instanceof PDF) {
                         ((PDF) nextFile).closePage(nextPage.getPageNumber());
@@ -433,12 +437,14 @@ public class ImageActivity extends AppCompatActivity {
             if (prevPage != null) {
                 File prevFile = prevPage.getParentFile();
                 if (prevFile.equals(thisFile)) {
-                    if ((prevFile instanceof PDF) && (nextPage.getPageNumber() != thisPage.getPageNumber())) {
-                        ((PDF) prevFile).closePage(nextPage.getPageNumber());
+                    /*
+                    if ((prevFile instanceof PDF) && (prevPage.getPageNumber() != thisPage.getPageNumber())) {
+                        ((PDF) prevFile).closePage(prevPage.getPageNumber());
                     }
+                    */
                 } else {
                     if (prevFile instanceof PDF) {
-                        ((PDF) prevFile).closePage(nextPage.getPageNumber());
+                        ((PDF) prevFile).closePage(prevPage.getPageNumber());
                         ((PDF) prevFile).close();
                     } else if (prevFile instanceof Image) {
                         ((Image) prevFile).close();
@@ -557,7 +563,7 @@ public class ImageActivity extends AppCompatActivity {
             int imagePos = thisFile.getParentFile().getPos(thisFile)+1;
             return "(" + imagePos + "/" + thisFile.getParentFile().getListFile().size() + ") " + thisFile.getName();
         } else if (thisFile instanceof PDF) {
-            int pageNum = pageNumber;
+            int pageNum = thisPage.getPageNumber();
             int lastPage = ((PDF) thisFile).getPdfRenderer().getPageCount();
             return "(" + pageNum + "/" + lastPage + ") " + thisFile.getName();
         }else{
@@ -582,7 +588,9 @@ public class ImageActivity extends AppCompatActivity {
                     if (number >= 1 && number <= ((PDF) thisFile).getPdfRenderer().getPageCount()) {
                         pageNumber = number;
                         thisPage = new Page(thisFile,thisActivity,"firstPossible",pageNumber);
-                        bitmapRaw = thisPage.getBitmap();
+                        bitmapToDisplay = thisPage.getBitmap();
+                        prevPage = thisPage.getPrevPage();
+                        nextPage = thisPage.getNextPage();
                         displayBitmap();
                         onNewPage();
                     } else {

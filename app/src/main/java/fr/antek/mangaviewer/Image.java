@@ -54,6 +54,9 @@ public class Image extends File{
     }
 
     public Bitmap getBitmapRaw() {
+        if (!isOpen){
+            open();
+        }
         return bitmapRaw;
     }
 

@@ -11,18 +11,17 @@ public class PDFPage {
     private Bitmap bitmapRaw;
     private Boolean isWide;
     private PdfRenderer.Page pageRenderer;
-    private int pageNumber;
+    private final int pageId;
     private Boolean isOpen = false;
 
 
-    public PDFPage(PDF parentPDF, int pageNumber) {
+    public PDFPage(PDF parentPDF, int pageId) {
         this.parentPDF = parentPDF;
-        this.pageNumber = pageNumber;
-        open();
+        this.pageId = pageId;
     }
 
     public void open(){
-        pageRenderer = parentPDF.getPdfRenderer().openPage(pageNumber);
+        pageRenderer = parentPDF.getPdfRenderer().openPage(pageId);
 
         bitmapRaw = Bitmap.createBitmap(pageRenderer.getWidth()*4, pageRenderer.getHeight()*4, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmapRaw);
@@ -35,20 +34,29 @@ public class PDFPage {
     }
 
     public void close(){
-        Log.d("MOI", "close" + pageNumber);
         bitmapRaw = null;
         isOpen = false;
     }
 
     public Bitmap getBitmapRaw() {
+        if (!isOpen){
+            open();
+        }
         return bitmapRaw;
     }
 
     public Boolean getWide() {
+        if (!isOpen){
+            open();
+        }
         return isWide;
     }
 
     public Boolean getOpen() {
         return isOpen;
+    }
+
+    public int getPageId() {
+        return pageId;
     }
 }
