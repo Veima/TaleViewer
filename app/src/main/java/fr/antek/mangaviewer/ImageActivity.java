@@ -74,7 +74,7 @@ public class ImageActivity extends AppCompatActivity {
     private Page thisPage;
     private String splitStep= null;
     private int pageNumber = 1;
-    private ImageActivity thisActivity = this;
+    private final ImageActivity thisActivity = this;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -342,17 +342,6 @@ public class ImageActivity extends AppCompatActivity {
     }
 
 
-
-    private void openImage(){
-
-        try {
-            bitmapRaw = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ((Image) thisFile).getUri());
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void displayBitmap(){
             if (settings.getScroll()){
                 if (bitmapScroll != null) {
@@ -471,11 +460,8 @@ public class ImageActivity extends AppCompatActivity {
             hide();
         }
         Handler handler = new Handler();
-        handler.postDelayed(this::openImage, 50);
+        handler.postDelayed(this::displayBitmap, 50);
     }
-
-
-
 
     private void hide() {
         // Hide UI first
