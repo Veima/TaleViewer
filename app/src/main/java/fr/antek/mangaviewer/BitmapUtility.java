@@ -148,14 +148,20 @@ public class BitmapUtility {
         int viewW = view.getWidth();
         int viewH = view.getHeight();
 
-        int offset = Math.round(scrollOffset);
+        if ((viewW != 0) && (viewH != 0)) {
+            int offset = Math.round(scrollOffset);
 
-        Rect rect = new Rect(0, offset, viewW, viewH+offset);
-        assert(rect.left < rect.right && rect.top < rect.bottom);
-        Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
-        new Canvas(resultBmp).drawBitmap(bitmapScroll, -rect.left, -rect.top, null);
+            Rect rect = new Rect(0, offset, viewW, viewH+offset);
+            assert(rect.left < rect.right && rect.top < rect.bottom);
+            Bitmap resultBmp = Bitmap.createBitmap(rect.right-rect.left, rect.bottom-rect.top, Bitmap.Config.ARGB_8888);
+            new Canvas(resultBmp).drawBitmap(bitmapScroll, -rect.left, -rect.top, null);
 
-        return resultBmp;
+            return resultBmp;
+        }else{
+            return bitmapScroll;
+        }
+
+
     }
 
     public static Bitmap adaptWidth(Bitmap bitmapInput, View view){

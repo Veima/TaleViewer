@@ -369,20 +369,22 @@ public class ImageActivity extends AppCompatActivity {
             ArrayList<Bitmap> bitmapUp = new ArrayList<Bitmap>();
             Page page = thisPage;
             while (upH < viewH){
-                page = thisPage.getPrevPage();
+                page = page.getPrevPage();
                 Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(),imageView);
                 upH = upH + prevBitmap.getHeight();
                 bitmapUp.add(prevBitmap);
+                Log.d("moi", "up: " + upH);
             }
 
             int downH = 0;
             ArrayList<Bitmap> bitmapDown = new ArrayList<Bitmap>();
             page = thisPage;
             while (downH < viewH){
-                page = thisPage.getPrevPage();
+                page = page.getPrevPage();
                 Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(),imageView);
                 downH = downH + prevBitmap.getHeight();
                 bitmapDown.add(prevBitmap);
+                Log.d("moi", "down: " + downH);
             }
 
             ArrayList<Bitmap> bitmapAll = new ArrayList<Bitmap>();
