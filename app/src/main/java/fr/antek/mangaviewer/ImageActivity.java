@@ -192,12 +192,9 @@ public class ImageActivity extends AppCompatActivity {
                     }
                 }
                 return true;
-
             });
-
             this.addOnOrientationChangeListener();
         }
-
     }
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_dynamic, menu);
@@ -225,8 +222,6 @@ public class ImageActivity extends AppCompatActivity {
 
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
-
-
         if (itemId == 0) {
             Intent intentToParameterActivity = new Intent(ImageActivity.this, ParameterActivity.class);
             intentToParameterActivity.putExtra("activityAfter", "ImageActivity");
@@ -341,7 +336,6 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
-
     private void displayBitmap(){
             if (settings.getScroll()){
                 if (bitmapScroll != null) {
@@ -355,8 +349,6 @@ public class ImageActivity extends AppCompatActivity {
                     imageView.setImageBitmap(bitmap);
                 }
             }
-
-
 
     }
 
@@ -375,14 +367,65 @@ public class ImageActivity extends AppCompatActivity {
             int viewH = imageView.getHeight();
             int upH = 0;
             ArrayList<Bitmap> bitmapUp = new ArrayList<Bitmap>();
+            Page page = thisPage;
             while (upH < viewH){
-                Bitmap prevBitmap = null; //getPrevBtm();
-                prevBitmap = BitmapUtility.adaptWidth(prevBitmap,imageView);
-                upH = upH +prevBitmap.getHeight();
+                page = thisPage.getPrevPage();
+                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(),imageView);
+                upH = upH + prevBitmap.getHeight();
                 bitmapUp.add(prevBitmap);
             }
+
+            int downH = 0;
+            ArrayList<Bitmap> bitmapDown = new ArrayList<Bitmap>();
+            page = thisPage;
+            while (downH < viewH){
+                page = thisPage.getPrevPage();
+                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(),imageView);
+                downH = downH + prevBitmap.getHeight();
+                bitmapDown.add(prevBitmap);
+            }
+
+            ArrayList<Bitmap> bitmapAll = new ArrayList<Bitmap>();
+
+            for (int i = bitmapUp.size() - 1; i >= 0; i--) {
+                bitmapAll.add(bitmapUp.get(i));
+            }
+
+            bitmapAll.add(thisPage.getBitmap());
+
+            bitmapAll.addAll(bitmapDown);
+
+            return joinBitmapsVertically(bitmapAll);
         }
         return null;
+    }
+
+    public static Bitmap joinBitmapsVertically(ArrayList<Bitmap> bitmaps) {
+        int totalWidth = 0;
+        int totalHeight = 0;
+
+        // Calculer la largeur totale et la hauteur totale des bitmaps
+        for (Bitmap bitmap : bitmaps) {
+            if (bitmap.getWidth() > totalWidth) {
+                totalWidth = bitmap.getWidth();
+            }
+            totalHeight += bitmap.getHeight();
+        }
+
+        // Créer une nouvelle bitmap avec les dimensions calculées
+        Bitmap resultBitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
+
+        // Créer un canvas pour dessiner sur la nouvelle bitmap
+        Canvas canvas = new Canvas(resultBitmap);
+        int y = 0;
+
+        // Dessiner chaque bitmap sur la nouvelle bitmap, l'une en dessous de l'autre
+        for (Bitmap bitmap : bitmaps) {
+            canvas.drawBitmap(bitmap, 0, y, null);
+            y += bitmap.getHeight();
+        }
+
+        return resultBitmap;
     }
 
 
