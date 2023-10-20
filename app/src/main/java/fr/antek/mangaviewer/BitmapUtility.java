@@ -169,6 +169,6 @@ public class BitmapUtility {
         float btmW = bitmapInput.getWidth();
         float btmH = bitmapInput.getHeight();
 
-        return Bitmap.createScaledBitmap(bitmapInput, viewW, Math.round(viewW * btmW / btmH) , true);
+        return Bitmap.createScaledBitmap(bitmapInput, viewW, Math.round(viewW * btmH / btmW) , true);
     }
 }

@@ -144,17 +144,23 @@ public class ImageActivity extends AppCompatActivity {
                 scaleGestureDetector.onTouchEvent(event);
                 gestureDetector.onTouchEvent(event);
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if (currentScale != 1.0f) {
-                        currentXSlide = event.getX();
-                        currentYSlide = event.getY();
-                    }
+                    //if (currentScale != 1.0f) {
+                    currentXSlide = event.getX();
+                    currentYSlide = event.getY();
+                    //}
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     if (settings.getScroll()) {
-                        scrollOffset = scrollOffset - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
-                        currentXSlide = event.getX();
-                        //update scroll
+                        noOtherAction = false;
+                        Log.d("MOI", "scrollOffset: " + scrollOffset);
+                        scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                        Log.d("MOI", "currentYSlide: " + currentYSlide);
+                        currentYSlide = event.getY();
+                        Log.d("MOI", "scrollOffset: " + scrollOffset);
+                        Log.d("MOI", "sevent.getY(): " + event.getY());
+
+                        displayBitmap();
                     }else {
                         if ((noOtherAction) && (currentScale != 1.0f) && (event.getPointerCount() == 1)) {
                             offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
@@ -168,8 +174,8 @@ public class ImageActivity extends AppCompatActivity {
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (!settings.getScroll()){
-                        if ((noOtherAction) && (currentScale == 1.0f)) {
+                    if (noOtherAction){
+                        if (currentScale == 1.0f){
                             float x = event.getX();
                             float y = event.getY();
 
@@ -181,15 +187,18 @@ public class ImageActivity extends AppCompatActivity {
 
                             if ((relativeY < 0.15) || (relativeY > 0.85)) {
                                 toggle();
-                            } else if (relativeX < 0.5) {
-                                goPrevPage();
-                            } else {
-                                goNextPage();
+                            }else if (!settings.getScroll()){
+                                if (relativeX < 0.5) {
+                                    goPrevPage();
+                                }else{
+                                    goNextPage();
+                                }
                             }
-                        } else {
-                            noOtherAction = true;
                         }
+                    }else{
+                        noOtherAction = true;
                     }
+
                 }
                 return true;
             });
@@ -257,6 +266,9 @@ public class ImageActivity extends AppCompatActivity {
     private void addOnOrientationChangeListener() {
         this.getWindow().getDecorView().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             if  (currentOrientation != getResources().getConfiguration().orientation){
+                if (settings.getScroll()){
+                    bitmapScroll=generateScrollBitmap();
+                }
                 displayBitmap();
                 currentOrientation = getResources().getConfiguration().orientation;
             }
@@ -272,13 +284,11 @@ public class ImageActivity extends AppCompatActivity {
                 prevPage = thisPage.getPrevPage();
                 nextPage = thisPage.getNextPage();
                 onNewPage();
-                if (settings.getScroll()){
-                    bitmap = BitmapUtility.adaptScrollView(bitmapScroll,imageView,scrollOffset);
-                }else {
-                    bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
-                    bitmap = BitmapUtility.correctRatio(bitmap, imageView);
+                if (settings.getScroll()) {
+                    bitmapScroll = generateScrollBitmap();
                 }
-                imageView.setImageBitmap(bitmap);
+                displayBitmap();
+
                 firstLoad = false;
             }
         }
@@ -406,7 +416,6 @@ public class ImageActivity extends AppCompatActivity {
         int totalWidth = 0;
         int totalHeight = 0;
 
-        // Calculer la largeur totale et la hauteur totale des bitmaps
         for (Bitmap bitmap : bitmaps) {
             if (bitmap.getWidth() > totalWidth) {
                 totalWidth = bitmap.getWidth();
@@ -414,14 +423,11 @@ public class ImageActivity extends AppCompatActivity {
             totalHeight += bitmap.getHeight();
         }
 
-        // Créer une nouvelle bitmap avec les dimensions calculées
         Bitmap resultBitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
 
-        // Créer un canvas pour dessiner sur la nouvelle bitmap
         Canvas canvas = new Canvas(resultBitmap);
         int y = 0;
 
-        // Dessiner chaque bitmap sur la nouvelle bitmap, l'une en dessous de l'autre
         for (Bitmap bitmap : bitmaps) {
             canvas.drawBitmap(bitmap, 0, y, null);
             y += bitmap.getHeight();
@@ -439,11 +445,9 @@ public class ImageActivity extends AppCompatActivity {
             if (nextPage != null) {
                 File nextFile = nextPage.getParentFile();
                 if (nextFile.equals(thisFile)) {
-                    /*
                     if ((nextFile instanceof PDF) && (nextPage.getPageNumber() != thisPage.getPageNumber())) {
                         ((PDF) nextFile).closePage(nextPage.getPageNumber());
                     }
-                     */
                 } else {
                     if (nextFile instanceof PDF) {
                         ((PDF) nextFile).closePage(nextPage.getPageNumber());
@@ -471,11 +475,9 @@ public class ImageActivity extends AppCompatActivity {
             if (prevPage != null) {
                 File prevFile = prevPage.getParentFile();
                 if (prevFile.equals(thisFile)) {
-                    /*
                     if ((prevFile instanceof PDF) && (prevPage.getPageNumber() != thisPage.getPageNumber())) {
                         ((PDF) prevFile).closePage(prevPage.getPageNumber());
                     }
-                    */
                 } else {
                     if (prevFile instanceof PDF) {
                         ((PDF) prevFile).closePage(prevPage.getPageNumber());
