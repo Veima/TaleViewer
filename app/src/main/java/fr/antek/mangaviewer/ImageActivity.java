@@ -197,21 +197,37 @@ public class ImageActivity extends AppCompatActivity {
                             float x = event.getX();
                             float y = event.getY();
 
+                            int moveX = Math.round(currentXSlide - x);
+                            int moveY = Math.round(currentYSlide - y);
                             int width = imageView.getWidth();
-                            int height = imageView.getHeight();
+                            if (Math.sqrt(moveY*moveY+moveX*moveX)>width/4){
+                                if (Math.abs(moveX) > Math.abs(moveY)){
+                                    if ((moveX > 0) && (moveX > width/3)){
+                                        goNextPage();
+                                    }else if ((moveX < 0) && (moveX < width/(-3))){
+                                        goPrevPage();
+                                    }
+                                }
+                            }else{
+                                int height = imageView.getHeight();
 
-                            float relativeX = x / width;
-                            float relativeY = y / height;
+                                float relativeX = x / width;
+                                float relativeY = y / height;
 
-                            if ((relativeY < 0.15) || (relativeY > 0.85)) {
-                                toggle();
-                            }else if (!settings.getScroll()){
-                                if (relativeX < 0.5) {
-                                    goPrevPage();
-                                }else{
-                                    goNextPage();
+                                if ((relativeY < 0.15) || (relativeY > 0.85)) {
+                                    toggle();
+                                }else if (!settings.getScroll()){
+                                    if (relativeX < 0.5) {
+                                        goPrevPage();
+                                    }else{
+                                        goNextPage();
+                                    }
                                 }
                             }
+
+
+
+
                         }
                     }else{
                         noOtherAction = true;
