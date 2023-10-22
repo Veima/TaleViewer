@@ -82,7 +82,9 @@ public class ImageActivity extends AppCompatActivity {
     private int centerH;
     private int viewH;
     private ArrayList<Bitmap> bitmapUp;
+    private ArrayList<Page> pageUp;
     private ArrayList<Bitmap> bitmapDown;
+    private ArrayList<Page> pageDown;
     private Bitmap thisBitmap;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -164,13 +166,11 @@ public class ImageActivity extends AppCompatActivity {
                             if ((currentScale == 1.0f)){
                                 scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                                 currentYSlide = event.getY();
-                                Log.d("moi", "onScale: ");
                                 updateScrollBitmap();
                                 displayBitmap();
                             }else{
                                 scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                                 currentYSlide = event.getY();
-                                Log.d("moi", "onScale: 2");
                                 updateScrollBitmap();
 
                                 Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
@@ -425,6 +425,44 @@ public class ImageActivity extends AppCompatActivity {
         return null;
     }
 
+    public void createBitmapUp(){
+        upH = 0;
+        bitmapUp = new ArrayList<Bitmap>();
+        pageUp = new ArrayList<Page>();
+        Page page = thisPage;
+        Boolean end = false;
+        while ((upH < viewH) && !end){
+            page = page.getPrevPage();
+            if (page == null){
+                end = true;
+            }else {
+                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+                upH = upH + prevBitmap.getHeight();
+                pageUp.add(page);
+                bitmapUp.add(prevBitmap);
+            }
+        }
+    }
+
+    private void createBitmapDown(){
+        downH = 0;
+        bitmapDown = new ArrayList<Bitmap>();
+        pageDown = new ArrayList<Page>();
+        Page page = thisPage;
+        Boolean end = false;
+        while ((downH < viewH) && !end) {
+            page = page.getNextPage();
+            if (page == null){
+                end = true;
+            }else{
+                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+                downH = downH + prevBitmap.getHeight();
+                pageDown.add(page);
+                bitmapDown.add(prevBitmap);
+            }
+        }
+    }
+
     public void updateScrollBitmap(){
 
         if ((scrollOffset < upH - viewH/10 ) && (upH ==0)){
@@ -437,68 +475,119 @@ public class ImageActivity extends AppCompatActivity {
 
         if (upH > scrollOffset +viewH/2){
             Log.d("Moi", "prev");
-            thisPage = thisPage.getPrevPage();
+
+            bitmapDown.add(0, thisBitmap);
+            pageDown.add(0,thisPage);
+
+            thisBitmap = bitmapUp.get(0);
+            thisPage = pageUp.get(0);
             thisFile = thisPage.getParentFile();
 
-            createBitmapDown();
-            thisBitmap = BitmapUtility.adaptWidth(thisPage.getBitmap(),imageView);
-            scrollOffset = scrollOffset - upH;
-            createBitmapUp();
-            scrollOffset = scrollOffset + upH + centerH;
+            bitmapUp.remove(0);
+            pageUp.remove(0);
+
+            cutDown();
 
             centerH = thisBitmap.getHeight();
+            upH = upH - centerH;
+            completeUp();
+
             bitmapScroll = mergeBitmap();
 
             onNewPage();
         }else if (upH + centerH < scrollOffset +viewH/2){
             Log.d("Moi", "next");
-            thisPage = thisPage.getNextPage();
+            bitmapUp.add(0, thisBitmap);
+            pageUp.add(0,thisPage);
+
+            thisBitmap = bitmapDown.get(0);
+            thisPage = pageDown.get(0);
             thisFile = thisPage.getParentFile();
 
-            scrollOffset = scrollOffset - upH;
-            createBitmapUp();
-            scrollOffset = scrollOffset + upH - centerH;
+            bitmapDown.remove(0);
+            pageDown.remove(0);
+
+            cutUp();
+
             centerH = thisBitmap.getHeight();
-            thisBitmap = BitmapUtility.adaptWidth(thisPage.getBitmap(),imageView);
-            createBitmapDown();
+            downH = downH - centerH;
+            completeDown();
 
             bitmapScroll = mergeBitmap();
-
             onNewPage();
         }
     }
 
-    public void createBitmapUp(){
-        upH = 0;
-        bitmapUp = new ArrayList<Bitmap>();
-        Page page = thisPage;
+    public void completeUp(){
         Boolean end = false;
-        while ((upH < viewH) && !end){
-            page = page.getPrevPage();
-            if (page == null){
-                end = true;
-            }else {
-                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
-                upH = upH + prevBitmap.getHeight();
-                bitmapUp.add(prevBitmap);
+        if (pageUp.size() > 0){
+            Page page = pageUp.get(pageUp.size()-1);
+            while ((upH < viewH) && !end){
+                page = page.getPrevPage();
+                if (page == null){
+                    end = true;
+                }else {
+                    Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+                    upH = upH + prevBitmap.getHeight();
+                    scrollOffset = scrollOffset + prevBitmap.getHeight();
+                    pageUp.add(page);
+                    bitmapUp.add(prevBitmap);
+                }
             }
         }
     }
 
-    private void createBitmapDown(){
-        downH = 0;
-        bitmapDown = new ArrayList<Bitmap>();
-        Page page = thisPage;
+    public void completeDown(){
         Boolean end = false;
-        while ((downH < viewH) && !end) {
-            page = page.getNextPage();
-            if (page == null){
-                end = true;
-            }else{
-                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
-                downH = downH + prevBitmap.getHeight();
-                bitmapDown.add(prevBitmap);
+        if (pageDown.size() > 0){
+            Page page = pageDown.get(pageDown.size()-1);
+            while ((downH < viewH) && !end){
+                page = page.getNextPage();
+                if (page == null){
+                    end = true;
+                }else {
+                    Bitmap nextBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+                    downH = downH + nextBitmap.getHeight();
+                    pageDown.add(page);
+                    bitmapDown.add(nextBitmap);
+                }
             }
+        }
+
+    }
+
+    public void cutUp() {
+
+        ArrayList<Bitmap> oldBitmapUp = bitmapUp;
+        ArrayList<Page> oldPageUp = pageUp;
+        bitmapUp = new ArrayList<Bitmap>();
+        pageUp = new ArrayList<Page>();
+        int i = 0;
+        scrollOffset = scrollOffset - (upH + centerH);
+
+        upH = 0;
+        while ((upH < viewH) && (i < oldBitmapUp.size())) {
+            bitmapUp.add(oldBitmapUp.get(i));
+            pageUp.add(oldPageUp.get(i));
+            upH = upH + oldBitmapUp.get(i).getHeight();
+
+            i++;
+        }
+        scrollOffset = scrollOffset + upH;
+    }
+
+    public void cutDown(){
+        ArrayList<Bitmap> oldBitmapDown = bitmapDown;
+        ArrayList<Page> oldPageDown = pageDown;
+        bitmapDown = new ArrayList<Bitmap>();
+        pageDown = new ArrayList<Page>();
+        int i = 0;
+        downH = 0;
+        while ((downH < viewH) && (i < oldBitmapDown.size())) {
+            bitmapDown.add(oldBitmapDown.get(i));
+            pageDown.add(oldPageDown.get(i));
+            downH = downH + oldBitmapDown.get(i).getHeight();
+            i++;
         }
     }
 
