@@ -37,6 +37,12 @@ public class Page {
                     this.splitStep = "halfFirst";
                 }
             }
+        }else{
+            if (settings.getFullBefore()) {
+                this.splitStep = "fullFirst";
+            } else {
+                this.splitStep = "halfFirst";
+            }
         }
         if (parentFile instanceof PDF){
             if (pageNumber == -1){

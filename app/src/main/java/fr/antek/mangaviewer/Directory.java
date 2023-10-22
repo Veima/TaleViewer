@@ -43,6 +43,7 @@ public class Directory extends File{
                 e.printStackTrace();
             }
         }
+
         fileList = new ArrayList<>(fileListNotArray);
 
         Collections.sort(fileList);

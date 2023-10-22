@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import org.chromium.base.task.AsyncTask;
+
 import fr.antek.mangaviewer.databinding.ActivityImageBinding;
 public class ImageActivity extends AppCompatActivity {
     private final Handler mHideHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
@@ -75,6 +77,13 @@ public class ImageActivity extends AppCompatActivity {
     private String splitStep= null;
     private int pageNumber = 1;
     private final ImageActivity thisActivity = this;
+    private int upH;
+    private int downH;
+    private int centerH;
+    private int viewH;
+    private ArrayList<Bitmap> bitmapUp;
+    private ArrayList<Bitmap> bitmapDown;
+    private Bitmap thisBitmap;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -144,23 +153,32 @@ public class ImageActivity extends AppCompatActivity {
                 scaleGestureDetector.onTouchEvent(event);
                 gestureDetector.onTouchEvent(event);
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    //if (currentScale != 1.0f) {
                     currentXSlide = event.getX();
                     currentYSlide = event.getY();
-                    //}
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     if (settings.getScroll()) {
-                        noOtherAction = false;
-                        Log.d("MOI", "scrollOffset: " + scrollOffset);
-                        scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
-                        Log.d("MOI", "currentYSlide: " + currentYSlide);
-                        currentYSlide = event.getY();
-                        Log.d("MOI", "scrollOffset: " + scrollOffset);
-                        Log.d("MOI", "sevent.getY(): " + event.getY());
+                        if (event.getPointerCount() == 1) {
+                            noOtherAction = false;
+                            if ((currentScale == 1.0f)){
+                                scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                                currentYSlide = event.getY();
+                                Log.d("moi", "onScale: ");
+                                updateScrollBitmap();
+                                displayBitmap();
+                            }else{
+                                scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                                currentYSlide = event.getY();
+                                Log.d("moi", "onScale: 2");
+                                updateScrollBitmap();
 
-                        displayBitmap();
+                                Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
+                                imageView.setImageBitmap(cropedBitmap);
+                            }
+
+                        }
+
                     }else {
                         if ((noOtherAction) && (currentScale != 1.0f) && (event.getPointerCount() == 1)) {
                             offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
@@ -281,11 +299,12 @@ public class ImageActivity extends AppCompatActivity {
 
         if (hasFocus) {
             if (firstLoad){
-                prevPage = thisPage.getPrevPage();
-                nextPage = thisPage.getNextPage();
                 onNewPage();
                 if (settings.getScroll()) {
                     bitmapScroll = generateScrollBitmap();
+                }else{
+                    prevPage = thisPage.getPrevPage();
+                    nextPage = thisPage.getNextPage();
                 }
                 displayBitmap();
 
@@ -304,7 +323,6 @@ public class ImageActivity extends AppCompatActivity {
         }
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-
             float newFocusX = detector.getFocusX();
             float newFocusY = detector.getFocusY();
 
@@ -323,7 +341,18 @@ public class ImageActivity extends AppCompatActivity {
             currentFocusX = newFocusX;
             currentFocusY = newFocusY;
 
-            Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
+            Bitmap cropedBitmap;
+            /*
+            if (settings.getScroll()){
+                cropedBitmap = BitmapUtility.cropAndCheck(bitmapScroll, offsetX+scrollOffset*currentScale, offsetY, currentScale, contextThis);
+            }else{
+                cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
+            }
+
+             */
+            cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
+
+
 
             imageView.setImageBitmap(cropedBitmap);
 
@@ -374,42 +403,115 @@ public class ImageActivity extends AppCompatActivity {
 
     public Bitmap generateScrollBitmap(){
         if (imageView != null){
-            int viewH = imageView.getHeight();
-            int upH = 0;
-            ArrayList<Bitmap> bitmapUp = new ArrayList<Bitmap>();
-            Page page = thisPage;
-            while (upH < viewH){
-                page = page.getPrevPage();
-                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(),imageView);
-                upH = upH + prevBitmap.getHeight();
-                bitmapUp.add(prevBitmap);
-                Log.d("moi", "up: " + upH);
+            viewH = imageView.getHeight();
+
+            createBitmapUp();
+
+            createBitmapDown();
+            thisBitmap = BitmapUtility.adaptWidth(thisPage.getBitmap(),imageView);
+            centerH = thisBitmap.getHeight();
+            scrollOffset = upH + (centerH - viewH)/2;
+
+            if ((scrollOffset < upH - viewH/10 ) && (upH ==0)){
+                scrollOffset = upH - viewH/10;
             }
 
-            int downH = 0;
-            ArrayList<Bitmap> bitmapDown = new ArrayList<Bitmap>();
-            page = thisPage;
-            while (downH < viewH){
-                page = page.getPrevPage();
-                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(),imageView);
-                downH = downH + prevBitmap.getHeight();
-                bitmapDown.add(prevBitmap);
-                Log.d("moi", "down: " + downH);
+            if ((viewH + scrollOffset > upH + centerH + downH + viewH/10) && (downH == 0)){
+                scrollOffset = upH + centerH + downH - viewH + viewH/10;
             }
 
-            ArrayList<Bitmap> bitmapAll = new ArrayList<Bitmap>();
-
-            for (int i = bitmapUp.size() - 1; i >= 0; i--) {
-                bitmapAll.add(bitmapUp.get(i));
-            }
-
-            bitmapAll.add(thisPage.getBitmap());
-
-            bitmapAll.addAll(bitmapDown);
-
-            return joinBitmapsVertically(bitmapAll);
+            return mergeBitmap();
         }
         return null;
+    }
+
+    public void updateScrollBitmap(){
+
+        if ((scrollOffset < upH - viewH/10 ) && (upH ==0)){
+            scrollOffset = upH - viewH/10;
+        }
+
+        if ((viewH + scrollOffset > upH + centerH + downH + viewH/10) && (downH == 0)){
+            scrollOffset = upH + centerH + downH - viewH + viewH/10;
+        }
+
+        if (upH > scrollOffset +viewH/2){
+            Log.d("Moi", "prev");
+            thisPage = thisPage.getPrevPage();
+            thisFile = thisPage.getParentFile();
+
+            createBitmapDown();
+            thisBitmap = BitmapUtility.adaptWidth(thisPage.getBitmap(),imageView);
+            scrollOffset = scrollOffset - upH;
+            createBitmapUp();
+            scrollOffset = scrollOffset + upH + centerH;
+
+            centerH = thisBitmap.getHeight();
+            bitmapScroll = mergeBitmap();
+
+            onNewPage();
+        }else if (upH + centerH < scrollOffset +viewH/2){
+            Log.d("Moi", "next");
+            thisPage = thisPage.getNextPage();
+            thisFile = thisPage.getParentFile();
+
+            scrollOffset = scrollOffset - upH;
+            createBitmapUp();
+            scrollOffset = scrollOffset + upH - centerH;
+            centerH = thisBitmap.getHeight();
+            thisBitmap = BitmapUtility.adaptWidth(thisPage.getBitmap(),imageView);
+            createBitmapDown();
+
+            bitmapScroll = mergeBitmap();
+
+            onNewPage();
+        }
+    }
+
+    public void createBitmapUp(){
+        upH = 0;
+        bitmapUp = new ArrayList<Bitmap>();
+        Page page = thisPage;
+        Boolean end = false;
+        while ((upH < viewH) && !end){
+            page = page.getPrevPage();
+            if (page == null){
+                end = true;
+            }else {
+                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+                upH = upH + prevBitmap.getHeight();
+                bitmapUp.add(prevBitmap);
+            }
+        }
+    }
+
+    private void createBitmapDown(){
+        downH = 0;
+        bitmapDown = new ArrayList<Bitmap>();
+        Page page = thisPage;
+        Boolean end = false;
+        while ((downH < viewH) && !end) {
+            page = page.getNextPage();
+            if (page == null){
+                end = true;
+            }else{
+                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+                downH = downH + prevBitmap.getHeight();
+                bitmapDown.add(prevBitmap);
+            }
+        }
+    }
+
+    public Bitmap mergeBitmap(){
+        ArrayList<Bitmap> bitmapAll = new ArrayList<Bitmap>();
+
+        for (int i = bitmapUp.size() - 1; i >= 0; i--) {
+            bitmapAll.add(bitmapUp.get(i));
+        }
+        bitmapAll.add(thisBitmap);
+
+        bitmapAll.addAll(bitmapDown);
+        return joinBitmapsVertically(bitmapAll);
     }
 
     public static Bitmap joinBitmapsVertically(ArrayList<Bitmap> bitmaps) {
@@ -621,9 +723,13 @@ public class ImageActivity extends AppCompatActivity {
                     if (number >= 1 && number <= ((PDF) thisFile).getPdfRenderer().getPageCount()) {
                         pageNumber = number;
                         thisPage = new Page(thisFile,thisActivity,"firstPossible",pageNumber);
-                        bitmapToDisplay = thisPage.getBitmap();
-                        prevPage = thisPage.getPrevPage();
-                        nextPage = thisPage.getNextPage();
+                        if (settings.getScroll()){
+                            bitmapScroll = generateScrollBitmap();
+                        }else{
+                            bitmapToDisplay = thisPage.getBitmap();
+                            prevPage = thisPage.getPrevPage();
+                            nextPage = thisPage.getNextPage();
+                        }
                         displayBitmap();
                         onNewPage();
                     } else {

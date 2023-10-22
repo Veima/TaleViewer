@@ -17,6 +17,7 @@ public class PDF extends File{
     private Bitmap miniature = null;
     private PdfRenderer pdfRenderer;
     private PDFPage[] listPage;
+    private boolean open= false;
 
     public PDF(AppCompatActivity activity, String parentPath, DocumentFile doc, Directory parentFile) {
         super(activity, parentPath, doc, parentFile);
@@ -28,6 +29,7 @@ public class PDF extends File{
             ParcelFileDescriptor fileDescriptor = super.getActivity().getContentResolver().openFileDescriptor(super.getDoc().getUri(), "r");
             pdfRenderer = new PdfRenderer(fileDescriptor);
             listPage = new PDFPage[pdfRenderer.getPageCount()];
+            open = true;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -36,6 +38,7 @@ public class PDF extends File{
     public void close(){
         pdfRenderer.close();
         listPage = null;
+        open = false;
     }
 
     public void openPage(int pageNumber){
@@ -66,6 +69,9 @@ public class PDF extends File{
     }
 
     public PdfRenderer getPdfRenderer() {
+        if (!open){
+            open();
+        }
         return pdfRenderer;
     }
 }
