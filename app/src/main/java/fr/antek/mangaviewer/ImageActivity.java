@@ -1,22 +1,16 @@
 package fr.antek.mangaviewer;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.ParcelFileDescriptor;
-import android.provider.MediaStore;
 import android.text.InputType;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -35,11 +29,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
-
-import org.chromium.base.task.AsyncTask;
 
 import fr.antek.mangaviewer.databinding.ActivityImageBinding;
 public class ImageActivity extends AppCompatActivity {
@@ -71,7 +62,6 @@ public class ImageActivity extends AppCompatActivity {
     private float currentYSlide;
     private boolean firstLoad = true;
     private Settings settings;
-    private String parameter;
     private float scrollOffset = 0;
     private Page thisPage;
     private String splitStep= null;
@@ -86,6 +76,7 @@ public class ImageActivity extends AppCompatActivity {
     private ArrayList<Bitmap> bitmapDown;
     private ArrayList<Page> pageDown;
     private Bitmap thisBitmap;
+    private int oldOffsetY;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -170,10 +161,12 @@ public class ImageActivity extends AppCompatActivity {
                                 displayBitmap();
                             }else{
                                 scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                                offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                                 currentYSlide = event.getY();
                                 updateScrollBitmap();
+                                currentXSlide = event.getX();
 
-                                Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
+                                Bitmap cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
                                 imageView.setImageBitmap(cropedBitmap);
                             }
 
@@ -183,7 +176,7 @@ public class ImageActivity extends AppCompatActivity {
                         if ((noOtherAction) && (currentScale != 1.0f) && (event.getPointerCount() == 1)) {
                             offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                             offsetY = offsetY - (event.getY() - currentYSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
-                            Bitmap cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, this);
+                            Bitmap cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, this);
                             imageView.setImageBitmap(cropedBitmap);
                             currentXSlide = event.getX();
                             currentYSlide = event.getY();
@@ -224,10 +217,6 @@ public class ImageActivity extends AppCompatActivity {
                                     }
                                 }
                             }
-
-
-
-
                         }
                     }else{
                         noOtherAction = true;
@@ -358,17 +347,15 @@ public class ImageActivity extends AppCompatActivity {
             currentFocusY = newFocusY;
 
             Bitmap cropedBitmap;
-            /*
             if (settings.getScroll()){
-                cropedBitmap = BitmapUtility.cropAndCheck(bitmapScroll, offsetX+scrollOffset*currentScale, offsetY, currentScale, contextThis);
+
+                scrollOffset = scrollOffset + (offsetY - oldOffsetY);
+                oldOffsetY = Math.round(offsetY);
+                cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
+                updateScrollBitmap();
             }else{
-                cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
+                cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, contextThis);
             }
-
-             */
-            cropedBitmap = BitmapUtility.cropAndCheck(bitmap, offsetX, offsetY, currentScale, contextThis);
-
-
 
             imageView.setImageBitmap(cropedBitmap);
 
@@ -385,7 +372,7 @@ public class ImageActivity extends AppCompatActivity {
                 currentScale = 1.0f;
                 offsetX = 0f;
                 offsetY = 0f;
-                imageView.setImageBitmap(bitmap);
+                displayBitmap();
             }
             return true;
         }
