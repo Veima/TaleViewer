@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "fr.antek.mangaviewer"
-        minSdk = 25
+        minSdk = 26
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"

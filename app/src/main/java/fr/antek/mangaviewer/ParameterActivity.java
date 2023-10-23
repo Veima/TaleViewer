@@ -1,17 +1,48 @@
 package fr.antek.mangaviewer;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import android.content.Context;
+import android.content.SharedPreferences;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.File;
+import java.util.Locale;
+import java.util.Map;
+import android.app.Activity;
+import androidx.documentfile.provider.DocumentFile;
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class ParameterActivity extends AppCompatActivity {
     private Uri storyFolderUri;
@@ -28,6 +59,11 @@ public class ParameterActivity extends AppCompatActivity {
     private Switch switchScroll;
     private SharedPreferences memoire;
     private String textFirstPage;
+    private Button exportButton;
+    private Button importButton;
+    private static final String JSON_KEY = "data";
+    public static final int FILE_PICKER_REQUEST_CODE = 1001;
+
 
 
     @Override
@@ -51,6 +87,9 @@ public class ParameterActivity extends AppCompatActivity {
         sliderOverlap = findViewById(R.id.sliderOverlap);
         overlapValue = findViewById(R.id.overlapValue);
         switchScroll = findViewById(R.id.switchScroll);
+
+        exportButton = findViewById(R.id.buttonExport);
+        importButton = findViewById(R.id.buttonImport);
 
         memoire = this.getSharedPreferences("memoire",MODE_PRIVATE);
         SharedPreferences.Editor editor = memoire.edit();
@@ -129,6 +168,9 @@ public class ParameterActivity extends AppCompatActivity {
             editor.apply();
         });
 
+        exportButton.setOnClickListener(v -> showFileChooser(this));
+        importButton.setOnClickListener(v -> chooseTextFile(this));
+
 
 
     }
@@ -163,6 +205,120 @@ public class ParameterActivity extends AppCompatActivity {
             intentToImageActivity.putExtra("path", path);
             startActivity(intentToImageActivity);
         }
-
     }
+
+
+
+    public void showFileChooser(Activity activity) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, generateFileName());
+        activity.startActivityForResult(intent, FILE_PICKER_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_PICKER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (data != null) {
+                Uri uri = data.getData();
+                if (uri != null) {
+                    try {
+                        OutputStream outputStream = getContentResolver().openOutputStream(uri);
+
+                        String yourData = sharedPreferencesToString(memoire);
+                        outputStream.write(yourData.getBytes());
+                        outputStream.close();
+
+                        Toast.makeText(this, getString(R.string.SaveSucess), Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Toast.makeText(this, getString(R.string.SaveFail), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }else{
+            String content = readSelectedTextFile(this, requestCode, resultCode, data);
+
+            if (content != null) {
+                Log.d("moi", content);
+            }
+        }
+    }
+
+
+    public String sharedPreferencesToString(SharedPreferences sharedPreferences) {
+        String outputSting = "";
+
+        Map<String, ?> allEntries = sharedPreferences.getAll();
+
+        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            outputSting = outputSting + key + "=" + value + "\n";
+
+        }
+        return outputSting;
+    }
+
+    public static void stringToSharedPreferences(SharedPreferences.Editor editor, String inputString) {
+        String[] listPref = inputString.split("\n");
+            for (String pref : listPref) {
+                String key = pref.split("=",1)[0];
+                String value = pref.split("=",1)[1];
+
+                try {
+                    boolean valueBoolean = Boolean.parseBoolean(value);
+                    editor.putBoolean(key, valueBoolean);
+                } catch (Exception e) {
+                    editor.putString(key, value);
+                }
+            }
+        editor.apply();
+    }
+
+    public String generateFileName() {
+        String fileName;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH_mm");
+        String timestamp = formatter.format(LocalDateTime.now());
+        fileName = "MW_Save_" + timestamp + ".txt";
+        return fileName;
+    }
+    private static final int PICK_TXT_FILE = 1;
+
+    public void chooseTextFile(Activity activity) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/plain");
+
+        activity.startActivityForResult(intent, PICK_TXT_FILE);
+    }
+
+    public String readSelectedTextFile(Activity activity, int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_TXT_FILE && resultCode == Activity.RESULT_OK) {
+            Uri uri = data.getData();
+            StringBuilder content = new StringBuilder();
+
+            try {
+                InputStream inputStream = activity.getContentResolver().openInputStream(uri);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append('\n');
+                }
+
+                reader.close();
+                return content.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return null;
+    }
+
+
+
 }

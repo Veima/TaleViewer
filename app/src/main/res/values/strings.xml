@@ -28,5 +28,9 @@
     <string name="Activatefullviewafter">Activer la vue complète après</string>
     <string name="Overlap">Superposition</string>
     <string name="ActivateScrollmode">Activer le mode Scroll</string>
+    <string name="Export">Exporter les données</string>
+    <string name="Import">Importer les données</string>
+    <string name="SaveSucess">Fichier créé avec succès</string>
+    <string name="SaveFail">Erreur lors de la création du fichier</string>
 
 </resources>
