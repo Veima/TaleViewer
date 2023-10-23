@@ -242,7 +242,7 @@ public class ParameterActivity extends AppCompatActivity {
             String content = readSelectedTextFile(this, requestCode, resultCode, data);
 
             if (content != null) {
-                Log.d("moi", content);
+                stringToSharedPreferences(memoire.edit(), content);
             }
         }
     }
@@ -265,14 +265,15 @@ public class ParameterActivity extends AppCompatActivity {
     public static void stringToSharedPreferences(SharedPreferences.Editor editor, String inputString) {
         String[] listPref = inputString.split("\n");
             for (String pref : listPref) {
-                String key = pref.split("=",1)[0];
-                String value = pref.split("=",1)[1];
-
-                try {
-                    boolean valueBoolean = Boolean.parseBoolean(value);
-                    editor.putBoolean(key, valueBoolean);
-                } catch (Exception e) {
-                    editor.putString(key, value);
+                String[] prefSplit = pref.split("=", 2);
+                if (prefSplit.length>1) {
+                    String key = prefSplit[0];
+                    String value = prefSplit[1];
+                    if ((value.equals("true")) || (value.equals("false"))){
+                        editor.putBoolean(key, Boolean.parseBoolean(value));
+                    }else{
+                        editor.putString(key, value);
+                    } 
                 }
             }
         editor.apply();

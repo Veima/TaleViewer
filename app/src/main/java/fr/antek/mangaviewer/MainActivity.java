@@ -208,8 +208,8 @@ public class MainActivity extends AppCompatActivity {
                 if (splitedPath[0] != null){
                     textContinueUltimeLine1.setText(splitedPath[0]);
                     textContinueUltimeLine1.setVisibility(View.VISIBLE);
-                }else if (pathLastImage.split(":").length>1){
-                    textContinueUltimeLine1.setText(pathLastImage.split(":")[1]);
+                }else if (pathLastImage.split(":nPage=").length>1){
+                    textContinueUltimeLine1.setText(pathLastImage.split(":")[1].replace("nPage=",""));
                     textContinueUltimeLine1.setVisibility(View.VISIBLE);
                 }
                 if (splitedPath[1] != null){
