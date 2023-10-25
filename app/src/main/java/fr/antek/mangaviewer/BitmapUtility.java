@@ -76,25 +76,25 @@ public class BitmapUtility {
     }
 
 
-    public static Bitmap zoomBitmap(Bitmap bitmap, float offsetX, float offsetY, float currentScale, ImageActivity context){
+    public static Bitmap zoomBitmap(Bitmap bitmap, double offsetX, double offsetY, double currentScale, ImageActivity context){
         int newLeft;
         int newTop;
 
         if (offsetX > 0){
-            newLeft = Math.round(offsetX);
+            newLeft = Math.toIntExact(Math.round(offsetX));
         }else{
             newLeft = 0;
             context.setOffsetX(0);
         }
         if (offsetY > 0){
-            newTop = Math.round(offsetY);
+            newTop = Math.toIntExact(Math.round(offsetY));
         }else{
             newTop = 0;
             context.setOffsetY(0);
         }
 
-        int newW = Math.round(bitmap.getWidth()/currentScale);
-        int newH = Math.round(bitmap.getHeight()/currentScale);
+        int newW = Math.toIntExact(Math.round(bitmap.getWidth() / currentScale));
+        int newH = Math.toIntExact(Math.round(bitmap.getHeight() / currentScale));
 
         int newRight;
 
@@ -125,25 +125,25 @@ public class BitmapUtility {
         return resultBmp;
     }
 
-    public static Bitmap zoomScrollBitmap(Bitmap bitmap, float offsetX, float offsetY, float currentScale, ImageActivity context, View imageView){
+    public static Bitmap zoomScrollBitmap(Bitmap bitmap, double offsetX, double offsetY, double currentScale, ImageActivity context, View imageView){
         int newLeft;
         int newTop;
 
         if (offsetX > 0){
-            newLeft = Math.round(offsetX);
+            newLeft = Math.toIntExact(Math.round(offsetX));
         }else{
             newLeft = 0;
             context.setOffsetX(0);
         }
         if (offsetY > 0){
-            newTop = Math.round(offsetY);
+            newTop = Math.toIntExact(Math.round(offsetY));
         }else{
             newTop = 0;
             context.setOffsetY(0);
         }
 
-        int newW = Math.round(bitmap.getWidth()/currentScale);
-        int newH = Math.round(imageView.getHeight()/currentScale);
+        int newW = Math.toIntExact(Math.round(bitmap.getWidth() / currentScale));
+        int newH = Math.toIntExact(Math.round(imageView.getHeight() / currentScale));
 
         int newRight;
 
@@ -191,12 +191,12 @@ public class BitmapUtility {
         return resultBmp;
     }
 
-    public static Bitmap adaptScrollView(Bitmap bitmapScroll, View view,float scrollOffset){
+    public static Bitmap adaptScrollView(Bitmap bitmapScroll, View view,double scrollOffset){
         int viewW = view.getWidth();
         int viewH = view.getHeight();
 
         if ((viewW != 0) && (viewH != 0)) {
-            int offset = Math.round(scrollOffset);
+            int offset = Math.toIntExact(Math.round(scrollOffset));
 
             Rect rect = new Rect(0, offset, viewW, viewH+offset);
             assert(rect.left < rect.right && rect.top < rect.bottom);

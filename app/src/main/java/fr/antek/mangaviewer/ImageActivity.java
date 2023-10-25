@@ -51,17 +51,17 @@ public class ImageActivity extends AppCompatActivity {
     private Bitmap bitmap;
     private Bitmap bitmapToDisplay;
     private Bitmap bitmapScroll;
-    private float offsetX = 0f;
-    private float offsetY = 0f;
-    private float currentFocusX = 0f;
-    private float currentFocusY = 0f;
-    private float currentScale = 1.0f;
+    private double offsetX = 0f;
+    private double offsetY = 0f;
+    private double currentFocusX = 0f;
+    private double currentFocusY = 0f;
+    private double currentScale = 1.0f;
     private int currentOrientation;
     private float currentXSlide;
     private float currentYSlide;
     private boolean firstLoad = true;
     private Settings settings;
-    private float scrollOffset = 0;
+    private double scrollOffset = 0;
     private Page thisPage;
     private String splitStep= null;
     private int pageNumber = 1;
@@ -75,7 +75,6 @@ public class ImageActivity extends AppCompatActivity {
     private ArrayList<Bitmap> bitmapDown;
     private ArrayList<Page> pageDown;
     private Bitmap thisBitmap;
-    private float oldOffsetY;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -186,11 +185,11 @@ public class ImageActivity extends AppCompatActivity {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (currentAction.equals("none")){
                         if (currentScale == 1.0f){
-                            float x = event.getX();
-                            float y = event.getY();
+                            double x = event.getX();
+                            double y = event.getY();
 
-                            int moveX = Math.round(currentXSlide - x);
-                            int moveY = Math.round(currentYSlide - y);
+                            int moveX = Math.toIntExact(Math.round(currentXSlide - x));
+                            int moveY = Math.toIntExact(Math.round(currentYSlide - y));
                             int width = imageView.getWidth();
                             if (Math.sqrt(moveY*moveY+moveX*moveX)>width/4){
                                 if (Math.abs(moveX) > Math.abs(moveY)){
@@ -203,8 +202,8 @@ public class ImageActivity extends AppCompatActivity {
                             }else{
                                 int height = imageView.getHeight();
 
-                                float relativeX = x / width;
-                                float relativeY = y / height;
+                                double relativeX = x / width;
+                                double relativeY = y / height;
 
                                 if ((relativeY < 0.15) || (relativeY > 0.85)) {
                                     toggle();
@@ -328,12 +327,12 @@ public class ImageActivity extends AppCompatActivity {
         }
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            float newFocusX = detector.getFocusX();
-            float newFocusY = detector.getFocusY();
+            double newFocusX = detector.getFocusX();
+            double newFocusY = detector.getFocusY();
 
             currentAction = "zoom";
 
-            float newScale = detector.getScaleFactor();
+            double newScale = detector.getScaleFactor();
 
             currentScale = Math.max(1.0f, Math.min(currentScale*newScale, 10.0f));
 
@@ -874,11 +873,11 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
-    public void setOffsetX(float offsetX){
+    public void setOffsetX(double offsetX){
         this.offsetX = offsetX;
     }
 
-    public void setOffsetY(float offsetY){
+    public void setOffsetY(double offsetY){
         this.offsetY = offsetY;
     }
 
