@@ -45,11 +45,10 @@ public class ImageActivity extends AppCompatActivity {
     private SharedPreferences memoire;
     private Page prevPage;
     private Page nextPage;
-    private Boolean noOtherAction = true;
+    private String currentAction = "none";
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
     private Bitmap bitmap;
-    private Bitmap bitmapRaw;
     private Bitmap bitmapToDisplay;
     private Bitmap bitmapScroll;
     private float offsetX = 0f;
@@ -62,7 +61,7 @@ public class ImageActivity extends AppCompatActivity {
     private float currentYSlide;
     private boolean firstLoad = true;
     private Settings settings;
-    private float scrollOffset = 0;
+    //private float offsetY = 0;
     private Page thisPage;
     private String splitStep= null;
     private int pageNumber = 1;
@@ -76,7 +75,7 @@ public class ImageActivity extends AppCompatActivity {
     private ArrayList<Bitmap> bitmapDown;
     private ArrayList<Page> pageDown;
     private Bitmap thisBitmap;
-    private int oldOffsetY;
+    private float oldOffsetY;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -150,30 +149,30 @@ public class ImageActivity extends AppCompatActivity {
                     currentYSlide = event.getY();
                 }
 
-                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                if ((event.getAction() == MotionEvent.ACTION_MOVE) && (!currentAction.equals("zoom"))) {
+                    currentAction = "move";
                     if (settings.getScroll()) {
                         if (event.getPointerCount() == 1) {
-                            noOtherAction = false;
                             if ((currentScale == 1.0f)){
-                                scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                                offsetY = offsetY - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                                 currentYSlide = event.getY();
                                 updateScrollBitmap();
                                 displayBitmap();
                             }else{
-                                scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
-                                offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                                offsetY = offsetY - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                                offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
                                 currentYSlide = event.getY();
                                 updateScrollBitmap();
                                 currentXSlide = event.getX();
 
-                                Bitmap cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
+                                Bitmap cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, offsetY, currentScale, contextThis, imageView);
                                 imageView.setImageBitmap(cropedBitmap);
                             }
 
                         }
 
                     }else {
-                        if ((noOtherAction) && (currentScale != 1.0f) && (event.getPointerCount() == 1)) {
+                        if ((currentScale != 1.0f) && (event.getPointerCount() == 1)) {
                             offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                             offsetY = offsetY - (event.getY() - currentYSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
                             Bitmap cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, this);
@@ -185,7 +184,7 @@ public class ImageActivity extends AppCompatActivity {
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (noOtherAction){
+                    if (currentAction.equals("none")){
                         if (currentScale == 1.0f){
                             float x = event.getX();
                             float y = event.getY();
@@ -219,7 +218,7 @@ public class ImageActivity extends AppCompatActivity {
                             }
                         }
                     }else{
-                        noOtherAction = true;
+                        currentAction = "none";
                     }
 
                 }
@@ -324,6 +323,7 @@ public class ImageActivity extends AppCompatActivity {
         public boolean onScaleBegin(ScaleGestureDetector detector) {
             currentFocusX = detector.getFocusX();
             currentFocusY = detector.getFocusY();
+
             return true;
         }
         @Override
@@ -331,28 +331,28 @@ public class ImageActivity extends AppCompatActivity {
             float newFocusX = detector.getFocusX();
             float newFocusY = detector.getFocusY();
 
-            noOtherAction = false;
+            currentAction = "zoom";
 
             float newScale = detector.getScaleFactor();
 
             currentScale = Math.max(1.0f, Math.min(currentScale*newScale, 10.0f));
 
-            offsetX = (offsetX/newScale-newFocusX/newScale+newFocusX);
-            offsetY = (offsetY/newScale-newFocusY/newScale+newFocusY);
+            offsetX = ((offsetX-newFocusX)/newScale+newFocusX);
+            offsetY = ((offsetY-newFocusY)/newScale+newFocusY);
 
-            offsetX = offsetX + ((currentFocusX - newFocusX)/currentScale)/imageView.getWidth()*bitmap.getWidth();
-            offsetY = offsetY + ((currentFocusY - newFocusY)/currentScale)/imageView.getHeight()*bitmap.getHeight();
+            offsetX = offsetX + ((currentFocusX - newFocusX)/currentScale);
+            offsetY = offsetY + ((currentFocusY - newFocusY)/currentScale);
 
             currentFocusX = newFocusX;
             currentFocusY = newFocusY;
 
+
+
             Bitmap cropedBitmap;
             if (settings.getScroll()){
-
-                scrollOffset = scrollOffset + (offsetY - oldOffsetY);
-                oldOffsetY = Math.round(offsetY);
-                cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
+                cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, offsetY, currentScale, contextThis, imageView);
                 updateScrollBitmap();
+
             }else{
                 cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, contextThis);
             }
@@ -367,11 +367,15 @@ public class ImageActivity extends AppCompatActivity {
     private class DoubleTapListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDoubleTap(@NonNull MotionEvent e) {
-            noOtherAction = false;
+            currentAction = "doubleTap";
             if (currentScale != 1.0f) {
                 currentScale = 1.0f;
+                if (settings.getScroll()){
+                    offsetY = upH;
+                }else{
+                    offsetY = 0f;
+                }
                 offsetX = 0f;
-                offsetY = 0f;
                 displayBitmap();
             }
             return true;
@@ -379,18 +383,18 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     private void displayBitmap(){
-            if (settings.getScroll()){
-                if (bitmapScroll != null) {
-                    bitmap = BitmapUtility.adaptScrollView(bitmapScroll, imageView, scrollOffset);
-                    imageView.setImageBitmap(bitmap);
-                }
-            }else {
-                if (bitmapToDisplay != null) {
-                    bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
-                    bitmap = BitmapUtility.correctRatio(bitmap, imageView);
-                    imageView.setImageBitmap(bitmap);
-                }
+        if (settings.getScroll()){
+            if (bitmapScroll != null) {
+                bitmap = BitmapUtility.adaptScrollView(bitmapScroll, imageView, offsetY);
+                imageView.setImageBitmap(bitmap);
             }
+        }else {
+            if (bitmapToDisplay != null) {
+                bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
+                bitmap = BitmapUtility.correctRatio(bitmap, imageView);
+                imageView.setImageBitmap(bitmap);
+            }
+        }
 
     }
 
@@ -413,14 +417,14 @@ public class ImageActivity extends AppCompatActivity {
             createBitmapDown();
             thisBitmap = BitmapUtility.adaptWidth(thisPage.getBitmap(),imageView);
             centerH = thisBitmap.getHeight();
-            scrollOffset = upH + (centerH - viewH)/2;
+            offsetY = upH + (centerH - viewH)/2;
 
-            if ((scrollOffset < upH - viewH/10 ) && (upH ==0)){
-                scrollOffset = upH - viewH/10;
+            if ((offsetY < upH - viewH/10 ) && (upH ==0)){
+                offsetY = upH - viewH/10;
             }
 
-            if ((viewH + scrollOffset > upH + centerH + downH + viewH/10) && (downH == 0)){
-                scrollOffset = upH + centerH + downH - viewH + viewH/10;
+            if ((viewH + offsetY > upH + centerH + downH + viewH/10) && (downH == 0)){
+                offsetY = upH + centerH + downH - viewH + viewH/10;
             }
 
             return mergeBitmap();
@@ -468,15 +472,15 @@ public class ImageActivity extends AppCompatActivity {
 
     public void updateScrollBitmap(){
 
-        if ((scrollOffset < upH - viewH/10 ) && (upH ==0)){
-            scrollOffset = upH - viewH/10;
+        if ((offsetY < -viewH/10 ) && (upH ==0)){
+            offsetY = - viewH/10;
         }
 
-        if ((viewH + scrollOffset > upH + centerH + downH + viewH/10) && (downH == 0)){
-            scrollOffset = upH + centerH + downH - viewH + viewH/10;
+        if ((viewH + offsetY > upH + centerH + viewH/10) && (downH == 0)){
+            offsetY = upH + centerH - viewH + viewH/10;
         }
 
-        if (upH > scrollOffset +viewH/2){
+        if (upH > offsetY/currentScale +viewH/2){
             Log.d("Moi", "prev");
 
             bitmapDown.add(0, thisBitmap);
@@ -498,7 +502,7 @@ public class ImageActivity extends AppCompatActivity {
             bitmapScroll = mergeBitmap();
 
             onNewPage();
-        }else if (upH + centerH < scrollOffset +viewH/2){
+        }else if (upH + centerH < offsetY/currentScale +viewH/2){
             Log.d("Moi", "next");
             bitmapUp.add(0, thisBitmap);
             pageUp.add(0,thisPage);
@@ -532,7 +536,8 @@ public class ImageActivity extends AppCompatActivity {
                 }else {
                     Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
                     upH = upH + prevBitmap.getHeight();
-                    scrollOffset = scrollOffset + prevBitmap.getHeight();
+
+                    offsetY = offsetY + prevBitmap.getHeight();
                     pageUp.add(page);
                     bitmapUp.add(prevBitmap);
                 }
@@ -566,7 +571,7 @@ public class ImageActivity extends AppCompatActivity {
         bitmapUp = new ArrayList<Bitmap>();
         pageUp = new ArrayList<Page>();
         int i = 0;
-        scrollOffset = scrollOffset - (upH + centerH);
+        offsetY = offsetY - (upH + centerH);
 
         upH = 0;
         while ((upH < viewH) && (i < oldBitmapUp.size())) {
@@ -576,7 +581,7 @@ public class ImageActivity extends AppCompatActivity {
 
             i++;
         }
-        scrollOffset = scrollOffset + upH;
+        offsetY = offsetY + upH;
     }
 
     public void cutDown(){
