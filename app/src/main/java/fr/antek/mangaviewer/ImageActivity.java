@@ -173,9 +173,6 @@ public class ImageActivity extends AppCompatActivity {
                                             updateInProgress = false;
                                         }
                                     });
-
-
-
                                 }
                                 displayBitmap();
                                 onNewPage();
@@ -185,7 +182,21 @@ public class ImageActivity extends AppCompatActivity {
                                 scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                                 offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
                                 currentYSlide = event.getY();
-                                updateScrollBitmap();
+                                if (!updateInProgress){
+                                    updateInProgress = true;
+
+                                    ExecutorService service = Executors.newSingleThreadExecutor();
+                                    service.execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            updateScrollBitmap();
+                                            updateInProgress = false;
+                                        }
+                                    });
+                                }
+                                displayBitmap();
+                                onNewPage();
+
                                 currentXSlide = event.getX();
 
                                 Bitmap cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
@@ -376,7 +387,21 @@ public class ImageActivity extends AppCompatActivity {
                 currentFocusY = newFocusY;
 
                 cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, offsetY + scrollOffset, currentScale, contextThis, imageView);
-                updateScrollBitmap();
+                if (!updateInProgress){
+                    updateInProgress = true;
+
+                    ExecutorService service = Executors.newSingleThreadExecutor();
+                    service.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateScrollBitmap();
+                            updateInProgress = false;
+                        }
+                    });
+                }
+                displayBitmap();
+                onNewPage();
+
             }else{
                 //handling focus movement on Y
                 offsetY = offsetY + ((currentFocusY - newFocusY)/currentScale);

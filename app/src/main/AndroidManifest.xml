@@ -19,7 +19,6 @@
             android:name=".ImageActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="false"
-            android:label="@string/title_activity_image"
             android:theme="@style/Theme.MangaViewer.Fullscreen" />
         <activity
             android:name=".DirectoryActivity"

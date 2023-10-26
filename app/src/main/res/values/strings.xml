@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">MangaViewer</string>
-    <string name="title_activity_page">PageActivity</string>
-    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <integer name="tempsToast">3</integer>
+
     <string name="buttonContinueText">Continuer</string>
     <string name="buttonChooseDir">Changer Dossier</string>
     <string name="buttonUpdate">Actualiser</string>
@@ -9,8 +9,6 @@
     <string name="derniereImage">Ceci est la dernière page de l\'histoire</string>
     <string name="premiereImage">Ceci est la première page de l\'histoire</string>
     <string name="fileNotFound">File Not Found</string>
-    <integer name="tempsToast">3</integer>
-    <string name="title_activity_image">ImageActivity</string>
     <string name="home">Accueil</string>
     <string name="miniature">miniature</string>
     <string name="goToPage">Changer de page</string>
@@ -32,5 +30,4 @@
     <string name="Import">Importer les données</string>
     <string name="SaveSucess">Fichier créé avec succès</string>
     <string name="SaveFail">Erreur lors de la création du fichier</string>
-
 </resources>
