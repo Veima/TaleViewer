@@ -336,37 +336,28 @@ public class ImageActivity extends AppCompatActivity {
 
             currentScale = Math.max(1.0f, Math.min(currentScale*newScale, 10.0f));
 
+            //handling zoom on without moving
+            offsetX = ((offsetX-newFocusX)/newScale+newFocusX);
+            offsetY = ((offsetY-newFocusY)/newScale+newFocusY);
+
+            //handling focus movement on X
+            offsetX = offsetX + ((currentFocusX - newFocusX)/currentScale);
+            currentFocusX = newFocusX;
 
 
             Bitmap cropedBitmap;
             if (settings.getScroll()){
-
-                offsetX = (offsetX/newScale-newFocusX/newScale+newFocusX);
-                offsetY = (offsetY/newScale-newFocusY/newScale+newFocusY);
-
-                offsetX = offsetX + ((currentFocusX - newFocusX)/currentScale);
+                //handling focus movement on Y
                 scrollOffset = scrollOffset + ((currentFocusY - newFocusY))/currentScale;
-
-                currentFocusX = newFocusX;
                 currentFocusY = newFocusY;
 
-                //scrollOffset = Math.round(scrollOffset + (offsetY - oldOffsetY));
-
-                Log.d("MOI", "offsetY: " + offsetY);
-                Log.d("MOI", "scrollOffset: " + scrollOffset);
-                Log.d("MOI", "dif: " + (scrollOffset - offsetY));
-                Log.d("MOI", "===================================");
                 cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, offsetY + scrollOffset, currentScale, contextThis, imageView);
                 updateScrollBitmap();
             }else{
-                offsetX = (offsetX/newScale-newFocusX/newScale+newFocusX);
-                offsetY = (offsetY/newScale-newFocusY/newScale+newFocusY);
-
-                offsetX = offsetX + ((currentFocusX - newFocusX)/currentScale);
+                //handling focus movement on Y
                 offsetY = offsetY + ((currentFocusY - newFocusY)/currentScale);
-
-                currentFocusX = newFocusX;
                 currentFocusY = newFocusY;
+
                 cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, contextThis);
             }
 
