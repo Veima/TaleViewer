@@ -4,13 +4,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
-import android.util.Log;
 
 public class PDFPage {
-    private PDF parentPDF;
+    private final PDF parentPDF;
     private Bitmap bitmapRaw;
     private Boolean isWide;
-    private PdfRenderer.Page pageRenderer;
     private final int pageId;
     private Boolean isOpen = false;
 
@@ -21,7 +19,7 @@ public class PDFPage {
     }
 
     public void open(){
-        pageRenderer = parentPDF.getPdfRenderer().openPage(pageId);
+        PdfRenderer.Page pageRenderer = parentPDF.getPdfRenderer().openPage(pageId);
 
         bitmapRaw = Bitmap.createBitmap(pageRenderer.getWidth()*4, pageRenderer.getHeight()*4, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmapRaw);
@@ -50,13 +48,5 @@ public class PDFPage {
             open();
         }
         return isWide;
-    }
-
-    public Boolean getOpen() {
-        return isOpen;
-    }
-
-    public int getPageId() {
-        return pageId;
     }
 }

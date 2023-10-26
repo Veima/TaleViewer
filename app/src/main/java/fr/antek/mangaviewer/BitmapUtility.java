@@ -227,7 +227,7 @@ public class BitmapUtility {
     }
 
     public static Bitmap mergeBitmap(ArrayList<Bitmap> bitmapUp,Bitmap thisBitmap,ArrayList<Bitmap> bitmapDown){
-        ArrayList<Bitmap> bitmapAll = new ArrayList<Bitmap>();
+        ArrayList<Bitmap> bitmapAll = new ArrayList<>();
 
         for (int i = bitmapUp.size() - 1; i >= 0; i--) {
             bitmapAll.add(bitmapUp.get(i));

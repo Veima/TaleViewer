@@ -1,11 +1,9 @@
 package fr.antek.mangaviewer;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,7 +29,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -165,13 +162,10 @@ public class ImageActivity extends AppCompatActivity {
                                 if (!updateInProgress){
                                     updateInProgress = true;
 
-                                    ExecutorService service = Executors.newSingleThreadExecutor();
-                                    service.execute(new Runnable() {
-                                        @Override
-                                        public void run() {
+                                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                                    executor.execute(() -> {
                                             updateScrollBitmap();
                                             updateInProgress = false;
-                                        }
                                     });
                                 }
                                 displayBitmap();
@@ -185,13 +179,10 @@ public class ImageActivity extends AppCompatActivity {
                                 if (!updateInProgress){
                                     updateInProgress = true;
 
-                                    ExecutorService service = Executors.newSingleThreadExecutor();
-                                    service.execute(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            updateScrollBitmap();
-                                            updateInProgress = false;
-                                        }
+                                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                                    executor.execute(() -> {
+                                        updateScrollBitmap();
+                                        updateInProgress = false;
                                     });
                                 }
                                 displayBitmap();
@@ -206,7 +197,9 @@ public class ImageActivity extends AppCompatActivity {
                         }
 
                     }else {
+                        Log.d("MOI","test");
                         if ((currentScale != 1.0f) && (event.getPointerCount() == 1)) {
+
                             offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                             offsetY = offsetY - (event.getY() - currentYSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
                             Bitmap cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, this);
@@ -218,43 +211,48 @@ public class ImageActivity extends AppCompatActivity {
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (currentAction.equals("none")){
-                        if (currentScale == 1.0f){
-                            double x = event.getX();
-                            double y = event.getY();
+                    if (currentScale == 1.0f) {
+                        double x = event.getX();
+                        double y = event.getY();
 
-                            int moveX = Math.toIntExact(Math.round(currentXSlide - x));
-                            int moveY = Math.toIntExact(Math.round(currentYSlide - y));
-                            int width = imageView.getWidth();
-                            if (Math.sqrt(moveY*moveY+moveX*moveX)>width/4){
-                                if (Math.abs(moveX) > Math.abs(moveY)){
-                                    if ((moveX > 0) && (moveX > width/3)){
-                                        goNextPage();
-                                    }else if ((moveX < 0) && (moveX < width/(-3))){
-                                        goPrevPage();
-                                    }
+                        int moveX = Math.toIntExact(Math.round(currentXSlide - x));
+                        int moveY = Math.toIntExact(Math.round(currentYSlide - y));
+                        int width = imageView.getWidth();
+
+                        if (currentAction.equals("none")) {
+
+                            int height = imageView.getHeight();
+
+                            double relativeX = x / width;
+                            double relativeY = y / height;
+
+                            if ((relativeY < 0.15) || (relativeY > 0.85)) {
+                                toggle();
+                            } else if (!settings.getScroll()) {
+                                if (relativeX < 0.5) {
+                                    goPrevPage();
+                                } else {
+                                    goNextPage();
                                 }
-                            }else{
-                                int height = imageView.getHeight();
+                            }
+                        } else if ((currentAction.equals("move")) && (!settings.getScroll())) {
+                            if (Math.sqrt(moveY * moveY + moveX * moveX) > (width / 4.0)) {
 
-                                double relativeX = x / width;
-                                double relativeY = y / height;
-
-                                if ((relativeY < 0.15) || (relativeY > 0.85)) {
-                                    toggle();
-                                }else if (!settings.getScroll()){
-                                    if (relativeX < 0.5) {
-                                        goPrevPage();
-                                    }else{
+                                if (Math.abs(moveX) > Math.abs(moveY)) {
+                                    if ((moveX > 0) && (moveX > width / 3)) {
                                         goNextPage();
+                                    } else if ((moveX < 0) && (moveX < width / (-3))) {
+                                        goPrevPage();
                                     }
                                 }
                             }
+                            currentAction = "none";
+                        } else {
+                            currentAction = "none";
                         }
-                    }else{
+                    }else {
                         currentAction = "none";
                     }
-
                 }
                 return true;
             });
@@ -390,13 +388,10 @@ public class ImageActivity extends AppCompatActivity {
                 if (!updateInProgress){
                     updateInProgress = true;
 
-                    ExecutorService service = Executors.newSingleThreadExecutor();
-                    service.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateScrollBitmap();
-                            updateInProgress = false;
-                        }
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    executor.execute(() -> {
+                        updateScrollBitmap();
+                        updateInProgress = false;
                     });
                 }
                 displayBitmap();
@@ -415,6 +410,7 @@ public class ImageActivity extends AppCompatActivity {
 
             return true;
         }
+
     }
 
     private class DoubleTapListener extends GestureDetector.SimpleOnGestureListener {
@@ -469,14 +465,14 @@ public class ImageActivity extends AppCompatActivity {
             createBitmapDown();
             thisBitmap = BitmapUtility.adaptWidth(thisPage.getBitmap(),imageView);
             centerH = thisBitmap.getHeight();
-            scrollOffset = upH + (centerH - viewH)/2;
+            scrollOffset = upH + (centerH - viewH)/2.0;
 
-            if ((scrollOffset < upH - viewH/10 ) && (upH ==0)){
-                scrollOffset = upH - viewH/10;
+            if ((scrollOffset < upH - viewH/10.0 ) && (upH ==0)){
+                scrollOffset = upH - viewH/10.0;
             }
 
-            if ((viewH + scrollOffset > upH + centerH + downH + viewH/10) && (downH == 0)){
-                scrollOffset = upH + centerH + downH - viewH + viewH/10;
+            if ((viewH + scrollOffset > upH + centerH + downH + viewH/10.0) && (downH == 0)){
+                scrollOffset = upH + centerH + downH - viewH + viewH/10.0;
             }
 
             return BitmapUtility.mergeBitmap(bitmapUp,thisBitmap,bitmapDown);
@@ -486,10 +482,10 @@ public class ImageActivity extends AppCompatActivity {
 
     public void createBitmapUp(){
         upH = 0;
-        bitmapUp = new ArrayList<Bitmap>();
-        pageUp = new ArrayList<Page>();
+        bitmapUp = new ArrayList<>();
+        pageUp = new ArrayList<>();
         Page page = thisPage;
-        Boolean end = false;
+        boolean end = false;
         while ((upH < viewH) && !end){
             page = page.getPrevPage();
             if (page == null){
@@ -505,10 +501,10 @@ public class ImageActivity extends AppCompatActivity {
 
     private void createBitmapDown(){
         downH = 0;
-        bitmapDown = new ArrayList<Bitmap>();
-        pageDown = new ArrayList<Page>();
+        bitmapDown = new ArrayList<>();
+        pageDown = new ArrayList<>();
         Page page = thisPage;
-        Boolean end = false;
+        boolean end = false;
         while ((downH < viewH) && !end) {
             page = page.getNextPage();
             if (page == null){
@@ -527,16 +523,15 @@ public class ImageActivity extends AppCompatActivity {
         double oldScrollOffset = scrollOffset;
         newScrollOffset = scrollOffset;
 
-        if ((newScrollOffset < upH - viewH/10 ) && (upH ==0)){
-            newScrollOffset = upH - viewH/10;
+        if ((newScrollOffset < upH - viewH/10.0) && (upH ==0)){
+            newScrollOffset = upH - viewH/10.0;
         }
 
-        if ((viewH + newScrollOffset > upH + centerH + downH + viewH/10) && (downH == 0)){
-            newScrollOffset = upH + centerH + downH - viewH + viewH/10;
+        if ((viewH + newScrollOffset > upH + centerH + downH + viewH/10.0) && (downH == 0)){
+            newScrollOffset = upH + centerH + downH - viewH + viewH/10.0;
         }
 
-        if (upH > newScrollOffset +viewH/2){
-            Log.d("Moi", "prev");
+        if (upH > newScrollOffset +viewH/2.0){
 
             bitmapDown.add(0, thisBitmap);
             pageDown.add(0,thisPage);
@@ -556,8 +551,7 @@ public class ImageActivity extends AppCompatActivity {
 
             bitmapScroll = BitmapUtility.mergeBitmap(bitmapUp,thisBitmap,bitmapDown);
 
-        }else if (upH + centerH < newScrollOffset +viewH/2){
-            Log.d("Moi", "next");
+        }else if (upH + centerH < newScrollOffset +viewH/2.0){
             bitmapUp.add(0, thisBitmap);
             pageUp.add(0,thisPage);
 
@@ -581,7 +575,7 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     public void completeUp(){
-        Boolean end = false;
+        boolean end = false;
         if (pageUp.size() > 0){
             Page page = pageUp.get(pageUp.size()-1);
             while ((upH < viewH) && !end){
@@ -601,7 +595,7 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     public void completeDown(){
-        Boolean end = false;
+        boolean end = false;
         if (pageDown.size() > 0){
             Page page = pageDown.get(pageDown.size()-1);
             while ((downH < viewH) && !end){
@@ -623,8 +617,8 @@ public class ImageActivity extends AppCompatActivity {
 
         ArrayList<Bitmap> oldBitmapUp = bitmapUp;
         ArrayList<Page> oldPageUp = pageUp;
-        bitmapUp = new ArrayList<Bitmap>();
-        pageUp = new ArrayList<Page>();
+        bitmapUp = new ArrayList<>();
+        pageUp = new ArrayList<>();
         int i = 0;
         newScrollOffset = newScrollOffset - (upH + centerH);
 
@@ -642,8 +636,8 @@ public class ImageActivity extends AppCompatActivity {
     public void cutDown(){
         ArrayList<Bitmap> oldBitmapDown = bitmapDown;
         ArrayList<Page> oldPageDown = pageDown;
-        bitmapDown = new ArrayList<Bitmap>();
-        pageDown = new ArrayList<Page>();
+        bitmapDown = new ArrayList<>();
+        pageDown = new ArrayList<>();
         int i = 0;
         downH = 0;
         while ((downH < viewH) && (i < oldBitmapDown.size())) {
@@ -828,39 +822,31 @@ public class ImageActivity extends AppCompatActivity {
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
 
-        builder.setPositiveButton(getString(R.string.validationButton), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String inputText = input.getText().toString();
-                try {
-                    int number = Integer.parseInt(inputText);
-                    if (number >= 1 && number <= ((PDF) thisFile).getPdfRenderer().getPageCount()) {
-                        pageNumber = number;
-                        thisPage = new Page(thisFile,thisActivity,"firstPossible",pageNumber);
-                        if (settings.getScroll()){
-                            bitmapScroll = generateScrollBitmap();
-                        }else{
-                            bitmapToDisplay = thisPage.getBitmap();
-                            prevPage = thisPage.getPrevPage();
-                            nextPage = thisPage.getNextPage();
-                        }
-                        displayBitmap();
-                        onNewPage();
-                    } else {
-                        Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount(), Toast.LENGTH_SHORT).show();
+        builder.setPositiveButton(getString(R.string.validationButton), (dialog, which) -> {
+            String inputText = input.getText().toString();
+            try {
+                int number = Integer.parseInt(inputText);
+                if (number >= 1 && number <= ((PDF) thisFile).getPdfRenderer().getPageCount()) {
+                    pageNumber = number;
+                    thisPage = new Page(thisFile,thisActivity,"firstPossible",pageNumber);
+                    if (settings.getScroll()){
+                        bitmapScroll = generateScrollBitmap();
+                    }else{
+                        bitmapToDisplay = thisPage.getBitmap();
+                        prevPage = thisPage.getPrevPage();
+                        nextPage = thisPage.getNextPage();
                     }
-                } catch (NumberFormatException e) {
+                    displayBitmap();
+                    onNewPage();
+                } else {
                     Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount(), Toast.LENGTH_SHORT).show();
                 }
+            } catch (NumberFormatException e) {
+                Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount(), Toast.LENGTH_SHORT).show();
             }
         });
 
-        builder.setNegativeButton(getString(R.string.cancelButton), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        builder.setNegativeButton(getString(R.string.cancelButton), (dialog, which) -> dialog.cancel());
 
         builder.show();
     }

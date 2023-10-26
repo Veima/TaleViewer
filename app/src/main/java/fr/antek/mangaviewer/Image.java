@@ -7,7 +7,6 @@ import android.provider.MediaStore;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Image extends File{

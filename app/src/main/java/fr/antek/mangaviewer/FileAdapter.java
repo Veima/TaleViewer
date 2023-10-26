@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -68,9 +69,7 @@ public class FileAdapter extends ArrayAdapter {
                         Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
                         ((Image) file).setMiniature(bitmap);
                     }
-                    handler.post(() -> {
-                        imageView.setImageBitmap(((Image) file).getMiniature());
-                    });
+                    handler.post(() -> imageView.setImageBitmap(((Image) file).getMiniature()));
                 });
 
             }
@@ -81,7 +80,7 @@ public class FileAdapter extends ArrayAdapter {
                     Bitmap bitmapRaw;
                     try {
                         ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFileDescriptor(((PDF) file).getUri(), "r");
-                        PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
+                        PdfRenderer pdfRenderer = new PdfRenderer(Objects.requireNonNull(fileDescriptor));
                         PdfRenderer.Page pdfPage = pdfRenderer.openPage(0);
 
                         bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth(), pdfPage.getHeight(), Bitmap.Config.ARGB_8888);
@@ -98,9 +97,7 @@ public class FileAdapter extends ArrayAdapter {
                         Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
                         ((PDF) file).setMiniature(bitmap);
                     }
-                    handler.post(() -> {
-                        imageView.setImageBitmap(((PDF) file).getMiniature());
-                    });
+                    handler.post(() -> imageView.setImageBitmap(((PDF) file).getMiniature()));
                 });
             }
             imageView.setImageBitmap(((PDF) file).getMiniature());

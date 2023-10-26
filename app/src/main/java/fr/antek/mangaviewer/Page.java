@@ -1,20 +1,13 @@
 package fr.antek.mangaviewer;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.pdf.PdfRenderer;
-import android.provider.MediaStore;
-import android.util.Log;
-
-import java.io.IOException;
 
 public class Page {
-    private File parentFile;
-    private ImageActivity activity;
+    private final File parentFile;
+    private final ImageActivity activity;
     private String splitStep;
     private int pageNumber;
-    private Settings settings;
+    private final Settings settings;
     private Boolean doSplit = null;
 
     public Page(File parentFile, ImageActivity activity, String splitStep, int pageNumber) {
@@ -79,24 +72,27 @@ public class Page {
             bitmapRaw = null;
         }
         if (doSplit){
-            if (splitStep.equals("fullFirst")) {
-                resultBitmap = bitmapRaw;
-            } else if (splitStep.equals("halfFirst")) {
-                resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPage(), settings.getOverlap());
-            } else if (splitStep.equals("fullBetween")) {
-                resultBitmap = bitmapRaw;
-            } else if (splitStep.equals("halfLast")) {
-                resultBitmap = BitmapUtility.splitPage(bitmapRaw, !settings.getFirstPage(), settings.getOverlap());
-            } else if (splitStep.equals("fullLast")) {
-                resultBitmap = bitmapRaw;
-            }else {
-                if (settings.getFullBefore()) {
+            switch (splitStep) {
+                case "fullFirst":
+                case "fullBetween":
+                case "fullLast":
                     resultBitmap = bitmapRaw;
-                    splitStep = "fullFirst";
-                } else {
+                    break;
+                case "halfFirst":
                     resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPage(), settings.getOverlap());
-                    splitStep = "halfFirst";
-                }
+                    break;
+                case "halfLast":
+                    resultBitmap = BitmapUtility.splitPage(bitmapRaw, !settings.getFirstPage(), settings.getOverlap());
+                    break;
+                default:
+                    if (settings.getFullBefore()) {
+                        resultBitmap = bitmapRaw;
+                        splitStep = "fullFirst";
+                    } else {
+                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPage(), settings.getOverlap());
+                        splitStep = "halfFirst";
+                    }
+                    break;
             }
         }else{
             resultBitmap = bitmapRaw;
@@ -123,30 +119,31 @@ public class Page {
             findSplit();
         }
         if (doSplit) {
-            if (splitStep.equals("fullFirst")){
-                return getFromPrevBitmap();
-            }else if(splitStep.equals("halfFirst")) {
-                if (settings.getFullBefore()){
-                    return new Page(parentFile, activity, "fullFirst", pageNumber);
-                }else{
+            switch (splitStep) {
+                case "fullFirst":
                     return getFromPrevBitmap();
-                }
-            }else if(splitStep.equals("fullBetween")) {
-                return new Page(parentFile, activity, "halfFirst", pageNumber);
-            }else if(splitStep.equals("halfLast")) {
-                if (settings.getFullBetween()){
-                    return new Page(parentFile, activity, "fullBetween", pageNumber);
-                }else{
+                case "halfFirst":
+                    if (settings.getFullBefore()) {
+                        return new Page(parentFile, activity, "fullFirst", pageNumber);
+                    } else {
+                        return getFromPrevBitmap();
+                    }
+                case "fullBetween":
                     return new Page(parentFile, activity, "halfFirst", pageNumber);
-                }
-            }else if(splitStep.equals("fullLast")) {
-                return new Page(parentFile, activity, "halfLast", pageNumber);
-            }else{
-                if (settings.getFullAfter()){
-                    return new Page(parentFile, activity, "fullLast", pageNumber);
-                }else{
-                    return new Page(parentFile, activity,  "halfLast", pageNumber);
-                }
+                case "halfLast":
+                    if (settings.getFullBetween()) {
+                        return new Page(parentFile, activity, "fullBetween", pageNumber);
+                    } else {
+                        return new Page(parentFile, activity, "halfFirst", pageNumber);
+                    }
+                case "fullLast":
+                    return new Page(parentFile, activity, "halfLast", pageNumber);
+                default:
+                    if (settings.getFullAfter()) {
+                        return new Page(parentFile, activity, "fullLast", pageNumber);
+                    } else {
+                        return new Page(parentFile, activity, "halfLast", pageNumber);
+                    }
             }
         }else{
             return getFromPrevBitmap();
@@ -182,30 +179,31 @@ public class Page {
             findSplit();
         }
         if (doSplit) {
-            if (splitStep.equals("fullFirst")){
-                return new Page(parentFile, activity, "halfFirst", pageNumber);
-            }else if(splitStep.equals("halfFirst")) {
-                if (settings.getFullBetween()){
-                    return new Page(parentFile, activity, "fullBetween", pageNumber);
-                }else{
+            switch (splitStep) {
+                case "fullFirst":
+                    return new Page(parentFile, activity, "halfFirst", pageNumber);
+                case "halfFirst":
+                    if (settings.getFullBetween()) {
+                        return new Page(parentFile, activity, "fullBetween", pageNumber);
+                    } else {
+                        return new Page(parentFile, activity, "halfLast", pageNumber);
+                    }
+                case "fullBetween":
                     return new Page(parentFile, activity, "halfLast", pageNumber);
-                }
-            }else if(splitStep.equals("fullBetween")) {
-                return new Page(parentFile, activity, "halfLast", pageNumber);
-            }else if(splitStep.equals("halfLast")) {
-                if (settings.getFullAfter()){
-                    return new Page(parentFile, activity, "fullLast", pageNumber);
-                }else{
+                case "halfLast":
+                    if (settings.getFullAfter()) {
+                        return new Page(parentFile, activity, "fullLast", pageNumber);
+                    } else {
+                        return getFromNextBitmap();
+                    }
+                case "fullLast":
                     return getFromNextBitmap();
-                }
-            }else if(splitStep.equals("fullLast")) {
-                return getFromNextBitmap();
-            }else{
-                if (settings.getFullBefore()) {
-                    return new Page(parentFile, activity, "fullFirst", pageNumber);
-                } else {
-                    return new Page(parentFile, activity,"halfFirst", pageNumber);
-                }
+                default:
+                    if (settings.getFullBefore()) {
+                        return new Page(parentFile, activity, "fullFirst", pageNumber);
+                    } else {
+                        return new Page(parentFile, activity, "halfFirst", pageNumber);
+                    }
             }
         }else{
             return getFromNextBitmap();

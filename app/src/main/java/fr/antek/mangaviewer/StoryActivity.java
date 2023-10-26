@@ -8,8 +8,6 @@ import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.view.Menu;
@@ -92,9 +90,7 @@ public class StoryActivity extends AppCompatActivity {
         if (hasFocus) {
             ExecutorService executor = Executors.newSingleThreadExecutor();
 
-            executor.execute(() -> {
-                chargeMiniature();
-            });
+            executor.execute(this::chargeMiniature);
 
         }
     }
@@ -185,7 +181,7 @@ public class StoryActivity extends AppCompatActivity {
                     Bitmap bitmapRaw;
                     try {
                         ParcelFileDescriptor fileDescriptor = this.getContentResolver().openFileDescriptor(((PDF) file).getUri(), "r");
-                        PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
+                        PdfRenderer pdfRenderer = new PdfRenderer(Objects.requireNonNull(fileDescriptor));
                         PdfRenderer.Page pdfPage = pdfRenderer.openPage(0);
 
                         bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth(), pdfPage.getHeight(), Bitmap.Config.ARGB_8888);

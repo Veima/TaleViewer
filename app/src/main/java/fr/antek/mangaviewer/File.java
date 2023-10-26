@@ -1,8 +1,6 @@
 package fr.antek.mangaviewer;
 
 
-import android.util.Log;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -13,7 +11,7 @@ public class File implements Comparable<File>{
     private final String path;
     private final DocumentFile doc;
     private final Directory parentFile;
-    private AppCompatActivity activity;
+    private final AppCompatActivity activity;
 
     public File(AppCompatActivity activity, String parentPath, DocumentFile doc, Directory parentFile) {
         this.activity = activity;

@@ -1,8 +1,6 @@
 package fr.antek.mangaviewer;
 
 
-import android.util.Log;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -55,7 +53,7 @@ public class Directory extends File{
             return new Directory(super.getActivity(), super.getPath(), file, this);
         }else if(isImage(file)){
             return new Image(super.getActivity(), super.getPath(), file, this);
-        }else if(file.getName().endsWith(".pdf")) {
+        }else if(Objects.requireNonNull(file.getName()).endsWith(".pdf")) {
             return new PDF(super.getActivity(), super.getPath(), file, this);
         }else{
             return null;
@@ -99,7 +97,7 @@ public class Directory extends File{
                 Image childFile = new Image(super.getActivity(), super.getPath(), childDoc, this);
                 fileList.add(childFile);
                 return childFile;
-            }else if(childDoc.getName().endsWith(".pdf")) {
+            }else if(Objects.requireNonNull(childDoc.getName()).endsWith(".pdf")) {
 
                 PDF childFile = new PDF(super.getActivity(), super.getPath(), childDoc, this);
                 fileList.add(childFile);

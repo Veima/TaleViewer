@@ -1,11 +1,11 @@
 package fr.antek.mangaviewer;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -13,55 +13,35 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import android.content.Context;
-import android.content.SharedPreferences;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.File;
-import java.util.Locale;
-import java.util.Map;
-import android.app.Activity;
-import androidx.documentfile.provider.DocumentFile;
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.Objects;
 
 public class ParameterActivity extends AppCompatActivity {
     private Uri storyFolderUri;
     private String path;
     private String activityAfter;
-    private Switch switchSplit;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch switchFirstPage;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch switchFullBefore;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch switchFullBetween;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch switchFullAfter;
     private TextView textOverlap;
     private SeekBar sliderOverlap;
     private TextView overlapValue;
-    private Switch switchScroll;
     private SharedPreferences memoire;
     private String textFirstPage;
-    private Button exportButton;
-    private Button importButton;
-    private static final String JSON_KEY = "data";
     public static final int FILE_PICKER_REQUEST_CODE = 1001;
 
 
@@ -78,7 +58,7 @@ public class ParameterActivity extends AppCompatActivity {
         Button buttonValid = findViewById(R.id.buttonValid);
         buttonValid.setOnClickListener(v -> returnActivity());
 
-        switchSplit = findViewById(R.id.switchSplit);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch switchSplit = findViewById(R.id.switchSplit);
         switchFirstPage = findViewById(R.id.switchFirstPage);
         switchFullBefore = findViewById(R.id.switchFullBefore);
         switchFullBetween = findViewById(R.id.switchFullBetween);
@@ -86,10 +66,10 @@ public class ParameterActivity extends AppCompatActivity {
         textOverlap = findViewById(R.id.textOverlap);
         sliderOverlap = findViewById(R.id.sliderOverlap);
         overlapValue = findViewById(R.id.overlapValue);
-        switchScroll = findViewById(R.id.switchScroll);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch switchScroll = findViewById(R.id.switchScroll);
 
-        exportButton = findViewById(R.id.buttonExport);
-        importButton = findViewById(R.id.buttonImport);
+        Button exportButton = findViewById(R.id.buttonExport);
+        Button importButton = findViewById(R.id.buttonImport);
 
         memoire = this.getSharedPreferences("memoire",MODE_PRIVATE);
         SharedPreferences.Editor editor = memoire.edit();
@@ -149,7 +129,7 @@ public class ParameterActivity extends AppCompatActivity {
         sliderOverlap.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int overlap = Math.round(seekBar.getProgress()/2);
+                int overlap = Math.toIntExact(Math.round(seekBar.getProgress() / 2.0));
                 editor.putInt("overlap", overlap);
                 editor.apply();
                 String textOverlapValue = overlap + "%";
@@ -186,24 +166,29 @@ public class ParameterActivity extends AppCompatActivity {
     }
 
     private void returnActivity(){
-        if (activityAfter.equals("MainActivity")){
-            Intent intentToMainActivity = new Intent(ParameterActivity.this, MainActivity.class);
-            startActivity(intentToMainActivity);
-        }else if (activityAfter.equals("StoryActivity")){
-            Intent intentToStoryActivity = new Intent(ParameterActivity.this, StoryActivity.class);
-            intentToStoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
-            intentToStoryActivity.putExtra("path", path);
-            startActivity(intentToStoryActivity);
-        }else if (activityAfter.equals("DirectoryActivity")){
-            Intent intentToDirectoryActivity = new Intent(ParameterActivity.this, DirectoryActivity.class);
-            intentToDirectoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
-            intentToDirectoryActivity.putExtra("path", path);
-            startActivity(intentToDirectoryActivity);
-        }else if (activityAfter.equals("ImageActivity")){
-            Intent intentToImageActivity = new Intent(ParameterActivity.this, ImageActivity.class);
-            intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
-            intentToImageActivity.putExtra("path", path);
-            startActivity(intentToImageActivity);
+        switch (activityAfter) {
+            case "MainActivity":
+                Intent intentToMainActivity = new Intent(ParameterActivity.this, MainActivity.class);
+                startActivity(intentToMainActivity);
+                break;
+            case "StoryActivity":
+                Intent intentToStoryActivity = new Intent(ParameterActivity.this, StoryActivity.class);
+                intentToStoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                intentToStoryActivity.putExtra("path", path);
+                startActivity(intentToStoryActivity);
+                break;
+            case "DirectoryActivity":
+                Intent intentToDirectoryActivity = new Intent(ParameterActivity.this, DirectoryActivity.class);
+                intentToDirectoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                intentToDirectoryActivity.putExtra("path", path);
+                startActivity(intentToDirectoryActivity);
+                break;
+            case "ImageActivity":
+                Intent intentToImageActivity = new Intent(ParameterActivity.this, ImageActivity.class);
+                intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                intentToImageActivity.putExtra("path", path);
+                startActivity(intentToImageActivity);
+                break;
         }
     }
 
@@ -228,7 +213,7 @@ public class ParameterActivity extends AppCompatActivity {
                         OutputStream outputStream = getContentResolver().openOutputStream(uri);
 
                         String yourData = sharedPreferencesToString(memoire);
-                        outputStream.write(yourData.getBytes());
+                        Objects.requireNonNull(outputStream).write(yourData.getBytes());
                         outputStream.close();
 
                         Toast.makeText(this, getString(R.string.SaveSucess), Toast.LENGTH_SHORT).show();
@@ -249,17 +234,17 @@ public class ParameterActivity extends AppCompatActivity {
 
 
     public String sharedPreferencesToString(SharedPreferences sharedPreferences) {
-        String outputSting = "";
+        StringBuilder outputSting = new StringBuilder();
 
         Map<String, ?> allEntries = sharedPreferences.getAll();
 
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            outputSting = outputSting + key + "=" + value + "\n";
+            outputSting.append(key).append("=").append(value).append("\n");
 
         }
-        return outputSting;
+        return outputSting.toString();
     }
 
     public static void stringToSharedPreferences(SharedPreferences.Editor editor, String inputString) {
@@ -302,7 +287,7 @@ public class ParameterActivity extends AppCompatActivity {
             StringBuilder content = new StringBuilder();
 
             try {
-                InputStream inputStream = activity.getContentResolver().openInputStream(uri);
+                InputStream inputStream = activity.getContentResolver().openInputStream(Objects.requireNonNull(uri));
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
 

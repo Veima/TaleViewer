@@ -4,14 +4,12 @@ import android.graphics.Bitmap;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.provider.MediaStore;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Objects;
 
 public class PDF extends File{
     private Bitmap miniature = null;
@@ -26,7 +24,7 @@ public class PDF extends File{
     private void open(){
         try {
             ParcelFileDescriptor fileDescriptor = super.getActivity().getContentResolver().openFileDescriptor(super.getDoc().getUri(), "r");
-            pdfRenderer = new PdfRenderer(fileDescriptor);
+            pdfRenderer = new PdfRenderer(Objects.requireNonNull(fileDescriptor));
             listPage = new PDFPage[pdfRenderer.getPageCount()];
             open = true;
         } catch (IOException e) {
