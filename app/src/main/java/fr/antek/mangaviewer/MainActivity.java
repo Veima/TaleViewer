@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
                     textContinuePenultiemeLine1.setText(splitedPath[0]);
                     textContinuePenultiemeLine1.setVisibility(View.VISIBLE);
                 }else if (pathLastImage.split(":").length>1){
-                    textContinuePenultiemeLine1.setText(pathLastImage.split(":")[1]);
+                    textContinuePenultiemeLine1.setText(pathLastImage.split(":")[1].replace("nPage=",""));
                     textContinuePenultiemeLine1.setVisibility(View.VISIBLE);
                 }
                 if (splitedPath[1] != null){
@@ -297,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
                     textContinueAntepenultiemeLine1.setText(splitedPath[0]);
                     textContinueAntepenultiemeLine1.setVisibility(View.VISIBLE);
                 }else if (pathLastImage.split(":").length>1){
-                    textContinueAntepenultiemeLine1.setText(pathLastImage.split(":")[1]);
+                    textContinueAntepenultiemeLine1.setText(pathLastImage.split(":")[1].replace("nPage=",""));
                     textContinueAntepenultiemeLine1.setVisibility(View.VISIBLE);
                 }
                 if (splitedPath[1] != null){

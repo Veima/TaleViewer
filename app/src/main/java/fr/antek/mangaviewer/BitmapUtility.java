@@ -5,6 +5,8 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.view.View;
 
+import java.util.ArrayList;
+
 public class BitmapUtility {
     public static Bitmap correctSize(Bitmap bitmap, View view) {
         float bmpW = bitmap.getWidth();
@@ -223,4 +225,41 @@ public class BitmapUtility {
         }
 
     }
+
+    public static Bitmap mergeBitmap(ArrayList<Bitmap> bitmapUp,Bitmap thisBitmap,ArrayList<Bitmap> bitmapDown){
+        ArrayList<Bitmap> bitmapAll = new ArrayList<Bitmap>();
+
+        for (int i = bitmapUp.size() - 1; i >= 0; i--) {
+            bitmapAll.add(bitmapUp.get(i));
+        }
+        bitmapAll.add(thisBitmap);
+
+        bitmapAll.addAll(bitmapDown);
+        return joinBitmapsVertically(bitmapAll);
+    }
+
+    public static Bitmap joinBitmapsVertically(ArrayList<Bitmap> bitmaps) {
+        int totalWidth = 0;
+        int totalHeight = 0;
+
+        for (Bitmap bitmap : bitmaps) {
+            if (bitmap.getWidth() > totalWidth) {
+                totalWidth = bitmap.getWidth();
+            }
+            totalHeight += bitmap.getHeight();
+        }
+
+        Bitmap resultBitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(resultBitmap);
+        int y = 0;
+
+        for (Bitmap bitmap : bitmaps) {
+            canvas.drawBitmap(bitmap, 0, y, null);
+            y += bitmap.getHeight();
+        }
+
+        return resultBitmap;
+    }
+
 }

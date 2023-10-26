@@ -479,7 +479,7 @@ public class ImageActivity extends AppCompatActivity {
                 scrollOffset = upH + centerH + downH - viewH + viewH/10;
             }
 
-            return mergeBitmap();
+            return BitmapUtility.mergeBitmap(bitmapUp,thisBitmap,bitmapDown);
         }
         return null;
     }
@@ -554,7 +554,7 @@ public class ImageActivity extends AppCompatActivity {
             upH = upH - centerH;
             completeUp();
 
-            bitmapScroll = mergeBitmap();
+            bitmapScroll = BitmapUtility.mergeBitmap(bitmapUp,thisBitmap,bitmapDown);
 
         }else if (upH + centerH < newScrollOffset +viewH/2){
             Log.d("Moi", "next");
@@ -574,7 +574,7 @@ public class ImageActivity extends AppCompatActivity {
             downH = downH - centerH;
             completeDown();
 
-            bitmapScroll = mergeBitmap();
+            bitmapScroll = BitmapUtility.mergeBitmap(bitmapUp,thisBitmap,bitmapDown);
         }
 
         scrollOffset = scrollOffset + (newScrollOffset - oldScrollOffset);
@@ -653,44 +653,6 @@ public class ImageActivity extends AppCompatActivity {
             i++;
         }
     }
-
-    public Bitmap mergeBitmap(){
-        ArrayList<Bitmap> bitmapAll = new ArrayList<Bitmap>();
-
-        for (int i = bitmapUp.size() - 1; i >= 0; i--) {
-            bitmapAll.add(bitmapUp.get(i));
-        }
-        bitmapAll.add(thisBitmap);
-
-        bitmapAll.addAll(bitmapDown);
-        return joinBitmapsVertically(bitmapAll);
-    }
-
-    public static Bitmap joinBitmapsVertically(ArrayList<Bitmap> bitmaps) {
-        int totalWidth = 0;
-        int totalHeight = 0;
-
-        for (Bitmap bitmap : bitmaps) {
-            if (bitmap.getWidth() > totalWidth) {
-                totalWidth = bitmap.getWidth();
-            }
-            totalHeight += bitmap.getHeight();
-        }
-
-        Bitmap resultBitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(resultBitmap);
-        int y = 0;
-
-        for (Bitmap bitmap : bitmaps) {
-            canvas.drawBitmap(bitmap, 0, y, null);
-            y += bitmap.getHeight();
-        }
-
-        return resultBitmap;
-    }
-
-
 
     private void goPrevPage(){
         if (prevPage == null){
