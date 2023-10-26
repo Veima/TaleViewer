@@ -6,6 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.pdf.PdfRenderer;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -20,6 +22,8 @@ import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FileAdapter extends ArrayAdapter {
     private final Context context;
@@ -45,44 +49,59 @@ public class FileAdapter extends ArrayAdapter {
         textTitre.setText(file.getName());
 
         ImageView imageView = itemView.findViewById(R.id.image);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+
         if (file instanceof Directory){
             imageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.directory_icon));
         }else if(file instanceof Image) {
             if (((Image) file).getMiniature() == null){
-                Bitmap bitmapRaw;
-                try {
-                    bitmapRaw = MediaStore.Images.Media.getBitmap(context.getContentResolver(), ((Image) file).getUri());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                if (bitmapRaw != null) {
-                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
-                    ((Image) file).setMiniature(bitmap);
-                }
+                executor.execute(() -> {
+                    Bitmap bitmapRaw;
+                    try {
+                        bitmapRaw = MediaStore.Images.Media.getBitmap(context.getContentResolver(), ((Image) file).getUri());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (bitmapRaw != null) {
+                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                        ((Image) file).setMiniature(bitmap);
+                    }
+                    handler.post(() -> {
+                        imageView.setImageBitmap(((Image) file).getMiniature());
+                    });
+                });
+
             }
             imageView.setImageBitmap(((Image) file).getMiniature());
         }else if(file instanceof PDF) {
             if (((PDF) file).getMiniature() == null) {
-                Bitmap bitmapRaw;
-                try {
-                    ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFileDescriptor(((PDF) file).getUri(), "r");
-                    PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
-                    PdfRenderer.Page pdfPage = pdfRenderer.openPage(0);
+                executor.execute(() -> {
+                    Bitmap bitmapRaw;
+                    try {
+                        ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFileDescriptor(((PDF) file).getUri(), "r");
+                        PdfRenderer pdfRenderer = new PdfRenderer(fileDescriptor);
+                        PdfRenderer.Page pdfPage = pdfRenderer.openPage(0);
 
-                    bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth(), pdfPage.getHeight(), Bitmap.Config.ARGB_8888);
-                    Canvas canvas = new Canvas(bitmapRaw);
-                    canvas.drawColor(Color.WHITE);
-                    pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                        bitmapRaw = Bitmap.createBitmap(pdfPage.getWidth(), pdfPage.getHeight(), Bitmap.Config.ARGB_8888);
+                        Canvas canvas = new Canvas(bitmapRaw);
+                        canvas.drawColor(Color.WHITE);
+                        pdfPage.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
-                    pdfPage.close();
-                    pdfRenderer.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                if (bitmapRaw != null) {
-                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
-                    ((PDF) file).setMiniature(bitmap);
-                }
+                        pdfPage.close();
+                        pdfRenderer.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (bitmapRaw != null) {
+                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                        ((PDF) file).setMiniature(bitmap);
+                    }
+                    handler.post(() -> {
+                        imageView.setImageBitmap(((PDF) file).getMiniature());
+                    });
+                });
             }
             imageView.setImageBitmap(((PDF) file).getMiniature());
 

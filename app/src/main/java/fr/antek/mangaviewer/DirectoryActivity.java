@@ -58,13 +58,9 @@ public class DirectoryActivity extends AppCompatActivity {
 
         if (hasFocus) {
             ExecutorService executor = Executors.newSingleThreadExecutor();
-            Handler handler = new Handler(Looper.getMainLooper());
 
             executor.execute(() -> {
                     chargeMiniature();
-                handler.post(() -> {
-
-                });
             });
 
         }
