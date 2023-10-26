@@ -18,8 +18,6 @@ public class Image extends File{
 
     public Image(AppCompatActivity activity, String parentPath, DocumentFile docFile, Directory parentFile) {
         super(activity, parentPath, docFile, parentFile);
-        open();
-
     }
 
     public void open() {

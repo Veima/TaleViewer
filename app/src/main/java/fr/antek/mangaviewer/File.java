@@ -1,6 +1,8 @@
 package fr.antek.mangaviewer;
 
 
+import android.util.Log;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 

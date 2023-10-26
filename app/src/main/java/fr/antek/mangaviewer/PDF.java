@@ -21,7 +21,6 @@ public class PDF extends File{
 
     public PDF(AppCompatActivity activity, String parentPath, DocumentFile doc, Directory parentFile) {
         super(activity, parentPath, doc, parentFile);
-        open();
     }
 
     private void open(){
