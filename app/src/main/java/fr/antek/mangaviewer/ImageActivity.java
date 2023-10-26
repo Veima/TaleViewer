@@ -31,6 +31,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import fr.antek.mangaviewer.databinding.ActivityImageBinding;
 public class ImageActivity extends AppCompatActivity {
@@ -75,6 +78,8 @@ public class ImageActivity extends AppCompatActivity {
     private ArrayList<Bitmap> bitmapDown;
     private ArrayList<Page> pageDown;
     private Bitmap thisBitmap;
+    private boolean updateInProgress = false;
+    double newScrollOffset;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -104,6 +109,8 @@ public class ImageActivity extends AppCompatActivity {
         String imagePath = path.split("/", 3)[2];
         String[] pathSplit = imagePath.split(":");
         thisFile = storyLib.buildFromPath(pathSplit[0]);
+
+
 
         if (pathSplit.length >1){
             for (int i=1; i<pathSplit.length; i++){
@@ -155,8 +162,25 @@ public class ImageActivity extends AppCompatActivity {
                             if ((currentScale == 1.0f)){
                                 scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                                 currentYSlide = event.getY();
-                                updateScrollBitmap();
+                                if (!updateInProgress){
+                                    updateInProgress = true;
+
+                                    ExecutorService service = Executors.newSingleThreadExecutor();
+                                    service.execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            updateScrollBitmap();
+                                            updateInProgress = false;
+                                        }
+                                    });
+
+
+
+                                }
                                 displayBitmap();
+                                onNewPage();
+
+
                             }else{
                                 scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                                 offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
@@ -475,15 +499,18 @@ public class ImageActivity extends AppCompatActivity {
 
     public void updateScrollBitmap(){
 
-        if ((scrollOffset < upH - viewH/10 ) && (upH ==0)){
-            scrollOffset = upH - viewH/10;
+        double oldScrollOffset = scrollOffset;
+        newScrollOffset = scrollOffset;
+
+        if ((newScrollOffset < upH - viewH/10 ) && (upH ==0)){
+            newScrollOffset = upH - viewH/10;
         }
 
-        if ((viewH + scrollOffset > upH + centerH + downH + viewH/10) && (downH == 0)){
-            scrollOffset = upH + centerH + downH - viewH + viewH/10;
+        if ((viewH + newScrollOffset > upH + centerH + downH + viewH/10) && (downH == 0)){
+            newScrollOffset = upH + centerH + downH - viewH + viewH/10;
         }
 
-        if (upH > scrollOffset +viewH/2){
+        if (upH > newScrollOffset +viewH/2){
             Log.d("Moi", "prev");
 
             bitmapDown.add(0, thisBitmap);
@@ -504,8 +531,7 @@ public class ImageActivity extends AppCompatActivity {
 
             bitmapScroll = mergeBitmap();
 
-            onNewPage();
-        }else if (upH + centerH < scrollOffset +viewH/2){
+        }else if (upH + centerH < newScrollOffset +viewH/2){
             Log.d("Moi", "next");
             bitmapUp.add(0, thisBitmap);
             pageUp.add(0,thisPage);
@@ -524,8 +550,9 @@ public class ImageActivity extends AppCompatActivity {
             completeDown();
 
             bitmapScroll = mergeBitmap();
-            onNewPage();
         }
+
+        scrollOffset = scrollOffset + (newScrollOffset - oldScrollOffset);
     }
 
     public void completeUp(){
@@ -540,7 +567,7 @@ public class ImageActivity extends AppCompatActivity {
                     Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
                     upH = upH + prevBitmap.getHeight();
 
-                    scrollOffset = scrollOffset + prevBitmap.getHeight();
+                    newScrollOffset = newScrollOffset + prevBitmap.getHeight();
                     pageUp.add(page);
                     bitmapUp.add(prevBitmap);
                 }
@@ -574,7 +601,7 @@ public class ImageActivity extends AppCompatActivity {
         bitmapUp = new ArrayList<Bitmap>();
         pageUp = new ArrayList<Page>();
         int i = 0;
-        scrollOffset = scrollOffset - (upH + centerH);
+        newScrollOffset = newScrollOffset - (upH + centerH);
 
         upH = 0;
         while ((upH < viewH) && (i < oldBitmapUp.size())) {
@@ -584,7 +611,7 @@ public class ImageActivity extends AppCompatActivity {
 
             i++;
         }
-        scrollOffset = scrollOffset + upH;
+        newScrollOffset = newScrollOffset + upH;
     }
 
     public void cutDown(){
