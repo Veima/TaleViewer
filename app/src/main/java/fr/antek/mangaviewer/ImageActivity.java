@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -153,51 +152,57 @@ public class ImageActivity extends AppCompatActivity {
                 }
 
                 if ((event.getAction() == MotionEvent.ACTION_MOVE) && (!currentAction.equals("zoom"))) {
-                    currentAction = "move";
-                    if (settings.getScroll()) {
-                        if (event.getPointerCount() == 1) {
-                            if ((currentScale == 1.0f)){
-                                scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
-                                currentYSlide = event.getY();
-                                if (!updateInProgress){
-                                    updateInProgress = true;
+                    double x = event.getX();
+                    double y = event.getY();
+                    int moveX = Math.toIntExact(Math.round(currentXSlide - x));
+                    int moveY = Math.toIntExact(Math.round(currentYSlide - y));
+                    int width = imageView.getWidth();
 
-                                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                                    executor.execute(() -> {
+                    if (Math.sqrt(moveY * moveY + moveX * moveX) > (width / 10.0)) {
+                        currentAction = "move";
+                        if (settings.getScroll()) {
+                            if (event.getPointerCount() == 1) {
+                                if ((currentScale == 1.0f)) {
+                                    scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                                    currentYSlide = event.getY();
+                                    if (!updateInProgress) {
+                                        updateInProgress = true;
+
+                                        ExecutorService executor = Executors.newSingleThreadExecutor();
+                                        executor.execute(() -> {
                                             updateScrollBitmap();
                                             updateInProgress = false;
-                                    });
+                                        });
+                                    }
+                                    displayBitmap();
+                                    onNewPage();
+
+
+                                } else {
+                                    scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
+                                    offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
+                                    currentYSlide = event.getY();
+                                    if (!updateInProgress) {
+                                        updateInProgress = true;
+
+                                        ExecutorService executor = Executors.newSingleThreadExecutor();
+                                        executor.execute(() -> {
+                                            updateScrollBitmap();
+                                            updateInProgress = false;
+                                        });
+                                    }
+                                    displayBitmap();
+                                    onNewPage();
+
+                                    currentXSlide = event.getX();
+
+                                    Bitmap cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
+                                    imageView.setImageBitmap(cropedBitmap);
                                 }
-                                displayBitmap();
-                                onNewPage();
-
-
-                            }else{
-                                scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
-                                offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
-                                currentYSlide = event.getY();
-                                if (!updateInProgress){
-                                    updateInProgress = true;
-
-                                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                                    executor.execute(() -> {
-                                        updateScrollBitmap();
-                                        updateInProgress = false;
-                                    });
-                                }
-                                displayBitmap();
-                                onNewPage();
-
-                                currentXSlide = event.getX();
-
-                                Bitmap cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
-                                imageView.setImageBitmap(cropedBitmap);
                             }
-
                         }
 
                     }else {
-                        Log.d("MOI","test");
                         if ((currentScale != 1.0f) && (event.getPointerCount() == 1)) {
 
                             offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
@@ -211,6 +216,7 @@ public class ImageActivity extends AppCompatActivity {
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
+
                     if (currentScale == 1.0f) {
                         double x = event.getX();
                         double y = event.getY();
