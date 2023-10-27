@@ -256,9 +256,11 @@ public class ParameterActivity extends AppCompatActivity {
                     String value = prefSplit[1];
                     if ((value.equals("true")) || (value.equals("false"))){
                         editor.putBoolean(key, Boolean.parseBoolean(value));
+                    }else if (value.matches("[0-9]+")){
+                        editor.putInt(key, Integer.parseInt(value));
                     }else{
                         editor.putString(key, value);
-                    } 
+                    }
                 }
             }
         editor.apply();
