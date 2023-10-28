@@ -454,6 +454,7 @@ public class ImageActivity extends AppCompatActivity {
 
     private void onNewPage(){
         pageNumber = thisPage.getPageNumber();
+        path = thisFile.getPath();
         Objects.requireNonNull(getSupportActionBar()).setTitle(title());
         memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
         saveStoryLastPage();
