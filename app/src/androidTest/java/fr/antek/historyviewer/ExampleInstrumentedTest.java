@@ -1,4 +1,4 @@
-package fr.antek.mangaviewer;
+package fr.antek.historyviewer;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("fr.antek.mangaviewer", appContext.getPackageName());
+        assertEquals("fr.antek.historyviewer", appContext.getPackageName());
     }
 }

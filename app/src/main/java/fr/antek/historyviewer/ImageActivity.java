@@ -1,4 +1,4 @@
-package fr.antek.mangaviewer;
+package fr.antek.historyviewer;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.antek.mangaviewer.databinding.ActivityImageBinding;
+import fr.antek.historyviewer.databinding.ActivityImageBinding;
 public class ImageActivity extends AppCompatActivity {
     private final Handler mHideHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
     private final ImageActivity contextThis = this;
@@ -82,7 +82,7 @@ public class ImageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        fr.antek.mangaviewer.databinding.ActivityImageBinding binding = ActivityImageBinding.inflate(getLayoutInflater());
+        fr.antek.historyviewer.databinding.ActivityImageBinding binding = ActivityImageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         storyFolderUri = Uri.parse(getIntent().getStringExtra("storyFolderUri"));

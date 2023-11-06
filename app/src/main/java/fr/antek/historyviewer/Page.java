@@ -1,4 +1,4 @@
-package fr.antek.mangaviewer;
+package fr.antek.historyviewer;
 
 import android.graphics.Bitmap;
 
@@ -73,18 +73,12 @@ public class Page {
         }
         if (doSplit){
             switch (splitStep) {
-                case "fullFirst":
-                case "fullBetween":
-                case "fullLast":
-                    resultBitmap = bitmapRaw;
-                    break;
-                case "halfFirst":
-                    resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPage(), settings.getOverlap());
-                    break;
-                case "halfLast":
-                    resultBitmap = BitmapUtility.splitPage(bitmapRaw, !settings.getFirstPage(), settings.getOverlap());
-                    break;
-                default:
+                case "fullFirst", "fullBetween", "fullLast" -> resultBitmap = bitmapRaw;
+                case "halfFirst" ->
+                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPage(), settings.getOverlap());
+                case "halfLast" ->
+                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, !settings.getFirstPage(), settings.getOverlap());
+                default -> {
                     if (settings.getFullBefore()) {
                         resultBitmap = bitmapRaw;
                         splitStep = "fullFirst";
@@ -92,7 +86,7 @@ public class Page {
                         resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPage(), settings.getOverlap());
                         splitStep = "halfFirst";
                     }
-                    break;
+                }
             }
         }else{
             resultBitmap = bitmapRaw;
@@ -120,30 +114,36 @@ public class Page {
         }
         if (doSplit) {
             switch (splitStep) {
-                case "fullFirst":
+                case "fullFirst" -> {
                     return getFromPrevBitmap();
-                case "halfFirst":
+                }
+                case "halfFirst" -> {
                     if (settings.getFullBefore()) {
                         return new Page(parentFile, activity, "fullFirst", pageNumber);
                     } else {
                         return getFromPrevBitmap();
                     }
-                case "fullBetween":
+                }
+                case "fullBetween" -> {
                     return new Page(parentFile, activity, "halfFirst", pageNumber);
-                case "halfLast":
+                }
+                case "halfLast" -> {
                     if (settings.getFullBetween()) {
                         return new Page(parentFile, activity, "fullBetween", pageNumber);
                     } else {
                         return new Page(parentFile, activity, "halfFirst", pageNumber);
                     }
-                case "fullLast":
+                }
+                case "fullLast" -> {
                     return new Page(parentFile, activity, "halfLast", pageNumber);
-                default:
+                }
+                default -> {
                     if (settings.getFullAfter()) {
                         return new Page(parentFile, activity, "fullLast", pageNumber);
                     } else {
                         return new Page(parentFile, activity, "halfLast", pageNumber);
                     }
+                }
             }
         }else{
             return getFromPrevBitmap();
@@ -180,30 +180,36 @@ public class Page {
         }
         if (doSplit) {
             switch (splitStep) {
-                case "fullFirst":
+                case "fullFirst" -> {
                     return new Page(parentFile, activity, "halfFirst", pageNumber);
-                case "halfFirst":
+                }
+                case "halfFirst" -> {
                     if (settings.getFullBetween()) {
                         return new Page(parentFile, activity, "fullBetween", pageNumber);
                     } else {
                         return new Page(parentFile, activity, "halfLast", pageNumber);
                     }
-                case "fullBetween":
+                }
+                case "fullBetween" -> {
                     return new Page(parentFile, activity, "halfLast", pageNumber);
-                case "halfLast":
+                }
+                case "halfLast" -> {
                     if (settings.getFullAfter()) {
                         return new Page(parentFile, activity, "fullLast", pageNumber);
                     } else {
                         return getFromNextBitmap();
                     }
-                case "fullLast":
+                }
+                case "fullLast" -> {
                     return getFromNextBitmap();
-                default:
+                }
+                default -> {
                     if (settings.getFullBefore()) {
                         return new Page(parentFile, activity, "fullFirst", pageNumber);
                     } else {
                         return new Page(parentFile, activity, "halfFirst", pageNumber);
                     }
+                }
             }
         }else{
             return getFromNextBitmap();

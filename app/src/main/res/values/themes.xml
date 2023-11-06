@@ -1,20 +1,20 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
-    <style name="Base.Theme.MangaViewer" parent="Theme.Material3.DayNight">
+    <style name="Base.Theme.HistoryViewer" parent="Theme.Material3.DayNight">
         <!-- Customize your light theme here. -->
         <item name="colorPrimary">@color/light_blue_600</item>
     </style>
 
-    <style name="Theme.MangaViewer" parent="Base.Theme.MangaViewer" />
+    <style name="Theme.HistoryViewer" parent="Base.Theme.HistoryViewer" />
 
-    <style name="Theme.MangaViewer.Fullscreen" parent="Theme.MangaViewer">
-        <item name="android:actionBarStyle">@style/Widget.Theme.MangaViewer.ActionBar.Fullscreen
+    <style name="Theme.HistoryViewer.Fullscreen" parent="Theme.HistoryViewer">
+        <item name="android:actionBarStyle">@style/Widget.Theme.HistoryViewer.ActionBar.Fullscreen
         </item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowBackground">@null</item>
     </style>
 
-    <style name="ThemeOverlay.MangaViewer.FullscreenContainer" parent="">
+    <style name="ThemeOverlay.HistoryViewer.FullscreenContainer" parent="">
         <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
         <item name="fullscreenTextColor">@color/light_blue_A200</item>
     </style>

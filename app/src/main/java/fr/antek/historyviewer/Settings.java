@@ -1,4 +1,4 @@
-package fr.antek.mangaviewer;
+package fr.antek.historyviewer;
 
 public class Settings {
     private boolean splitPage = false;

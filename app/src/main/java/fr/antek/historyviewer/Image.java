@@ -1,4 +1,4 @@
-package fr.antek.mangaviewer;
+package fr.antek.historyviewer;
 
 import android.graphics.Bitmap;
 import android.net.Uri;

@@ -1,4 +1,4 @@
-package fr.antek.mangaviewer;
+package fr.antek.historyviewer;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -167,28 +167,28 @@ public class ParameterActivity extends AppCompatActivity {
 
     private void returnActivity(){
         switch (activityAfter) {
-            case "MainActivity":
+            case "MainActivity" -> {
                 Intent intentToMainActivity = new Intent(ParameterActivity.this, MainActivity.class);
                 startActivity(intentToMainActivity);
-                break;
-            case "StoryActivity":
+            }
+            case "StoryActivity" -> {
                 Intent intentToStoryActivity = new Intent(ParameterActivity.this, StoryActivity.class);
                 intentToStoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
                 intentToStoryActivity.putExtra("path", path);
                 startActivity(intentToStoryActivity);
-                break;
-            case "DirectoryActivity":
+            }
+            case "DirectoryActivity" -> {
                 Intent intentToDirectoryActivity = new Intent(ParameterActivity.this, DirectoryActivity.class);
                 intentToDirectoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
                 intentToDirectoryActivity.putExtra("path", path);
                 startActivity(intentToDirectoryActivity);
-                break;
-            case "ImageActivity":
+            }
+            case "ImageActivity" -> {
                 Intent intentToImageActivity = new Intent(ParameterActivity.this, ImageActivity.class);
                 intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
                 intentToImageActivity.putExtra("path", path);
                 startActivity(intentToImageActivity);
-                break;
+            }
         }
     }
 
@@ -270,7 +270,7 @@ public class ParameterActivity extends AppCompatActivity {
         String fileName;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH_mm");
         String timestamp = formatter.format(LocalDateTime.now());
-        fileName = "MW_Save_" + timestamp + ".txt";
+        fileName = "HV_Save_" + timestamp + ".txt";
         return fileName;
     }
     private static final int PICK_TXT_FILE = 1;

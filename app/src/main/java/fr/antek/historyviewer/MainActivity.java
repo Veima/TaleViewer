@@ -1,4 +1,4 @@
-package fr.antek.mangaviewer;
+package fr.antek.historyviewer;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -177,12 +177,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void saveUriToSharedPreferences(Uri uri) {
         SharedPreferences.Editor editor = memoire.edit();
-        editor.putString("mangaFolder", uri.toString());
+        editor.putString("historyFolder", uri.toString());
         editor.apply();
     }
 
     private Uri getStoredUri() {
-        String uriString = memoire.getString("mangaFolder", null);
+        String uriString = memoire.getString("historyFolder", null);
         if (uriString != null) {
             return Uri.parse(uriString);
         }else{

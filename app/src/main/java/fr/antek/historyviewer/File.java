@@ -1,5 +1,4 @@
-package fr.antek.mangaviewer;
-
+package fr.antek.historyviewer;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
