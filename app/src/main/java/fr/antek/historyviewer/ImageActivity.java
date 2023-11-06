@@ -93,7 +93,7 @@ public class ImageActivity extends AppCompatActivity {
         settings = new Settings();
 
         settings.setSplitPage(memoire.getBoolean("switchSplit",false));
-        settings.setFirstPage(memoire.getBoolean("switchFirstPage",true));
+        settings.setFirstPageRight(memoire.getBoolean("switchFirstPage",true));
         settings.setFullBefore(memoire.getBoolean("switchFullBefore",false));
         settings.setFullBetween(memoire.getBoolean("switchFullBetween",false));
         settings.setFullAfter(memoire.getBoolean("switchFullAfter",false));
@@ -158,7 +158,7 @@ public class ImageActivity extends AppCompatActivity {
                     int moveY = Math.toIntExact(Math.round(currentYSlide - y));
                     int width = imageView.getWidth();
 
-                    if (Math.sqrt(moveY * moveY + moveX * moveX) > (width / 10.0)) {
+                    if ((Math.sqrt(moveY * moveY + moveX * moveX) > (width / 10.0)) || currentAction.equals("move")) {
                         currentAction = "move";
                         if (settings.getScroll()) {
                             if (event.getPointerCount() == 1) {
@@ -196,7 +196,7 @@ public class ImageActivity extends AppCompatActivity {
 
                                     currentXSlide = event.getX();
 
-                                    Bitmap cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
+                                    Bitmap cropedBitmap = BitmapUtility.zoomBitmap(bitmapScroll, offsetX, scrollOffset, currentScale, contextThis, imageView);
                                     imageView.setImageBitmap(cropedBitmap);
                                 }
                             }
@@ -207,7 +207,7 @@ public class ImageActivity extends AppCompatActivity {
 
                             offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                             offsetY = offsetY - (event.getY() - currentYSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
-                            Bitmap cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, this);
+                            Bitmap cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, this, imageView);
                             imageView.setImageBitmap(cropedBitmap);
                             currentXSlide = event.getX();
                             currentYSlide = event.getY();
@@ -390,7 +390,7 @@ public class ImageActivity extends AppCompatActivity {
                 scrollOffset = scrollOffset + ((currentFocusY - newFocusY))/currentScale;
                 currentFocusY = newFocusY;
 
-                cropedBitmap = BitmapUtility.zoomScrollBitmap(bitmapScroll, offsetX, offsetY + scrollOffset, currentScale, contextThis, imageView);
+                cropedBitmap = BitmapUtility.zoomBitmap(bitmapScroll, offsetX, offsetY + scrollOffset, currentScale, contextThis, imageView);
                 if (!updateInProgress){
                     updateInProgress = true;
 
@@ -408,7 +408,7 @@ public class ImageActivity extends AppCompatActivity {
                 offsetY = offsetY + ((currentFocusY - newFocusY)/currentScale);
                 currentFocusY = newFocusY;
 
-                cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, contextThis);
+                cropedBitmap = BitmapUtility.zoomBitmap(bitmap, offsetX, offsetY, currentScale, contextThis, imageView);
             }
 
             imageView.setImageBitmap(cropedBitmap);
@@ -444,7 +444,7 @@ public class ImageActivity extends AppCompatActivity {
             }
         }else {
             if (bitmapToDisplay != null) {
-                bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView);
+                bitmap = BitmapUtility.correctSize(bitmapToDisplay, imageView.getWidth(), imageView.getHeight());
                 bitmap = BitmapUtility.correctRatio(bitmap, imageView);
                 imageView.setImageBitmap(bitmap);
             }

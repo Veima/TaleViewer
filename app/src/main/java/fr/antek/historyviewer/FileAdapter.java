@@ -26,12 +26,21 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * An ArrayAdapter for displaying a list of files with their names and icons.
+ */
 public class FileAdapter extends ArrayAdapter {
     private final Context context;
     private final int ressource;
     private final ArrayList<File> fileList;
     private final ArrayList<View> itemViewList = new ArrayList<>();
 
+    /**
+     * Constructs a FileAdapter using the provided context, resource, and file list.
+     * @param context The application context.
+     * @param resource The resource ID for the layout of each file item.
+     * @param fileList The list of files to display.
+     */
     public FileAdapter(Context context, int resource, ArrayList<File> fileList) {
         super(context, resource, fileList);
         this.fileList = fileList;

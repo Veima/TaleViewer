@@ -1,13 +1,17 @@
 package fr.antek.historyviewer;
 
+/**
+ * Represents a configuration class for various display settings in the application.
+ */
 public class Settings {
-    private boolean splitPage = false;
-    private boolean firstPage = true;
-    private boolean fullBefore = false;
-    private boolean fullBetween = false;
-    private boolean fullAfter = false;
-    private int overlap = 0;
-    private boolean scroll  = false;
+    private boolean splitPage = false;      // Indicates whether to split pages for a two-page view.
+    private boolean firstPageRight = true;  // Indicates whether the first is the Right.
+    private boolean fullBefore = false;     // Indicates whether to show the full page before the center.
+    private boolean fullBetween = false;    // Indicates whether to show the full page between the center pages.
+    private boolean fullAfter = false;      // Indicates whether to show the full page after the center.
+    private int overlap = 0;                // The percentage of overlap for split pages.
+    private boolean scroll = false;         // Indicates whether scrolling is enabled.
+
 
     public boolean getSplitPage() {
         return splitPage;
@@ -17,12 +21,12 @@ public class Settings {
         this.splitPage = splitPage;
     }
 
-    public boolean getFirstPage() {
-        return firstPage;
+    public boolean getFirstPageRight() {
+        return firstPageRight;
     }
 
-    public void setFirstPage(boolean firstPage) {
-        this.firstPage = firstPage;
+    public void setFirstPageRight(boolean firstPage) {
+        this.firstPageRight = firstPage;
     }
 
     public boolean getFullBefore() {

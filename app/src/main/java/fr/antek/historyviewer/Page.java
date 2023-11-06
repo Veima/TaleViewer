@@ -2,14 +2,24 @@ package fr.antek.historyviewer;
 
 import android.graphics.Bitmap;
 
+/**
+ * Represents a page within a document or image file, providing functionality to handle splitting and navigation.
+ */
 public class Page {
-    private final File parentFile;
-    private final ImageActivity activity;
-    private String splitStep;
-    private int pageNumber;
-    private final Settings settings;
-    private Boolean doSplit = null;
+    private final File parentFile; // The parent file containing this page.
+    private final ImageActivity activity; // The activity associated with this page.
+    private String splitStep; // The current split step used for page processing.
+    private int pageNumber; // The page number within the document or image.
+    private final Settings settings; // Application settings.
+    private Boolean doSplit = null; // Flag to determine if splitting is necessary.
 
+    /**
+     * Constructs a Page object.
+     * @param parentFile The parent file containing this page.
+     * @param activity The ImageActivity associated with this page.
+     * @param splitStep The current split step for page processing.
+     * @param pageNumber The page number within the document or image.
+     */
     public Page(File parentFile, ImageActivity activity, String splitStep, int pageNumber) {
         this.parentFile = parentFile;
         this.activity = activity;
@@ -51,12 +61,12 @@ public class Page {
                 ((Image) parentFile).open();
             }
         }
-
-
-
-
     }
 
+    /**
+     * Retrieves the bitmap representation of the page.
+     * @return The Bitmap representing the page's content.
+     */
     public Bitmap getBitmap(){
         if (doSplit == null) {
             findSplit();
@@ -75,15 +85,15 @@ public class Page {
             switch (splitStep) {
                 case "fullFirst", "fullBetween", "fullLast" -> resultBitmap = bitmapRaw;
                 case "halfFirst" ->
-                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPage(), settings.getOverlap());
+                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPageRight(), settings.getOverlap());
                 case "halfLast" ->
-                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, !settings.getFirstPage(), settings.getOverlap());
+                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, !settings.getFirstPageRight(), settings.getOverlap());
                 default -> {
                     if (settings.getFullBefore()) {
                         resultBitmap = bitmapRaw;
                         splitStep = "fullFirst";
                     } else {
-                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPage(), settings.getOverlap());
+                        resultBitmap = BitmapUtility.splitPage(bitmapRaw, settings.getFirstPageRight(), settings.getOverlap());
                         splitStep = "halfFirst";
                     }
                 }
@@ -95,6 +105,9 @@ public class Page {
         return resultBitmap;
     }
 
+    /**
+     * Determines whether splitting is needed for the page based on its width and application settings.
+     */
     public void findSplit() {
         Boolean wide;
         if (parentFile instanceof Image){
@@ -105,9 +118,12 @@ public class Page {
             wide = false;
         }
         doSplit = (wide && settings.getSplitPage());
-
     }
 
+    /**
+     * Retrieves the previous page (if any) based on the current split step.
+     * @return The previous page or null if not applicable.
+     */
     public Page getPrevPage(){
         if (doSplit == null) {
             findSplit();
@@ -115,13 +131,13 @@ public class Page {
         if (doSplit) {
             switch (splitStep) {
                 case "fullFirst" -> {
-                    return getFromPrevBitmap();
+                    return getPrevImage();
                 }
                 case "halfFirst" -> {
                     if (settings.getFullBefore()) {
                         return new Page(parentFile, activity, "fullFirst", pageNumber);
                     } else {
-                        return getFromPrevBitmap();
+                        return getPrevImage();
                     }
                 }
                 case "fullBetween" -> {
@@ -146,11 +162,15 @@ public class Page {
                 }
             }
         }else{
-            return getFromPrevBitmap();
+            return getPrevImage();
         }
     }
 
-    public Page getFromPrevBitmap(){
+    /**
+     * Retrieves the previous page based on the current split step.
+     * @return The previous page or null if not applicable.
+     */
+    public Page getPrevImage(){
         if (parentFile instanceof Image){
             File prevFile = parentFile.getPrev();
             if (prevFile == null){
@@ -174,6 +194,10 @@ public class Page {
         }
     }
 
+    /**
+     * Retrieves the next page (if any) based on the current split step.
+     * @return The next page or null if not applicable.
+     */
     public Page getNextPage(){
         if (doSplit == null) {
             findSplit();
@@ -197,11 +221,11 @@ public class Page {
                     if (settings.getFullAfter()) {
                         return new Page(parentFile, activity, "fullLast", pageNumber);
                     } else {
-                        return getFromNextBitmap();
+                        return getNextImage();
                     }
                 }
                 case "fullLast" -> {
-                    return getFromNextBitmap();
+                    return getNextImage();
                 }
                 default -> {
                     if (settings.getFullBefore()) {
@@ -212,11 +236,15 @@ public class Page {
                 }
             }
         }else{
-            return getFromNextBitmap();
+            return getNextImage();
         }
     }
 
-    public Page getFromNextBitmap(){
+    /**
+     * Retrieves the next page based on the current split step.
+     * @return The next page or null if not applicable.
+     */
+    public Page getNextImage(){
         if (parentFile instanceof Image){
             File nextFile = parentFile.getNext();
             if (nextFile == null){
