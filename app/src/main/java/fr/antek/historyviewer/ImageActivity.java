@@ -32,6 +32,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import fr.antek.historyviewer.databinding.ActivityImageBinding;
+
+/**
+ * ImageActivity is an Android activity class responsible for displaying and interacting with image
+ * or PDF files within a story folder. It allows users to navigate through pages, zoom in and out,
+ * and perform other actions based on user interactions.
+ */
 public class ImageActivity extends AppCompatActivity {
     private final Handler mHideHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
     private final ImageActivity contextThis = this;
@@ -77,21 +83,26 @@ public class ImageActivity extends AppCompatActivity {
     private boolean updateInProgress = false;
     double newScrollOffset;
 
+    /**
+     * Constructor for ImageActivity. Initializes and configures the activity.
+     * @param savedInstanceState The saved instance state, if any.
+     */
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Inflate the layout for this activity
         fr.antek.historyviewer.databinding.ActivityImageBinding binding = ActivityImageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Retrieve essential data from intent extras and shared preferences
         storyFolderUri = Uri.parse(getIntent().getStringExtra("storyFolderUri"));
         path = getIntent().getStringExtra("path");
-
         memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
 
+        // Create and configure the settings object based on user preferences
         settings = new Settings();
-
         settings.setSplitPage(memoire.getBoolean("switchSplit",false));
         settings.setFirstPageRight(memoire.getBoolean("switchFirstPage",true));
         settings.setFullBefore(memoire.getBoolean("switchFullBefore",false));
@@ -100,19 +111,22 @@ public class ImageActivity extends AppCompatActivity {
         settings.setOverlap(memoire.getInt("overlap",0));
         settings.setScroll(memoire.getBoolean("switchScroll",false));
 
+        // Create a StoryLib instance to manage the story folder
         StoryLib storyLib = new StoryLib(this, storyFolderUri);
 
+        // Extract the image path and any parameters
         String imagePath = path.split("/", 3)[2];
         String[] pathSplit = imagePath.split(":");
         thisFile = storyLib.buildFromPath(pathSplit[0]);
 
-
-
+        // Parse and apply any additional parameters to the file
         if (pathSplit.length >1){
             for (int i=1; i<pathSplit.length; i++){
                 stringToParameter(pathSplit[i]);
             }
         }
+
+        // Check if the specified file exists in the story folder
         if (thisFile == null){
             Toast.makeText(this, getString(R.string.fileNotFound), R.integer.tempsToast).show();
             Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
@@ -120,12 +134,14 @@ public class ImageActivity extends AppCompatActivity {
         }else {
             thisPage = new Page(thisFile, this, splitStep, pageNumber);
 
+            // Set the main content view and initialize UI components
             mContentView = binding.imageView;
             imageView = findViewById(R.id.imageView);
             currentOrientation = getResources().getConfiguration().orientation;
 
             Objects.requireNonNull(getSupportActionBar()).setTitle(title());
 
+            // Initialize the bitmap for display (scroll or page mode)
             if (settings.getScroll()){
                 bitmapScroll=generateScrollBitmap();
             }else{
@@ -140,18 +156,27 @@ public class ImageActivity extends AppCompatActivity {
                 show();
             }
 
+            // Configure touch and gesture detectors for user interactions
             scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureListener());
             gestureDetector = new GestureDetector(this, new DoubleTapListener());
 
+            // Handle touch events on the image view
             imageView.setOnTouchListener((v, event) -> {
+
+                // Process scaling and double-tap gestures
                 scaleGestureDetector.onTouchEvent(event);
                 gestureDetector.onTouchEvent(event);
+
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // Store the starting position for tracking user movements
                     currentXSlide = event.getX();
                     currentYSlide = event.getY();
                 }
 
                 if ((event.getAction() == MotionEvent.ACTION_MOVE) && (!currentAction.equals("zoom"))) {
+                    // Handle image panning (scroll or page mode) based on user input
+                    // Update the display and trigger any necessary actions
+
                     double x = event.getX();
                     double y = event.getY();
                     int moveX = Math.toIntExact(Math.round(currentXSlide - x));
@@ -168,6 +193,7 @@ public class ImageActivity extends AppCompatActivity {
                                     if (!updateInProgress) {
                                         updateInProgress = true;
 
+                                        // Update the scroll bitmap in a separate thread
                                         ExecutorService executor = Executors.newSingleThreadExecutor();
                                         executor.execute(() -> {
                                             updateScrollBitmap();
@@ -179,6 +205,7 @@ public class ImageActivity extends AppCompatActivity {
 
 
                                 } else {
+                                    // Handle zooming and scrolling simultaneously
                                     scrollOffset = scrollOffset - (event.getY() - currentYSlide) / currentScale / imageView.getHeight() * bitmap.getHeight();
                                     offsetX = offsetX - (event.getX() - currentXSlide) / currentScale / imageView.getWidth() * bitmap.getWidth();
                                     currentYSlide = event.getY();
@@ -217,6 +244,7 @@ public class ImageActivity extends AppCompatActivity {
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
 
+                    // Handle touch-up events, gestures, and page navigation
                     if (currentScale == 1.0f) {
                         double x = event.getX();
                         double y = event.getY();
@@ -243,8 +271,8 @@ public class ImageActivity extends AppCompatActivity {
                             }
                         } else if ((currentAction.equals("move")) && (!settings.getScroll())) {
                             if (Math.sqrt(moveY * moveY + moveX * moveX) > (width / 4.0)) {
-
                                 if (Math.abs(moveX) > Math.abs(moveY)) {
+                                    // Detect horizontal swipe for page navigation
                                     if ((moveX > 0) && (moveX > width / 3)) {
                                         goNextPage();
                                     } else if ((moveX < 0) && (moveX < width / (-3))) {
@@ -262,16 +290,25 @@ public class ImageActivity extends AppCompatActivity {
                 }
                 return true;
             });
+            // Add an orientation change listener to handle screen rotation
             this.addOnOrientationChangeListener();
         }
     }
+
+    /**
+     * Create the options menu for the activity, dynamically adding items based on the current context.
+     * @param menu The options menu in which items are placed.
+     * @return `true` to display the menu, `false` to prevent it from being shown.
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_dynamic, menu);
 
         String[] menuOption = path.split("/");
 
+        // Add the 'Parameter' option to the menu
         menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.parameter));
 
+        // Dynamically add items to the menu based on the folder structure
         for (int i = 10; i < menuOption.length+8; i++) {
             String itemName;
             if (i==10){
@@ -281,6 +318,8 @@ public class ImageActivity extends AppCompatActivity {
             }
             menu.add(Menu.NONE, i, Menu.NONE, itemName);
         }
+
+        // Add a 'Go to Page' option to the menu if the current file is a PDF
         if (thisFile instanceof PDF){
             menu.add(Menu.NONE, 9, Menu.NONE, getString(R.string.goToPage));
         }
@@ -288,26 +327,36 @@ public class ImageActivity extends AppCompatActivity {
         return true;
     }
 
-
+    /**
+     * Handle options menu item selection, triggering appropriate actions based on the selected menu item.
+     * @param item The selected menu item.
+     * @return `true` if the item selection was handled, `false` otherwise.
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
+
         if (itemId == 0) {
+            // Handle the 'Parameter' menu item
             Intent intentToParameterActivity = new Intent(ImageActivity.this, ParameterActivity.class);
             intentToParameterActivity.putExtra("activityAfter", "ImageActivity");
             intentToParameterActivity.putExtra("storyFolderUri", storyFolderUri.toString());
             intentToParameterActivity.putExtra("path", thisFile.getPath() + ":" + parameterToString());
             startActivity(intentToParameterActivity);
         }else if (itemId == 9) {
+            // Handle the 'Go to Page' menu item
             pageSelectorDialog();
         }else if(itemId == 10){
+            // Handle the 'Home' menu item
             Intent intentToMain = new Intent(ImageActivity.this, MainActivity.class);
             startActivity(intentToMain);
         }else{
+            // Handle dynamically added folder-specific menu items
             StringBuilder newPath = new StringBuilder();
             String[] splitPath = path.split("/");
             for (int i = 1; i < itemId -8; i++) {
                 newPath.append("/").append(splitPath[i]);
             }
+            // Determine whether to navigate to a StoryActivity or DirectoryActivity
             if (itemId == 11) {
                 Intent intentToStoryActivity = new Intent(ImageActivity.this, StoryActivity.class);
                 intentToStoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
@@ -323,6 +372,10 @@ public class ImageActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Adds an orientation change listener to the activity's window decor view.
+     * This listener detects changes in the device's orientation and responds accordingly.
+     */
     private void addOnOrientationChangeListener() {
         this.getWindow().getDecorView().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             if  (currentOrientation != getResources().getConfiguration().orientation){
@@ -335,12 +388,17 @@ public class ImageActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Called when the focus of the activity's window changes, typically when the activity
+     * gains or loses focus.
+     * @param hasFocus `true` if the activity gains focus, `false` if it loses focus.
+     */
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
         if (hasFocus) {
             if (firstLoad){
+                // If it's the first time loading the activity, perform initialization steps
                 onNewPage();
                 if (settings.getScroll()) {
                     bitmapScroll = generateScrollBitmap();
@@ -355,10 +413,14 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * A custom scale gesture listener to handle zooming actions on the image view.
+     */
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
 
         @Override
         public boolean onScaleBegin(ScaleGestureDetector detector) {
+            // Store the initial focus point of the gesture
             currentFocusX = detector.getFocusX();
             currentFocusY = detector.getFocusY();
 
@@ -366,6 +428,7 @@ public class ImageActivity extends AppCompatActivity {
         }
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
+            // Get the new focus point of the gesture
             double newFocusX = detector.getFocusX();
             double newFocusY = detector.getFocusY();
 
@@ -394,6 +457,7 @@ public class ImageActivity extends AppCompatActivity {
                 if (!updateInProgress){
                     updateInProgress = true;
 
+                    // Asynchronously update the scroll bitmap
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     executor.execute(() -> {
                         updateScrollBitmap();
@@ -416,10 +480,14 @@ public class ImageActivity extends AppCompatActivity {
 
             return true;
         }
-
     }
 
     private class DoubleTapListener extends GestureDetector.SimpleOnGestureListener {
+        /**
+         * This method is triggered when a double-tap gesture is detected on the view.
+         * @param e The MotionEvent associated with the double-tap gesture.
+         * @return `true` to indicate that the double-tap gesture has been successfully handled.
+         */
         @Override
         public boolean onDoubleTap(@NonNull MotionEvent e) {
             currentAction = "doubleTap";
@@ -436,6 +504,10 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Displays the appropriate bitmap on the imageView based on the current viewing mode.
+     * If the app is in scrolling mode, it adapts and displays the scrollable bitmap; otherwise, it displays a bitmap with the correct size and aspect ratio.
+     */
     private void displayBitmap(){
         if (settings.getScroll()){
             if (bitmapScroll != null) {
@@ -452,6 +524,12 @@ public class ImageActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Handles the transition to a new page within the current file.
+     * Updates the page number, path, and ActionBar title to reflect the new page.
+     * Saves the current page's information to memory for future reference.
+     * Invalidates the options menu to update its state.
+     */
     private void onNewPage(){
         pageNumber = thisPage.getPageNumber();
         path = thisFile.getPath();
@@ -463,6 +541,13 @@ public class ImageActivity extends AppCompatActivity {
         invalidateOptionsMenu();
     }
 
+    /**
+     * Generates a composite bitmap for the scroll view.
+     * Combines three separate bitmaps: one for the top section, one for the visible page content,
+     * and one for the bottom section.
+     * Calculates and sets the scroll offset to position the visible content correctly.
+     * @return The composite bitmap for the scroll view.
+     */
     public Bitmap generateScrollBitmap(){
         if (imageView != null){
             viewH = imageView.getHeight();
@@ -487,6 +572,12 @@ public class ImageActivity extends AppCompatActivity {
         return null;
     }
 
+    /**
+     * Creates bitmaps for the top section of the scroll view and accumulates the total height (upH).
+     * It generates bitmaps for the pages above the currently visible page until the top of the ImageView
+     * is reached or there are no more pages to display.
+     * The method collects the pages and their respective bitmaps in the 'pageUp' and 'bitmapUp' lists.
+     */
     public void createBitmapUp(){
         upH = 0;
         bitmapUp = new ArrayList<>();
@@ -506,6 +597,12 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Creates bitmaps for the bottom section of the scroll view and accumulates the total height (downH).
+     * It generates bitmaps for the pages below the currently visible page until the bottom of the ImageView
+     * is reached or there are no more pages to display.
+     * The method collects the pages and their respective bitmaps in the 'pageDown' and 'bitmapDown' lists.
+     */
     private void createBitmapDown(){
         downH = 0;
         bitmapDown = new ArrayList<>();
@@ -525,6 +622,12 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Updates the scroll view bitmap based on the new scroll position (scrollOffset).
+     * The method checks if the new scroll position reaches the top or bottom of the available pages
+     * and adjusts the content accordingly. It reassembles the composite scroll view bitmap to display
+     * the newly visible content.
+     */
     public void updateScrollBitmap(){
 
         double oldScrollOffset = scrollOffset;
@@ -581,6 +684,10 @@ public class ImageActivity extends AppCompatActivity {
         scrollOffset = scrollOffset + (newScrollOffset - oldScrollOffset);
     }
 
+    /**
+     * Completes the content above the current scroll view by adding more pages and bitmaps.
+     * This method ensures that the scroll view content extends upwards until it fills the view.
+     */
     public void completeUp(){
         boolean end = false;
         if (pageUp.size() > 0){
@@ -601,6 +708,10 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Completes the content below the current scroll view by adding more pages and bitmaps.
+     * This method ensures that the scroll view content extends downwards until it fills the view.
+     */
     public void completeDown(){
         boolean end = false;
         if (pageDown.size() > 0){
@@ -617,11 +728,13 @@ public class ImageActivity extends AppCompatActivity {
                 }
             }
         }
-
     }
 
+    /**
+     * Cuts the content above the current scroll view to optimize memory usage and performance.
+     * This method removes the bitmaps and pages that are no longer visible above the scroll view.
+     */
     public void cutUp() {
-
         ArrayList<Bitmap> oldBitmapUp = bitmapUp;
         ArrayList<Page> oldPageUp = pageUp;
         bitmapUp = new ArrayList<>();
@@ -640,6 +753,10 @@ public class ImageActivity extends AppCompatActivity {
         newScrollOffset = newScrollOffset + upH;
     }
 
+    /**
+     * Cuts the content below the current scroll view to optimize memory usage and performance.
+     * This method removes the bitmaps and pages that are no longer visible below the scroll view.
+     */
     public void cutDown(){
         ArrayList<Bitmap> oldBitmapDown = bitmapDown;
         ArrayList<Page> oldPageDown = pageDown;
@@ -655,6 +772,11 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Navigates to the previous page in the current story or image file.
+     * If the previous page exists, it updates the displayed content and page information.
+     * If the next page belongs to the same file, it ensures that any resources are properly closed.
+     */
     private void goPrevPage(){
         if (prevPage == null){
             Toast.makeText(contextThis, getString(R.string.premiereImage), Toast.LENGTH_SHORT).show();
@@ -685,6 +807,11 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Navigates to the next page in the current story or image file.
+     * If the next page exists, it updates the displayed content and page information.
+     * If the previous page belongs to the same file, it ensures that any resources are properly closed.
+     */
     private void goNextPage(){
         if (nextPage == null){
             Toast.makeText(contextThis, getString(R.string.derniereImage), Toast.LENGTH_SHORT).show();
@@ -715,6 +842,11 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Toggles the visibility of UI elements (e.g., status bar, action bar) for immersive mode.
+     * If currently hidden, it shows the UI elements; if visible, it hides them.
+     * After toggling, it delays a short time before updating the displayed bitmap.
+     */
     private void toggle() {
         if (hide) {
             hide = false;
@@ -723,10 +855,15 @@ public class ImageActivity extends AppCompatActivity {
             hide = true;
             hide();
         }
+        // Delay a short time before updating the displayed bitmap to allow time for the UI elements to change.
         Handler handler = new Handler();
         handler.postDelayed(this::displayBitmap, 50);
     }
 
+    /**
+     * Hides the UI elements for immersive mode. This method hides the action bar first
+     * and schedules a runnable to remove the status and navigation bar after a short delay.
+     */
     private void hide() {
         // Hide UI first
         ActionBar actionBar = getSupportActionBar();
@@ -738,6 +875,9 @@ public class ImageActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mHidePart2Runnable, 1);
     }
 
+    /**
+     * Shows the system bars and schedules a runnable to display UI elements after a short delay.
+     */
     private void show() {
         // Show the system bar
         if (Build.VERSION.SDK_INT >= 30) {
@@ -753,6 +893,9 @@ public class ImageActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mShowPart2Runnable, 1);
     }
 
+    /**
+     * A runnable that hides the system bars and provides an immersive user experience.
+     */
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -775,6 +918,9 @@ public class ImageActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * A runnable that shows UI elements, such as the action bar.
+     */
     private final Runnable mShowPart2Runnable = () -> {
         // Delayed display of UI elements
         ActionBar actionBar = getSupportActionBar();
@@ -783,12 +929,19 @@ public class ImageActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Saves the last viewed page of the story, including its path and parameters, in shared preferences.
+     */
     private void saveStoryLastPage(){
         SharedPreferences.Editor editor = memoire.edit();
         editor.putString(path.split("/")[2].split(":")[0] + "lastImage", thisFile.getPath() + ":" + parameterToString());
         editor.apply();
     }
 
+    /**
+     * Saves the information about the last viewed stories in the application's shared preferences.
+     * It keeps track of the last three viewed stories.
+     */
     private void saveAppLastStory(){
         String storyName = path.split("/")[2].split(":")[0];
         String nameUltimeStory = memoire.getString("nameUltimeStory", null);
@@ -808,6 +961,11 @@ public class ImageActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    /**
+     * Generates the title for the current content being displayed.
+     * @return A formatted title string containing information about the content, such as page number for PDFs
+     *         or image position within a folder.
+     */
     public String title(){
         if (thisFile instanceof Image){
             int imagePos = thisFile.getParentFile().getPos(thisFile)+1;
@@ -821,6 +979,9 @@ public class ImageActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Displays a dialog for selecting a specific page within a PDF document.
+     */
     private void pageSelectorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.askNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount());
@@ -858,10 +1019,18 @@ public class ImageActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Converts the page and split step parameters to a string representation.
+     * @return A string representing the page and split step parameters.
+     */
     public String parameterToString(){
         return "nPage=" + thisPage.getPageNumber() + ":splitStep=" + thisPage.getSplitStep();
     }
 
+    /**
+     * Parses the parameter string to extract page and split step information and updates the corresponding properties.
+     * @param parameter The parameter string to parse.
+     */
     public void stringToParameter(String parameter){
         String[] paraSplit = parameter.split("=");
         if (paraSplit[0].equals("nPage")){

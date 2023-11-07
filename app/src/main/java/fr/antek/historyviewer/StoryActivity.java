@@ -26,6 +26,11 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The `StoryActivity` class represents the main activity for viewing and navigating a story directory.
+ * Users can explore and interact with files, including images and PDFs within the story folder.
+ * It also provides options to access the application settings and continue from the last viewed file.
+ */
 public class StoryActivity extends AppCompatActivity {
     private TextView textContinueStoryLine1;
     private TextView textContinueStoryLine2;
@@ -39,6 +44,10 @@ public class StoryActivity extends AppCompatActivity {
     private Directory thisStory;
     private ArrayList<File> listFile;
 
+    /**
+     * Called when the activity is created.
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +66,8 @@ public class StoryActivity extends AppCompatActivity {
         storyFolderUri = Uri.parse(getIntent().getStringExtra("storyFolderUri"));
         path = getIntent().getStringExtra("path");
 
-        recupLastStory();
+        // Retrieve and display the last viewed file in the story.
+        getLastStory();
 
         StoryLib storyLib = new StoryLib(this, storyFolderUri);
 
@@ -84,6 +94,10 @@ public class StoryActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Called when the activity gains or loses focus.
+     * @param hasFocus `true` if the activity gains focus, `false` if it loses focus.
+     */
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
@@ -95,6 +109,11 @@ public class StoryActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Create the options menu for the activity.
+     * @param menu The options menu in which items are placed.
+     * @return `true` to display the menu, `false` to prevent it from being shown.
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_dynamic, menu);
         menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.parameter));
@@ -102,6 +121,11 @@ public class StoryActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Handle options menu item selection.
+     * @param item The selected menu item.
+     * @return `true` if the item selection was handled, `false` otherwise.
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
@@ -119,29 +143,32 @@ public class StoryActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void recupLastStory(){
+    /**
+     * Retrieve and display information about the last viewed file in the story.
+     */
+    private void getLastStory(){
         String storyName = path.split("/")[2];
         String pathLastImage = memoire.getString(storyName + "lastImage", null);
         if (pathLastImage != null){
-            String[] splitedPath = splitPath(pathLastImage.split(":")[0]);
-            if (splitedPath[0] != null){
-                textContinueStoryLine1.setText(splitedPath[0]);
+            String[] splitPath = splitPath(pathLastImage.split(":")[0]);
+            if (splitPath[0] != null){
+                textContinueStoryLine1.setText(splitPath[0]);
                 textContinueStoryLine1.setVisibility(View.VISIBLE);
             }
-            if (splitedPath[1] != null){
-                textContinueStoryLine2.setText(splitedPath[1]);
+            if (splitPath[1] != null){
+                textContinueStoryLine2.setText(splitPath[1]);
                 textContinueStoryLine2.setVisibility(View.VISIBLE);
             }
-            if (splitedPath[2] != null){
-                textContinueStoryLine3.setText(splitedPath[2]);
+            if (splitPath[2] != null){
+                textContinueStoryLine3.setText(splitPath[2]);
                 textContinueStoryLine3.setVisibility(View.VISIBLE);
             }
-            if (splitedPath[3] != null){
-                textContinueStoryLine4.setText(splitedPath[3]);
+            if (splitPath[3] != null){
+                textContinueStoryLine4.setText(splitPath[3]);
                 textContinueStoryLine4.setVisibility(View.VISIBLE);
             }
-            if (splitedPath[4] != null){
-                textContinueStoryLine5.setText(splitedPath[4]);
+            if (splitPath[4] != null){
+                textContinueStoryLine5.setText(splitPath[4]);
                 textContinueStoryLine5.setVisibility(View.VISIBLE);
             }
 
@@ -159,6 +186,9 @@ public class StoryActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Asynchronously load thumbnails for files in the story.
+     */
     public void chargeMiniature(){
         ArrayList<Thread> listThread = new ArrayList<>();
         for (int i=0; i< listFile.size(); i++) {
@@ -213,6 +243,11 @@ public class StoryActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Split the path into multiple parts for display.
+     * @param path The full path to be split.
+     * @return An array of up to five parts of the path, representing a hierarchical structure.
+     */
     public String[] splitPath(String path){
         String[] pathPart = path.split("/");
         int pathSize = pathPart.length;

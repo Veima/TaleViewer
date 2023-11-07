@@ -29,9 +29,22 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
+/**
+ * This is the main activity for the History Viewer Android application.
+ * It serves as the entry point of the app and handles user interactions and navigation.
+ *
+ * This activity is responsible for managing the user's interaction with the app:
+ * - Selecting a directory to view stories.
+ * - Displaying a list of stories within the selected directory.
+ * - Handling user interactions with the list, including opening stories and continuing from where they left off.
+ * - Providing a menu for app settings and configuration.
+ *
+ * The activity also keeps track of the last three stories the user has interacted with and allows
+ * them to continue reading from where they left off.
+ */
 public class MainActivity extends AppCompatActivity {
 
+    // UI elements
     private Button buttonContinueUltime;
     private Button buttonContinuePenultieme;
     private Button buttonContinueAntepenultieme;
@@ -51,17 +64,25 @@ public class MainActivity extends AppCompatActivity {
     private TextView textContinueAntepenultiemeLine4;
     private TextView textContinueAntepenultiemeLine5;
     private ListView listViewStory;
+
+    // Data and state
     private Uri storyFolderUri = null;
     private SharedPreferences memoire;
     private StoryLib storyLib;
     private ArrayList<File> listStory;
 
-
+    /**
+     * Called when the activity is created. Initializes the UI, sets up click listeners,
+     * and retrieves the previously selected directory from SharedPreferences.
+     *
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Initialize UI elements
         buttonContinueUltime = findViewById(R.id.buttonContinueUltime);
         buttonContinuePenultieme = findViewById(R.id.buttonContinuePenultieme);
         buttonContinueAntepenultieme = findViewById(R.id.buttonContinueAntepenultieme);
@@ -84,26 +105,28 @@ public class MainActivity extends AppCompatActivity {
         textContinueAntepenultiemeLine4 = findViewById(R.id.textContinueAntepenultiemeLine4);
         textContinueAntepenultiemeLine5 = findViewById(R.id.textContinueAntepenultiemeLine5);
 
-        Button buttonCherche = findViewById(R.id.buttonCherche);
+        Button buttonFind = findViewById(R.id.buttonCherche);
         Button buttonUpdate = findViewById(R.id.buttonUpdate);
         listViewStory = findViewById(R.id.listViewStory);
 
-
+        // Initialize SharedPreferences for storing app data
         memoire = this.getSharedPreferences("memoire",MODE_PRIVATE);
-        recupLastStory();
+
+        // Retrieve the previously selected directory if available
+        getLastStory();
         storyFolderUri = getStoredUri();
 
+        // If a directory was previously selected, update the list of stories in that directory
         if (storyFolderUri != null){
             updateListView(storyFolderUri);
         }
 
-        buttonCherche.setOnClickListener(v -> pickDirectory());
-
+        // Set up click listeners for buttons
+        buttonFind.setOnClickListener(v -> pickDirectory());
         buttonUpdate.setOnClickListener(v -> updateListView(storyFolderUri));
-
-
     }
 
+    // Register an ActivityResultLauncher for directory selection...
     ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK){
             Intent intent = result.getData();
@@ -117,6 +140,10 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    /**
+     * Called when the activity's window focus changes. It is used to load thumbnails for the displayed stories.
+     * @param hasFocus True if the window has focus, false otherwise.
+     */
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
@@ -128,12 +155,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Inflate the options menu for the activity. It includes an item for app settings.
+     * @param menu The menu to be inflated.
+     * @return True if the menu is successfully inflated.
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_dynamic, menu);
         menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.parameter));
         return true;
     }
 
+    /**
+     * Handle menu item selection. In this case, it navigates to the app's settings activity.
+     * @param item The selected menu item.
+     * @return True if the item is successfully handled.
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
@@ -148,6 +185,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Update the list of stories in the selected directory. This function retrieves the list of
+     * stories and displays them in the ListView using a custom adapter.
+     * @param storyFolderUri The URI of the selected directory.
+     */
     private void updateListView(Uri storyFolderUri){
         storyLib = new StoryLib(this, storyFolderUri);
         listStory = storyLib.getListFile();
@@ -170,17 +212,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Launch the directory picker activity for the user to select a directory.
+     */
     private void pickDirectory() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         activityResultLauncher.launch(intent);
     }
 
+    /**
+     * Save the selected directory's URI to SharedPreferences for future reference.
+     * @param uri The URI of the selected directory.
+     */
     private void saveUriToSharedPreferences(Uri uri) {
         SharedPreferences.Editor editor = memoire.edit();
         editor.putString("historyFolder", uri.toString());
         editor.apply();
     }
 
+    /**
+     * Retrieve the stored URI of the previously selected directory from SharedPreferences.
+     * @return The stored directory URI or null if not available.
+     */
     private Uri getStoredUri() {
         String uriString = memoire.getString("historyFolder", null);
         if (uriString != null) {
@@ -190,36 +243,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private void recupLastStory(){
-
+    // Methods for managing display for the last three stories
+    private void getLastStory(){
         String nameUltimeStory = memoire.getString("nameUltimeStory", null);
         if (nameUltimeStory != null){
             String pathLastImage = memoire.getString(nameUltimeStory + "lastImage", null);
             if (pathLastImage != null){
-                String[] splitedPath = splitPath(pathLastImage.split(":")[0]);
-                if (splitedPath[0] != null){
-                    textContinueUltimeLine1.setText(splitedPath[0]);
+                String[] splitPath = splitPath(pathLastImage.split(":")[0]);
+                if (splitPath[0] != null){
+                    textContinueUltimeLine1.setText(splitPath[0]);
                     textContinueUltimeLine1.setVisibility(View.VISIBLE);
                 }else if (pathLastImage.split(":nPage=").length>1){
                     textContinueUltimeLine1.setText(pathLastImage.split(":")[1].replace("nPage=",""));
                     textContinueUltimeLine1.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[1] != null){
-                    textContinueUltimeLine2.setText(splitedPath[1]);
+                if (splitPath[1] != null){
+                    textContinueUltimeLine2.setText(splitPath[1]);
                     textContinueUltimeLine2.setVisibility(View.VISIBLE);
 
                 }
-                if (splitedPath[2] != null){
-                    textContinueUltimeLine3.setText(splitedPath[2]);
+                if (splitPath[2] != null){
+                    textContinueUltimeLine3.setText(splitPath[2]);
                     textContinueUltimeLine3.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[3] != null){
-                    textContinueUltimeLine4.setText(splitedPath[3]);
+                if (splitPath[3] != null){
+                    textContinueUltimeLine4.setText(splitPath[3]);
                     textContinueUltimeLine4.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[4] != null){
-                    textContinueUltimeLine5.setText(splitedPath[4]);
+                if (splitPath[4] != null){
+                    textContinueUltimeLine5.setText(splitPath[4]);
                     textContinueUltimeLine5.setVisibility(View.VISIBLE);
                 }
 
@@ -243,28 +295,28 @@ public class MainActivity extends AppCompatActivity {
         if (namePenultiemeStory != null){
             String pathLastImage = memoire.getString(namePenultiemeStory + "lastImage", null);
             if (pathLastImage != null){
-                String[] splitedPath = splitPath(pathLastImage.split(":")[0]);
-                if (splitedPath[0] != null){
-                    textContinuePenultiemeLine1.setText(splitedPath[0]);
+                String[] splitPath = splitPath(pathLastImage.split(":")[0]);
+                if (splitPath[0] != null){
+                    textContinuePenultiemeLine1.setText(splitPath[0]);
                     textContinuePenultiemeLine1.setVisibility(View.VISIBLE);
                 }else if (pathLastImage.split(":").length>1){
                     textContinuePenultiemeLine1.setText(pathLastImage.split(":")[1].replace("nPage=",""));
                     textContinuePenultiemeLine1.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[1] != null){
-                    textContinuePenultiemeLine2.setText(splitedPath[1]);
+                if (splitPath[1] != null){
+                    textContinuePenultiemeLine2.setText(splitPath[1]);
                     textContinuePenultiemeLine2.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[2] != null){
-                    textContinuePenultiemeLine3.setText(splitedPath[2]);
+                if (splitPath[2] != null){
+                    textContinuePenultiemeLine3.setText(splitPath[2]);
                     textContinuePenultiemeLine3.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[3] != null){
-                    textContinuePenultiemeLine4.setText(splitedPath[3]);
+                if (splitPath[3] != null){
+                    textContinuePenultiemeLine4.setText(splitPath[3]);
                     textContinuePenultiemeLine4.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[4] != null){
-                    textContinuePenultiemeLine5.setText(splitedPath[4]);
+                if (splitPath[4] != null){
+                    textContinuePenultiemeLine5.setText(splitPath[4]);
                     textContinuePenultiemeLine5.setVisibility(View.VISIBLE);
                 }
 
@@ -289,28 +341,28 @@ public class MainActivity extends AppCompatActivity {
         if (nameAntepenultiemeStory != null){
             String pathLastImage = memoire.getString(nameAntepenultiemeStory + "lastImage", null);
             if (pathLastImage != null){
-                String[] splitedPath = splitPath(pathLastImage.split(":")[0]);
-                if (splitedPath[0] != null){
-                    textContinueAntepenultiemeLine1.setText(splitedPath[0]);
+                String[] splitPath = splitPath(pathLastImage.split(":")[0]);
+                if (splitPath[0] != null){
+                    textContinueAntepenultiemeLine1.setText(splitPath[0]);
                     textContinueAntepenultiemeLine1.setVisibility(View.VISIBLE);
                 }else if (pathLastImage.split(":").length>1){
                     textContinueAntepenultiemeLine1.setText(pathLastImage.split(":")[1].replace("nPage=",""));
                     textContinueAntepenultiemeLine1.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[1] != null){
-                    textContinueAntepenultiemeLine2.setText(splitedPath[1]);
+                if (splitPath[1] != null){
+                    textContinueAntepenultiemeLine2.setText(splitPath[1]);
                     textContinueAntepenultiemeLine2.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[2] != null){
-                    textContinueAntepenultiemeLine3.setText(splitedPath[2]);
+                if (splitPath[2] != null){
+                    textContinueAntepenultiemeLine3.setText(splitPath[2]);
                     textContinueAntepenultiemeLine3.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[3] != null){
-                    textContinueAntepenultiemeLine4.setText(splitedPath[3]);
+                if (splitPath[3] != null){
+                    textContinueAntepenultiemeLine4.setText(splitPath[3]);
                     textContinueAntepenultiemeLine4.setVisibility(View.VISIBLE);
                 }
-                if (splitedPath[4] != null){
-                    textContinueAntepenultiemeLine5.setText(splitedPath[4]);
+                if (splitPath[4] != null){
+                    textContinueAntepenultiemeLine5.setText(splitPath[4]);
                     textContinueAntepenultiemeLine5.setVisibility(View.VISIBLE);
                 }
 
@@ -333,6 +385,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Load thumbnails for the stories displayed in the list.
+     */
     public void chargeMiniature(){
         if (listStory !=null) {
             ArrayList<Thread> listThread = new ArrayList<>();
@@ -391,6 +446,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Split a file path into multiple lines to fit in TextViews.
+     * @param path The file path to split.
+     * @return An array of strings containing the split path lines.
+     */
     public String[] splitPath(String path){
         String[] pathPart = path.split("/");
         int pathSize = pathPart.length;
@@ -422,6 +482,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return new String[]{line1,line2,line3,line4,line5};
     }
-
 
 }

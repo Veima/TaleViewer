@@ -25,6 +25,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * ParameterActivity is responsible for managing the application's settings and providing options for exporting and importing settings.
+ */
 public class ParameterActivity extends AppCompatActivity {
     private Uri storyFolderUri;
     private String path;
@@ -42,10 +45,15 @@ public class ParameterActivity extends AppCompatActivity {
     private TextView overlapValue;
     private SharedPreferences memoire;
     private String textFirstPage;
-    public static final int FILE_PICKER_REQUEST_CODE = 1001;
+    public static final int FILE_PICKER_REQUEST_CODE = 1;
+    private static final int PICK_TXT_FILE = 2;
 
 
-
+    /**
+     * Called when the activity is created. Initializes UI elements, handles user interactions, and manages settings.
+     *
+     * @param savedInstanceState The saved instance state, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,6 +163,11 @@ public class ParameterActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Toggles the visibility of UI elements related to splitting settings.
+     *
+     * @param state The visibility state to set for the elements.
+     */
     public void changeDisplaySplit(int state){
         switchFirstPage.setVisibility(state);
         switchFullBefore.setVisibility(state);
@@ -165,6 +178,9 @@ public class ParameterActivity extends AppCompatActivity {
         overlapValue.setVisibility(state);
     }
 
+    /**
+     * Navigates back to the previous activity.
+     */
     private void returnActivity(){
         switch (activityAfter) {
             case "MainActivity" -> {
@@ -192,8 +208,11 @@ public class ParameterActivity extends AppCompatActivity {
         }
     }
 
-
-
+    /**
+     * Displays the file chooser dialog to export settings to a file.
+     *
+     * @param activity The activity context in which to display the dialog.
+     */
     public void showFileChooser(Activity activity) {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -202,6 +221,13 @@ public class ParameterActivity extends AppCompatActivity {
         activity.startActivityForResult(intent, FILE_PICKER_REQUEST_CODE);
     }
 
+    /**
+     * Called when an activity launched by this activity returns a result.
+     *
+     * @param requestCode The code that was sent to the launched activity.
+     * @param resultCode The result code returned by the launched activity.
+     * @param data The intent data returned by the launched activity.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -223,7 +249,7 @@ public class ParameterActivity extends AppCompatActivity {
                     }
                 }
             }
-        }else{
+        }else if(requestCode == PICK_TXT_FILE && resultCode == Activity.RESULT_OK){
             String content = readSelectedTextFile(this, requestCode, resultCode, data);
 
             if (content != null) {
@@ -232,7 +258,12 @@ public class ParameterActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Converts the application's settings stored in SharedPreferences to a string representation.
+     *
+     * @param sharedPreferences The SharedPreferences object containing the settings.
+     * @return A string representation of the settings.
+     */
     public String sharedPreferencesToString(SharedPreferences sharedPreferences) {
         StringBuilder outputSting = new StringBuilder();
 
@@ -247,6 +278,12 @@ public class ParameterActivity extends AppCompatActivity {
         return outputSting.toString();
     }
 
+    /**
+     * Imports settings from a text file into the application's SharedPreferences.
+     *
+     * @param editor The SharedPreferences.Editor used to apply the imported settings.
+     * @param inputString The string containing the settings to import.
+     */
     public static void stringToSharedPreferences(SharedPreferences.Editor editor, String inputString) {
         String[] listPref = inputString.split("\n");
             for (String pref : listPref) {
@@ -266,6 +303,11 @@ public class ParameterActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    /**
+     * Generates a unique file name for exported settings.
+     *
+     * @return A unique file name for exported settings.
+     */
     public String generateFileName() {
         String fileName;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH_mm");
@@ -273,8 +315,12 @@ public class ParameterActivity extends AppCompatActivity {
         fileName = "HV_Save_" + timestamp + ".txt";
         return fileName;
     }
-    private static final int PICK_TXT_FILE = 1;
 
+    /**
+     * Displays a file picker dialog to choose a text file for importing settings.
+     *
+     * @param activity The activity context in which to display the dialog.
+     */
     public void chooseTextFile(Activity activity) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -283,6 +329,15 @@ public class ParameterActivity extends AppCompatActivity {
         activity.startActivityForResult(intent, PICK_TXT_FILE);
     }
 
+    /**
+     * Reads the content of the selected text file.
+     *
+     * @param activity The activity context.
+     * @param requestCode The request code.
+     * @param resultCode The result code.
+     * @param data The intent data containing the selected text file's URI.
+     * @return The content of the selected text file, or null if an error occurs.
+     */
     public String readSelectedTextFile(Activity activity, int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_TXT_FILE && resultCode == Activity.RESULT_OK) {
             Uri uri = data.getData();
@@ -306,7 +361,4 @@ public class ParameterActivity extends AppCompatActivity {
         }
         return null;
     }
-
-
-
 }
