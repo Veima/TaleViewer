@@ -190,7 +190,7 @@ public class ImageActivity extends AppCompatActivity {
                     int moveY = Math.toIntExact(Math.round(currentYSlide - y));
                     int width = imageView.getWidth();
 
-                    if ((Math.sqrt(moveY * moveY + moveX * moveX) > (width / 10.0)) || currentAction.equals("move")) {
+                    if ((Math.sqrt(moveY * moveY + moveX * moveX) > (width / 20.0)) || currentAction.equals("move")) {
                         currentAction = "move";
                         if (settings.getScroll()) {
                             if (event.getPointerCount() == 1) {

@@ -83,7 +83,7 @@ public class Directory extends File{
      * @return True if the file is an image, otherwise false.
      */
     public boolean isImage(DocumentFile file){
-        String[] extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"};
+        String[] extensions = {".jpg", ".jpeg", ".png", ".bmp", ".webp"};
 
         for (String extension : extensions) {
             if (Objects.requireNonNull(file.getName()).endsWith(extension)) {
