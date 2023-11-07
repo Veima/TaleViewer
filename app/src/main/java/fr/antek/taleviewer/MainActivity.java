@@ -126,7 +126,23 @@ public class MainActivity extends AppCompatActivity {
         buttonUpdate.setOnClickListener(v -> updateListView(storyFolderUri));
     }
 
-    // Register an ActivityResultLauncher for directory selection...
+    /**
+     * Called when the activity is resumed. This method is part of the Android Activity lifecycle
+     * and is invoked when the activity returns to the foreground, such as after being paused or
+     * when initially started.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getLastStory();
+    }
+
+    /**
+     * An ActivityResultLauncher is initialized using the registerForActivityResult method.
+     * This specific launcher is set up to handle the result of an activity started with the
+     * ActivityResultContracts.StartActivityForResult contract, which is typically used for
+     * picking a file from external storage or other activities.
+     */
     ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK){
             Intent intent = result.getData();

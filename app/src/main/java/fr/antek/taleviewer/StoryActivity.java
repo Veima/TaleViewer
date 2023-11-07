@@ -95,6 +95,17 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     /**
+     * Called when the activity is resumed. This method is part of the Android Activity lifecycle
+     * and is invoked when the activity returns to the foreground, such as after being paused or
+     * when initially started.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getLastStory();
+    }
+
+    /**
      * Called when the activity gains or loses focus.
      * @param hasFocus `true` if the activity gains focus, `false` if it loses focus.
      */
