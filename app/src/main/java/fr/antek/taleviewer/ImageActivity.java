@@ -1,4 +1,4 @@
-package fr.antek.historyviewer;
+package fr.antek.taleviewer;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.antek.historyviewer.databinding.ActivityImageBinding;
+import fr.antek.taleviewer.databinding.ActivityImageBinding;
 
 /**
  * ImageActivity is an Android activity class responsible for displaying and interacting with image
@@ -93,7 +93,7 @@ public class ImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Inflate the layout for this activity
-        fr.antek.historyviewer.databinding.ActivityImageBinding binding = ActivityImageBinding.inflate(getLayoutInflater());
+        fr.antek.taleviewer.databinding.ActivityImageBinding binding = ActivityImageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         // Retrieve essential data from intent extras and shared preferences

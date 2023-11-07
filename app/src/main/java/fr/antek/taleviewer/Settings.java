@@ -1,4 +1,4 @@
-package fr.antek.historyviewer;
+package fr.antek.taleviewer;
 
 /**
  * Represents a configuration class for various display settings in the application.

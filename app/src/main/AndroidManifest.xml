@@ -10,7 +10,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.HistoryViewer"
+        android:theme="@style/Theme.TaleViewer"
         tools:targetApi="31">
         <activity
             android:name=".ParameterActivity"
@@ -19,7 +19,7 @@
             android:name=".ImageActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="false"
-            android:theme="@style/Theme.HistoryViewer.Fullscreen" />
+            android:theme="@style/Theme.TaleViewer.Fullscreen" />
         <activity
             android:name=".DirectoryActivity"
             android:exported="false" />

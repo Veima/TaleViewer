@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "HistoryViewer"
+rootProject.name = "TaleViewer"
 include(":app")

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HistoryViewer</string>
+    <string name="app_name">Tale Viewer</string>
     <integer name="tempsToast">3</integer>
 
     <string name="buttonContinueText">Continuer</string>

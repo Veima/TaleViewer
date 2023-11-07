@@ -1,20 +1,20 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Base.Theme.HistoryViewer" parent="Theme.Material3.DayNight">
+    <style name="Base.Theme.TaleViewer" parent="Theme.Material3.DayNight">
         <!-- Customize your light theme here. -->
         <item name="colorPrimary">@color/light_blue_600</item>
     </style>
 
-    <style name="Theme.HistoryViewer" parent="Base.Theme.HistoryViewer" />
+    <style name="Theme.TaleViewer" parent="Base.Theme.TaleViewer" />
 
-    <style name="Theme.HistoryViewer.Fullscreen" parent="Theme.HistoryViewer">
-        <item name="android:actionBarStyle">@style/Widget.Theme.HistoryViewer.ActionBar.Fullscreen
+    <style name="Theme.TaleViewer.Fullscreen" parent="Theme.TaleViewer">
+        <item name="android:actionBarStyle">@style/Widget.Theme.TaleViewer.ActionBar.Fullscreen
         </item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowBackground">@null</item>
     </style>
 
-    <style name="ThemeOverlay.HistoryViewer.FullscreenContainer" parent="">
+    <style name="ThemeOverlay.TaleViewer.FullscreenContainer" parent="">
         <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
         <item name="fullscreenTextColor">@color/light_blue_A200</item>
     </style>

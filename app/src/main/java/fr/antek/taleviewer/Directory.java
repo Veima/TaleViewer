@@ -1,4 +1,4 @@
-package fr.antek.historyviewer;
+package fr.antek.taleviewer;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;

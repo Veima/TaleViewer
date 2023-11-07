@@ -1,4 +1,4 @@
-package fr.antek.historyviewer;
+package fr.antek.taleviewer;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

@@ -1,11 +1,11 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Base.Theme.HistoryViewer" parent="Theme.Material3.DayNight">
+    <style name="Base.Theme.TaleViewer" parent="Theme.Material3.DayNight">
         <!-- Customize your dark theme here. -->
         <item name="fullscreenBackgroundColor">@color/light_blue_900</item>
     </style>
 
-    <style name="ThemeOverlay.HistoryViewer.FullscreenContainer" parent="">
+    <style name="ThemeOverlay.TaleViewer.FullscreenContainer" parent="">
         <item name="fullscreenBackgroundColor">@color/light_blue_900</item>
         <item name="fullscreenTextColor">@color/light_blue_A400</item>
     </style>

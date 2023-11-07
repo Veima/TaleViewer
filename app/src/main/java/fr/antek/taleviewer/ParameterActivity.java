@@ -1,4 +1,4 @@
-package fr.antek.historyviewer;
+package fr.antek.taleviewer;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -312,7 +312,7 @@ public class ParameterActivity extends AppCompatActivity {
         String fileName;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH_mm");
         String timestamp = formatter.format(LocalDateTime.now());
-        fileName = "HV_Save_" + timestamp + ".txt";
+        fileName = "TV_Save_" + timestamp + ".txt";
         return fileName;
     }
 

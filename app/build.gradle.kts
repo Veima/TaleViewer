@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "fr.antek.historyviewer"
+    namespace = "fr.antek.taleviewer"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "fr.antek.historyviewer"
+        applicationId = "fr.antek.taleviewer"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

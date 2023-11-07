@@ -1,4 +1,4 @@
-package fr.antek.historyviewer;
+package fr.antek.taleviewer;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * This is the main activity for the History Viewer Android application.
+ * This is the main activity for the Tale Viewer Android application.
  * It serves as the entry point of the app and handles user interactions and navigation.
  *
  * This activity is responsible for managing the user's interaction with the app:
@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void saveUriToSharedPreferences(Uri uri) {
         SharedPreferences.Editor editor = memoire.edit();
-        editor.putString("historyFolder", uri.toString());
+        editor.putString("storyFolder", uri.toString());
         editor.apply();
     }
 
@@ -235,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
      * @return The stored directory URI or null if not available.
      */
     private Uri getStoredUri() {
-        String uriString = memoire.getString("historyFolder", null);
+        String uriString = memoire.getString("storyFolder", null);
         if (uriString != null) {
             return Uri.parse(uriString);
         }else{
