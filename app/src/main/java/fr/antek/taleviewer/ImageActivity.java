@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -553,7 +552,6 @@ public class ImageActivity extends AppCompatActivity {
     private void onNewPage(){
         pageNumber = thisPage.getPageNumber();
         path = thisFile.getPath();
-        Log.d("moi", path);
         Objects.requireNonNull(getSupportActionBar()).setTitle(title());
         memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
         saveStoryLastPage();
