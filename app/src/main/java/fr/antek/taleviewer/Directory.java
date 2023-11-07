@@ -176,6 +176,9 @@ public class Directory extends File{
      * @return The last file or the previous file if the last one is a directory.
      */
     public File getLast(){
+        if (!isScan){
+            listFile();
+        }
         File last = getFileWithPos(fileList.size()-1);
         if (last == null){
             return this.getPrev();

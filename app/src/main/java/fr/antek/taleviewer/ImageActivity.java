@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -96,12 +97,19 @@ public class ImageActivity extends AppCompatActivity {
         fr.antek.taleviewer.databinding.ActivityImageBinding binding = ActivityImageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
+
         // Retrieve essential data from intent extras and shared preferences
         storyFolderUri = Uri.parse(getIntent().getStringExtra("storyFolderUri"));
         path = getIntent().getStringExtra("path");
-        memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
+
+        // Checks if there is a saved instance state (e.g., during activity recreation) and retrieves the path
+        if (savedInstanceState != null) {
+            path = savedInstanceState.getString("path");
+        }
 
         // Create and configure the settings object based on user preferences
+        memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
         settings = new Settings();
         settings.setSplitPage(memoire.getBoolean("switchSplit",false));
         settings.setFirstPageRight(memoire.getBoolean("switchFirstPage",true));
@@ -293,6 +301,18 @@ public class ImageActivity extends AppCompatActivity {
             // Add an orientation change listener to handle screen rotation
             this.addOnOrientationChangeListener();
         }
+    }
+
+    /**
+     * Called to save the current instance state of the activity. It stores the 'path' variable's value
+     * in the provided Bundle to ensure that the state can be restored when needed.
+     *
+     * @param outState A Bundle in which the current instance state is saved.
+     */
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("path", path);
     }
 
     /**
@@ -533,6 +553,7 @@ public class ImageActivity extends AppCompatActivity {
     private void onNewPage(){
         pageNumber = thisPage.getPageNumber();
         path = thisFile.getPath();
+        Log.d("moi", path);
         Objects.requireNonNull(getSupportActionBar()).setTitle(title());
         memoire = this.getSharedPreferences("memoire", MODE_PRIVATE);
         saveStoryLastPage();
