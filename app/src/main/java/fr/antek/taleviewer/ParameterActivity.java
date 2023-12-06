@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -360,5 +362,32 @@ public class ParameterActivity extends AppCompatActivity {
             }
         }
         return null;
+    }
+
+    /**
+     * Inflate the options menu for the activity. It includes an item for app settings.
+     * @param menu The menu to be inflated.
+     * @return True if the menu is successfully inflated.
+     */
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_dynamic, menu);
+        menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.home));
+        return true;
+    }
+
+    /**
+     * Handle menu item selection. In this case, it navigates to the app's settings activity.
+     * @param item The selected menu item.
+     * @return True if the item is successfully handled.
+     */
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == 0) {
+            Intent intentToMain = new Intent(ParameterActivity.this, MainActivity.class);
+            startActivity(intentToMain);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
