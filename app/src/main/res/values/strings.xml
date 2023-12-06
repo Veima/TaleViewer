@@ -30,4 +30,5 @@
     <string name="Import">Importer les données</string>
     <string name="SaveSucess">Fichier créé avec succès</string>
     <string name="SaveFail">Erreur lors de la création du fichier</string>
+    <string name="ErrorOpen">n\’a pas pu être ouverte</string>
 </resources>
