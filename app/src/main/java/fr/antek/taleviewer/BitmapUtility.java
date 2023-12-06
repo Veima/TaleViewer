@@ -27,16 +27,21 @@ public class BitmapUtility {
         float bmpW = bitmap.getWidth();
         float bmpH = bitmap.getHeight();
         float ratio = bmpW / bmpH;
+
+
+        if ((viewW == 0) && (viewH == 0)) {
+            viewW = 1080;
+            viewH = 1920;
+        }
+
         float factorX = bmpW / viewW;
         float factorY = bmpH / viewH;
-
-        if ((viewW != 0) && (viewH != 0)) {
-            if (factorX > factorY) {
-                bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW / ratio), true);
-            } else {
-                bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH * ratio), Math.round(viewH), true);
-            }
+        if (factorX > factorY) {
+            bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewW), Math.round(viewW / ratio), true);
+        } else {
+            bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(viewH * ratio), Math.round(viewH), true);
         }
+
         return bitmap;
     }
 

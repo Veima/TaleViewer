@@ -876,7 +876,7 @@ public class ImageActivity extends AppCompatActivity {
         }
         // Delay a short time before updating the displayed bitmap to allow time for the UI elements to change.
         Handler handler = new Handler();
-        handler.postDelayed(this::displayBitmap, 50);
+        handler.postDelayed(this::displayBitmap, 300);
     }
 
     /**
