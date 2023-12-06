@@ -991,7 +991,7 @@ public class ImageActivity extends AppCompatActivity {
             return "(" + imagePos + "/" + thisFile.getParentFile().getListFile().size() + ") " + thisFile.getName();
         } else if (thisFile instanceof PDF) {
             int pageNum = thisPage.getPageNumber();
-            int lastPage = ((PDF) thisFile).getPdfRenderer().getPageCount();
+            int lastPage = ((PDF) thisFile).getPageCount();
             return "(" + pageNum + "/" + lastPage + ") " + thisFile.getName();
         }else{
             return thisFile.getName();
@@ -1003,7 +1003,7 @@ public class ImageActivity extends AppCompatActivity {
      */
     private void pageSelectorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.askNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount());
+        builder.setTitle(getString(R.string.askNumber) + " " + ((PDF) thisFile).getPageCount());
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -1013,7 +1013,7 @@ public class ImageActivity extends AppCompatActivity {
             String inputText = input.getText().toString();
             try {
                 int number = Integer.parseInt(inputText);
-                if (number >= 1 && number <= ((PDF) thisFile).getPdfRenderer().getPageCount()) {
+                if (number >= 1 && number <= ((PDF) thisFile).getPageCount()) {
                     pageNumber = number;
                     thisPage = new Page(thisFile,thisActivity,"firstPossible",pageNumber);
                     if (settings.getScroll()){
@@ -1026,10 +1026,10 @@ public class ImageActivity extends AppCompatActivity {
                     displayBitmap();
                     onNewPage();
                 } else {
-                    Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPageCount(), Toast.LENGTH_SHORT).show();
                 }
             } catch (NumberFormatException e) {
-                Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPdfRenderer().getPageCount(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ImageActivity.this, getString(R.string.errorInvalidNumber) + " " + ((PDF) thisFile).getPageCount(), Toast.LENGTH_SHORT).show();
             }
         });
 

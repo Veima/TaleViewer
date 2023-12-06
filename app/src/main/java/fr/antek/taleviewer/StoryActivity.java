@@ -214,10 +214,11 @@ public class StoryActivity extends AppCompatActivity {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    if (bitmapRaw != null) {
-                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
-                        ((Image) file).setMiniature(bitmap);
+                    if (bitmapRaw == null) {
+                        bitmapRaw = BitmapUtility.generateTextBitmap(file.getName() + " " + getString(R.string.ErrorOpen), 256, 256);
                     }
+                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                    ((Image) file).setMiniature(bitmap);
                 }else if(file instanceof PDF) {
                     Bitmap bitmapRaw;
                     try {
@@ -233,12 +234,10 @@ public class StoryActivity extends AppCompatActivity {
                         pdfPage.close();
                         pdfRenderer.close();
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        bitmapRaw = BitmapUtility.generateTextBitmap(file.getName() + " " + getString(R.string.ErrorOpen), 256, 256);
                     }
-                    if (bitmapRaw != null) {
-                        Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
-                        ((PDF) file).setMiniature(bitmap);
-                    }
+                    Bitmap bitmap = BitmapUtility.correctSize(bitmapRaw, 512, 512);
+                    ((PDF) file).setMiniature(bitmap);
                 }
             });
             listThread.add(thread);

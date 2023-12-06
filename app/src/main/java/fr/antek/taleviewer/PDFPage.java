@@ -29,16 +29,22 @@ public class PDFPage {
      * Opens and renders the PDF page, creating a raw bitmap representation of the page's content.
      */
     public void open(){
-        PdfRenderer.Page pageRenderer = parentPDF.getPdfRenderer().openPage(pageId);
+        if (parentPDF.getPdfRenderer() != null){
+            PdfRenderer.Page pageRenderer = parentPDF.getPdfRenderer().openPage(pageId);
 
-        bitmapRaw = Bitmap.createBitmap(pageRenderer.getWidth()*4, pageRenderer.getHeight()*4, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmapRaw);
-        canvas.drawColor(Color.WHITE);
+            bitmapRaw = Bitmap.createBitmap(pageRenderer.getWidth()*4, pageRenderer.getHeight()*4, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmapRaw);
+            canvas.drawColor(Color.WHITE);
 
-        pageRenderer.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+            pageRenderer.render(bitmapRaw, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
+            pageRenderer.close();
+        }else{
+            bitmapRaw = BitmapUtility.generateTextBitmap(parentPDF.getName() + " " + parentPDF.getActivity().getString(R.string.ErrorOpen), 720, 1280);
+        }
+
         isWide = bitmapRaw.getWidth()>bitmapRaw.getHeight();
         isOpen = true;
-        pageRenderer.close();
+
     }
 
     /**

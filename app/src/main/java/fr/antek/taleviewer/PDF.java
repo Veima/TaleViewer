@@ -39,17 +39,20 @@ public class PDF extends File{
             ParcelFileDescriptor fileDescriptor = super.getActivity().getContentResolver().openFileDescriptor(super.getDoc().getUri(), "r");
             pdfRenderer = new PdfRenderer(Objects.requireNonNull(fileDescriptor));
             listPage = new PDFPage[pdfRenderer.getPageCount()];
-            open = true;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            pdfRenderer = null;
+            listPage = new PDFPage[1];
         }
+        open = true;
     }
 
     /**
      * Closes the PDF file and releases resources.
      */
     public void close(){
-        pdfRenderer.close();
+        if (pdfRenderer != null){
+            pdfRenderer.close();
+        }
         listPage = null;
         open = false;
     }
@@ -92,6 +95,13 @@ public class PDF extends File{
      */
     public PDFPage getPage(int pageNumber){
         return listPage[pageNumber-1];
+    }
+
+    public int getPageCount(){
+        if (!open){
+            open();
+        }
+        return listPage.length;
     }
 
     public Uri getUri(){

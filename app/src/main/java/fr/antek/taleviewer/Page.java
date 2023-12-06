@@ -49,7 +49,7 @@ public class Page {
         }
         if (parentFile instanceof PDF){
             if (pageNumber == -1){
-                this.pageNumber = ((PDF)parentFile).getPdfRenderer().getPageCount();
+                this.pageNumber = ((PDF)parentFile).getPageCount();
             }else{
                 this.pageNumber = pageNumber;
             }
@@ -253,7 +253,7 @@ public class Page {
                 return new Page(nextFile, activity,  "firstPossible", 1);
             }
         }else if (parentFile instanceof PDF){
-            if (pageNumber == ((PDF)parentFile).getPdfRenderer().getPageCount()){
+            if (pageNumber == ((PDF)parentFile).getPageCount()){
                 File nextFile = parentFile.getNext();
                 if (nextFile == null){
                     return null;
