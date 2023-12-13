@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tale Viewer</string>
+    <string name="buttonContinueText">Avanti</string>
+    <string name="buttonChooseDir">Cambiare cartella</string>
+    <string name="buttonUpdate">Ricarica</string>
+    <string name="imageDescription">Un immagina</string>
+    <string name="derniereImage">Questa è l\'ultima pagina della storia</string>
+    <string name="premiereImage">Questa è la prima pagina della storia</string>
+    <string name="fileNotFound">File Not Found</string>
+    <string name="home">Home</string>
+    <string name="miniature">Miniatura</string>
+    <string name="goToPage">Cambia pagina</string>
+    <string name="parameter">Parametri</string>
+    <string name="errorInvalidNumber">"Numero non valido. Inserire un numero tra 1 e "</string>
+    <string name="askNumber">Inserire un numero tra 1 e</string>
+    <string name="validationButton">OK</string>
+    <string name="cancelButton">"Cancellare "</string>
+    <string name="Activatesplitview">Attivare lo splitting delle pagine larghe</string>
+    <string name="FirstPage">La prima pagina sarà quella di :</string>
+    <string name="Left">Sinistra</string>
+    <string name="Right">Destra</string>
+    <string name="Activatefullviewbefore">Attivare la vista completa prima</string>
+    <string name="Activatefullviewbetween">Attivare la vista completa tra</string>
+    <string name="Activatefullviewafter">Attivare la vista completa dopo</string>
+    <string name="Overlap">Sovraposizione</string>
+    <string name="ActivateScrollmode">Attivare la modalità di scorrimento</string>
+    <string name="Export">Esportare i dati</string>
+    <string name="Import">"Importare i dati "</string>
+    <string name="SaveSucess">File creato con successo</string>
+    <string name="SaveFail">Si è verificato un errore nella creazione del file</string>
+    <string name="ErrorOpen">non è stato possibile aprire il file</string>
+</resources>
