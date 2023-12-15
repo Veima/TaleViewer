@@ -35,8 +35,7 @@ Enjoy the flexibility of importing and exporting your reading history.
 
 ## Installation
 
-Go the Google play [Store app's page](link here)
-Or download the latest release from our this GitHub page.
+Download the latest release from our this GitHub page.
 
 ## Contributing
 
@@ -44,7 +43,7 @@ We welcome contributions from the community! If you find a bug, have a feature r
 
 ## Support
 
-Tale Viewer is free, ad-free, and open source. If you enjoy using the application, consider making a donation to support ongoing development and improvements.
+Tale Viewer is free, ad-free, and open source. If you enjoy using the application, consider [making a donation](https://ko-fi.com/veima) to support ongoing development and improvements.
 
 ## Screenshots
 
