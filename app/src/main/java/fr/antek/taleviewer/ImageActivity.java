@@ -661,7 +661,6 @@ public class ImageActivity extends AppCompatActivity {
         }
 
         if (upH > newScrollOffset +viewH/2.0){
-
             bitmapDown.add(0, thisBitmap);
             pageDown.add(0,thisPage);
 
@@ -712,6 +711,7 @@ public class ImageActivity extends AppCompatActivity {
         if (pageUp.size() > 0){
             Page page = pageUp.get(pageUp.size()-1);
             while ((upH < viewH) && !end){
+
                 page = page.getPrevPage();
                 if (page == null){
                     end = true;
@@ -724,6 +724,16 @@ public class ImageActivity extends AppCompatActivity {
                     bitmapUp.add(prevBitmap);
                 }
             }
+        }
+        if (pageUp.size() == 0){
+            Page page = thisPage.getPrevPage();
+            Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+            upH = upH + prevBitmap.getHeight();
+
+            newScrollOffset = newScrollOffset + prevBitmap.getHeight();
+            pageUp.add(page);
+            bitmapUp.add(prevBitmap);
+
         }
     }
 
@@ -746,6 +756,14 @@ public class ImageActivity extends AppCompatActivity {
                     bitmapDown.add(nextBitmap);
                 }
             }
+        }
+        if (pageDown.size() == 0){
+            Page page = thisPage.getNextPage();
+            Bitmap nextBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+            downH = downH + nextBitmap.getHeight();
+            pageDown.add(page);
+            bitmapDown.add(nextBitmap);
+
         }
     }
 
