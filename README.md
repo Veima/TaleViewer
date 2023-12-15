@@ -35,7 +35,7 @@ Enjoy the flexibility of importing and exporting your reading history.
 
 ## Installation
 
-Go the play [Store app's page](link here)
+Go the Google play [Store app's page](link here)
 Or download the latest release from our this GitHub page.
 
 ## Contributing
@@ -52,7 +52,7 @@ Tale Viewer is free, ad-free, and open source. If you enjoy using the applicatio
 ![2-Fullscreen](https://github.com/Veima/TaleViewer/assets/59318805/512b5ebb-0094-493e-ac93-43309e9cc23d)
 ![3-Split page](https://github.com/Veima/TaleViewer/assets/59318805/1d42babf-384c-4b96-afd9-cdbb1764bd0a)
 ![4-Saving page](https://github.com/Veima/TaleViewer/assets/59318805/7a1d9f31-8c10-4b24-8edc-b1b2b31cd199)
-![5-Scroll   Settings](https://github.com/Veima/TaleViewer/assets/59318805/1ec6bd10-2036-4db6-92d6-40dcba2fe0db)
+![5-Scroll Settings](https://github.com/Veima/TaleViewer/assets/59318805/1ec6bd10-2036-4db6-92d6-40dcba2fe0db)
 
 ## License
 
