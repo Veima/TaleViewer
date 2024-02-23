@@ -115,9 +115,8 @@ public class MainActivity extends AppCompatActivity {
         storyFolderUri = getStoredUri();
 
         // If a directory was previously selected, update the list of stories in that directory
-        if (storyFolderUri != null){
-            updateListView(storyFolderUri);
-        }
+        updateListView(storyFolderUri);
+
 
         // Set up click listeners for buttons
         buttonFind.setOnClickListener(v -> pickDirectory());
@@ -205,25 +204,27 @@ public class MainActivity extends AppCompatActivity {
      * @param storyFolderUri The URI of the selected directory.
      */
     private void updateListView(Uri storyFolderUri){
-        storyLib = new StoryLib(this, storyFolderUri);
-        listStory = storyLib.getListFile();
+        if (storyFolderUri != null) {
+            storyLib = new StoryLib(this, storyFolderUri);
+            listStory = storyLib.getListFile();
 
-        ListAdapter adapter = new FileAdapter(this, R.layout.item_file, listStory);
-        listViewStory.setAdapter(adapter);
-        listViewStory.setOnItemClickListener((parent, view, position, id) -> {
-            File selectedStory = storyLib.getFileWithPos(position);
-            if (selectedStory instanceof Directory) {
-                Intent intentToStoryActivity = new Intent(MainActivity.this, StoryActivity.class);
-                intentToStoryActivity.putExtra("storyFolderUri",storyFolderUri.toString());
-                intentToStoryActivity.putExtra("path",selectedStory.getPath());
-                startActivity(intentToStoryActivity);
-            }else if((selectedStory instanceof Image) || (selectedStory instanceof PDF)){
-                Intent intentToImageActivity = new Intent(MainActivity.this, ImageActivity.class);
-                intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
-                intentToImageActivity.putExtra("path", selectedStory.getPath());
-                startActivity(intentToImageActivity);
-            }
-        });
+            ListAdapter adapter = new FileAdapter(this, R.layout.item_file, listStory);
+            listViewStory.setAdapter(adapter);
+            listViewStory.setOnItemClickListener((parent, view, position, id) -> {
+                File selectedStory = storyLib.getFileWithPos(position);
+                if (selectedStory instanceof Directory) {
+                    Intent intentToStoryActivity = new Intent(MainActivity.this, StoryActivity.class);
+                    intentToStoryActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                    intentToStoryActivity.putExtra("path", selectedStory.getPath());
+                    startActivity(intentToStoryActivity);
+                } else if ((selectedStory instanceof Image) || (selectedStory instanceof PDF)) {
+                    Intent intentToImageActivity = new Intent(MainActivity.this, ImageActivity.class);
+                    intentToImageActivity.putExtra("storyFolderUri", storyFolderUri.toString());
+                    intentToImageActivity.putExtra("path", selectedStory.getPath());
+                    startActivity(intentToImageActivity);
+                }
+            });
+        }
     }
 
     /**
