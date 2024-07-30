@@ -727,12 +727,15 @@ public class ImageActivity extends AppCompatActivity {
         }
         if (pageUp.size() == 0){
             Page page = thisPage.getPrevPage();
-            Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
-            upH = upH + prevBitmap.getHeight();
+            if (page != null) {
+                Bitmap prevBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+                upH = upH + prevBitmap.getHeight();
 
-            newScrollOffset = newScrollOffset + prevBitmap.getHeight();
-            pageUp.add(page);
-            bitmapUp.add(prevBitmap);
+                newScrollOffset = newScrollOffset + prevBitmap.getHeight();
+                pageUp.add(page);
+                bitmapUp.add(prevBitmap);
+
+            }
 
         }
     }
