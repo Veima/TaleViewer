@@ -5,8 +5,8 @@
     <string name="buttonChooseDir">Changer de dossier</string>
     <string name="buttonUpdate">Actualiser</string>
     <string name="imageDescription">Une image</string>
-    <string name="derniereImage">Ceci est la dernière page de l\\\'histoire</string>
-    <string name="premiereImage">Ceci est la première page de l\\\'histoire</string>
+    <string name="derniereImage">Ceci est la dernière page de l\'histoire</string>
+    <string name="premiereImage">Ceci est la première page de l\'histoire</string>
     <string name="fileNotFound">Fichier introuvable</string>
     <string name="home">Accueil</string>
     <string name="miniature">Miniature</string>
@@ -29,5 +29,5 @@
     <string name="Import">Importer les données</string>
     <string name="SaveSucess">Fichier créé avec succès</string>
     <string name="SaveFail">Erreur lors de la création du fichier</string>
-    <string name="ErrorOpen">n\\\'a pas pu être ouvert</string>
+    <string name="ErrorOpen">n\'a pas pu être ouvert</string>
 </resources>
