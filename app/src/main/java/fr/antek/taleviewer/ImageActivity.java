@@ -759,10 +759,13 @@ public class ImageActivity extends AppCompatActivity {
         }
         if (pageDown.size() == 0){
             Page page = thisPage.getNextPage();
-            Bitmap nextBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
-            downH = downH + nextBitmap.getHeight();
-            pageDown.add(page);
-            bitmapDown.add(nextBitmap);
+            if (page != null){
+                Bitmap nextBitmap = BitmapUtility.adaptWidth(page.getBitmap(), imageView);
+                downH = downH + nextBitmap.getHeight();
+                pageDown.add(page);
+                bitmapDown.add(nextBitmap);
+            }
+
 
         }
     }
