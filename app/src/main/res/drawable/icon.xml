@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:gravity="center">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/light_blue_600" />
+            <size android:width="200dp" android:height="200dp" />
+        </shape>
+    </item>
+
+    <item android:drawable="@drawable/phone" />
+    <item android:drawable="@drawable/book" />
+    <item android:drawable="@drawable/tv" />
+</layer-list>
+
+
+
+
+
+
+
