@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
  */
 public class FileAdapter extends ArrayAdapter {
     private final Context context;
-    private final int ressource;
+    private final int resource;
     private final ArrayList<File> fileList;
     private final ArrayList<View> itemViewList = new ArrayList<>();
 
@@ -45,14 +45,14 @@ public class FileAdapter extends ArrayAdapter {
         super(context, resource, fileList);
         this.fileList = fileList;
         this.context = context;
-        this.ressource = resource;
+        this.resource = resource;
     }
 
     @NonNull
     @Override
     public View getView(int pos, View convertView, @NonNull ViewGroup parent){
         File file = fileList.get(pos);
-        @SuppressLint("ViewHolder") View itemView = LayoutInflater.from(context).inflate(ressource, parent, false);
+        @SuppressLint("ViewHolder") View itemView = LayoutInflater.from(context).inflate(resource, parent, false);
         itemViewList.add(itemView);
 
         TextView textTitre = itemView.findViewById(R.id.textName);
