@@ -150,7 +150,7 @@ public class Directory extends File{
         if (!isScan){
             listFile();
         }
-        if (fileList.size() > 0){
+        if (!fileList.isEmpty()){
             return fileList.get(pos);
         }else{
             return null;
